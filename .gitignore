@@ -46,6 +46,33 @@ tsconfig.tsbuildinfo
 *.sublime-workspace
 *.sublime-project
 
+# Additional IDE and development tools
+.vscode/
+.idea/
+.atom/
+.brackets.json
+.history/
+
+# Additional build caches and temporary folders  
+.cache/
+.parcel-cache/
+.turbo/
+.rush/
+.next/
+.nuxt/
+.tmp/
+.temp/
+
+# Additional OS files
+.fseventsd/
+.AppleDouble/
+.LSOverride/
+
+# Node.js related caches
+.npm/
+.yarn/cache
+.pnpm-store/
+
 # ====================
 # OPERATING SYSTEM
 # ====================
@@ -114,8 +141,14 @@ pids/
 *.db
 *.sqlite
 *.sqlite3
+*.db-shm
+*.db-wal
 flowx.db*
+
+# FlowX runtime and state directories (should not be tracked)
 .flowx/
+.swarm/
+.hive-mind/
 
 # Submodules (original reference implementation)
 original-claude-flow/
