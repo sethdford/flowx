@@ -1,7 +1,7 @@
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
-import { MCPServer } from '../../../src/mcp/server.js';
-import { EventBus } from '../../../src/core/event-bus.js';
-import { Logger } from '../../../src/core/logger.js';
+import { MCPServer } from '../../../src/mcp/server';
+import { EventBus } from '../../../src/core/event-bus';
+import { Logger } from '../../../src/core/logger';
 
 describe('Enterprise MCP Server', () => {
   let mcpServer: MCPServer;
@@ -11,7 +11,8 @@ describe('Enterprise MCP Server', () => {
   beforeEach(async () => {
     // Initialize core dependencies
     eventBus = EventBus.getInstance();
-    logger = new Logger({ level: 'debug', enableTimestamp: true });
+    logger = Logger.getInstance();
+    await logger.configure({ level: 'debug', enableTimestamp: true });
 
     // Mock config for enterprise MCP server
     const mockConfig = {

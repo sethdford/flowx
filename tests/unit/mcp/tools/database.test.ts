@@ -5,7 +5,7 @@
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
 import { createDatabaseTools } from '../../../../src/mcp/tools/database/index';
 import { MockLogger } from '../../../mocks/index';
-import * as path from 'node:path';
+import path from 'node:path';
 
 // Mock child_process
 jest.mock('node:child_process', () => ({
@@ -49,7 +49,7 @@ jest.mock('better-sqlite3', () => {
 // Helper function to create temp directory for tests
 async function createTempDir(): Promise<string> {
   const os = await import('node:os');
-  const tempDir = path.join(os.tmpdir(), `claude-flow-test-${Date.now()}`);
+  const tempDir = path.join(os.tmpdir(), `flowx-test-${Date.now()}`);
   return tempDir;
 }
 

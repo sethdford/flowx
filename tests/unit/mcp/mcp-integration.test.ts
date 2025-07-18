@@ -4,14 +4,14 @@
  */
 
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
-import { MCPServer } from '../../../src/mcp/server.ts';
-import { EventBus } from '../../../src/core/event-bus.ts';
-import { Logger } from '../../../src/core/logger.ts';
-import { MCPConfig } from '../../../src/utils/types.ts';
+import { MCPServer } from '../../../src/mcp/server';
+import { EventBus } from '../../../src/core/event-bus';
+import { Logger } from '../../../src/core/logger';
+import { MCPConfig } from '../../../src/utils/types';
 
 // Mock dependencies
-jest.mock('../../../src/core/event-bus.ts');
-jest.mock('../../../src/core/logger.ts');
+jest.mock('../../../src/core/event-bus');
+jest.mock('../../../src/core/logger');
 
 describe('MCP Integration Tests', () => {
   let mcpServer: MCPServer;
@@ -28,7 +28,11 @@ describe('MCP Integration Tests', () => {
       emit: jest.fn(),
       on: jest.fn(),
       off: jest.fn(),
+      getInstance: jest.fn().mockReturnThis(),
     } as any;
+    
+    // Mock the static getInstance method to return our mock instance
+    (EventBus as jest.MockedClass<typeof EventBus>).getInstance = jest.fn().mockReturnValue(mockEventBus);
 
     mockLogger = {
       info: jest.fn(),
@@ -36,7 +40,11 @@ describe('MCP Integration Tests', () => {
       warn: jest.fn(),
       error: jest.fn(),
       configure: jest.fn(),
+      getInstance: jest.fn().mockReturnThis(),
     } as any;
+    
+    // Mock the static getInstance method to return our mock instance
+    (Logger as jest.MockedClass<typeof Logger>).getInstance = jest.fn().mockReturnValue(mockLogger);
 
     // Basic MCP configuration
     config = {
@@ -55,7 +63,7 @@ describe('MCP Integration Tests', () => {
       },
     };
 
-    // Create MCP server instance
+    // Create MCP server instance using the mocked singleton instances
     mcpServer = new MCPServer(
       config,
       mockEventBus,
