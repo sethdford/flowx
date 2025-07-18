@@ -150,8 +150,10 @@ flowx.db*
 .swarm/
 .hive-mind/
 
-# Submodules (original reference implementation)
+# Reference implementations and external code (not part of our codebase)
 original-claude-flow/
+reference-implementations/
+external-libs/
 
 # Configuration files (keep examples)
 flowx.config.json
