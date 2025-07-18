@@ -36,9 +36,18 @@ import { servicesCommand } from '../commands/system/services-command.ts';
 import { systemCommand } from '../commands/system/system-command.ts';
 import { runCommand } from '../commands/system/run-command.ts';
 import { claudeCommand } from '../commands/system/claude-command.ts';
+import { sessionCommand } from '../commands/system/session-command.ts';
+import { infrastructureCommand } from '../commands/system/infrastructure-command.ts';
 
 // MCP Commands
 import { mcpCommand } from '../commands/system/mcp-command.ts';
+import mcpToolsCommand from '../commands/system/mcp-tools-command.ts';
+
+// Neural Commands
+import { neuralCommand } from '../commands/neural/neural-command.ts';
+
+// Claude API Commands
+import { claudeApiCommand } from '../commands/claude/claude-api-command.ts';
 
 // Agent Commands
 import { agentCommand } from '../commands/agents/agent-management-command.ts';
@@ -54,7 +63,17 @@ import { memoryCommand } from '../commands/memory/memory-management-command.ts';
 
 // Data Commands
 import { queryCommand } from '../commands/data/query-command.ts';
-import { analyzeCommand } from '../commands/data/analyze-command.ts';
+import { analyzeCommand } from '../commands/system/analyze-command.ts';
+import { debugCommand } from '../commands/system/debug-command.ts';
+
+// Refactor Commands
+import { refactorCommand } from '../commands/refactor/refactor-command.ts';
+import { architectCommand } from '../commands/refactor/architect-command.ts';
+import { qualityCommand } from '../commands/refactor/quality-command.ts';
+
+  // GitHub Commands
+  import githubAutomationCommand from '../commands/github/github-automation.ts';
+  import visualWorkflowDesignerCommand from '../commands/system/visual-workflow-designer.ts';
 
 // Hive-Mind Commands
 import { hiveMindCommand } from '../commands/hive-mind/hive-mind-command.ts';
@@ -81,83 +100,119 @@ const hooksCommand: CLICommand = {
 // Import fix-hook-variables command
 import { fixHookVariablesCommand } from '../commands/system/fix-hook-variables-command.ts';
 
+// Import REPL command
+import { replCommand } from '../commands/system/repl-command.ts';
+
 /**
  * Command Registry
  * Maps command names to their implementations
  */
-export const commandRegistry = new Map<string, CLICommand>([
-  // System Commands
-  ['status', statusCommand],
-  ['config', configCommand],
-  ['monitor', monitorCommand],
-  ['monitor-dashboard', monitorDashboardCommand],
-  ['web-ui', webUICommand],
-  ['workflow-designer', workflowDesignerCommand],
-  ['logs', logsCommand],
-  ['init', initCommand],
-  ['start', startCommand],
-  ['stop', stopCommand],
-  ['restart', restartCommand],
-  ['sparc', sparcCommand],
-  ['batch', batchCommand],
-  ['task', taskCommand],
-  ['todo', todoCommand],
-  ['workflow', workflowCommand],
-  ['migration', migrationCommand],
-  ['ui', uiCommand],
-  ['terminal', terminalCommand],
-  ['benchmark', benchmarkCommand],
-  ['health', healthCommand],
-  ['validate', validateCommand],
-  ['scale', scaleCommand],
-  ['backup', backupCommand],
-  ['restore', restoreCommand],
-  ['daemon', daemonCommand],
-  ['services', servicesCommand],
-  ['system', systemCommand],
-  ['run', runCommand],
-  ['claude', claudeCommand],
+export const commandRegistry = new Map<string, any>();
 
-  // MCP Commands
-  ['mcp', mcpCommand],
+// Initialize the command registry
+commandRegistry.set('status', statusCommand);
+commandRegistry.set('config', configCommand);
+commandRegistry.set('monitor', monitorCommand);
+commandRegistry.set('monitor-dashboard', monitorDashboardCommand);
+commandRegistry.set('web-ui', webUICommand);
+commandRegistry.set('workflow-designer', workflowDesignerCommand);
+commandRegistry.set('logs', logsCommand);
+commandRegistry.set('init', initCommand);
+commandRegistry.set('start', startCommand);
+commandRegistry.set('stop', stopCommand);
+commandRegistry.set('restart', restartCommand);
+commandRegistry.set('sparc', sparcCommand);
+commandRegistry.set('batch', batchCommand);
+commandRegistry.set('task', taskCommand);
+commandRegistry.set('todo', todoCommand);
+commandRegistry.set('workflow', workflowCommand);
+commandRegistry.set('migration', migrationCommand);
+commandRegistry.set('ui', uiCommand);
+commandRegistry.set('terminal', terminalCommand);
+commandRegistry.set('benchmark', benchmarkCommand);
+commandRegistry.set('health', healthCommand);
+commandRegistry.set('validate', validateCommand);
+commandRegistry.set('scale', scaleCommand);
+commandRegistry.set('backup', backupCommand);
+commandRegistry.set('restore', restoreCommand);
+commandRegistry.set('daemon', daemonCommand);
+commandRegistry.set('services', servicesCommand);
+commandRegistry.set('system', systemCommand);
+commandRegistry.set('run', runCommand);
+commandRegistry.set('claude', claudeCommand);
+commandRegistry.set('session', sessionCommand);
+commandRegistry.set('infrastructure', infrastructureCommand);
+commandRegistry.set('repl', replCommand);
 
-  // Agent Commands
-  ['agent', agentCommand],
-  ['spawn', spawnCommand],
-  ['kill', killCommand],
-  ['exec', execCommand],
+// MCP Commands
+commandRegistry.set('mcp', mcpCommand);
+commandRegistry.set('mcp-tools', mcpToolsCommand);
 
-  // Swarm Commands
-  ['swarm', swarmCommand],
+// Neural Commands
+commandRegistry.set('neural', neuralCommand);
 
-  // Memory Commands
-  ['memory', memoryCommand],
+// Claude API Commands
+commandRegistry.set('claude-api', claudeApiCommand);
 
-  // Data Commands
-  ['query', queryCommand],
-  ['analyze', analyzeCommand],
+// Agent Commands
+commandRegistry.set('agent', agentCommand);
+commandRegistry.set('spawn', spawnCommand);
+commandRegistry.set('kill', killCommand);
+commandRegistry.set('exec', execCommand);
 
-  // Hive-Mind Commands
-  ['hive-mind', hiveMindCommand],
+// Swarm Commands
+commandRegistry.set('swarm', swarmCommand);
 
-  // Hooks Commands
-  ['hooks', hooksCommand],
-  ['fix-hook-variables', fixHookVariablesCommand]
-]);
+// Memory Commands
+commandRegistry.set('memory', memoryCommand);
+
+// Data Commands
+commandRegistry.set('query', queryCommand);
+commandRegistry.set('analyze', analyzeCommand);
+commandRegistry.set('debug', debugCommand);
+
+// Refactor Commands  
+commandRegistry.set('refactor', refactorCommand);
+commandRegistry.set('architect', architectCommand);
+commandRegistry.set('quality', qualityCommand);
+
+// GitHub Commands
+commandRegistry.set('github', githubAutomationCommand);
+commandRegistry.set('visual-workflow', visualWorkflowDesignerCommand);
+
+// Hive-Mind Commands
+commandRegistry.set('hive-mind', hiveMindCommand);
+
+// Hooks Commands
+commandRegistry.set('hooks', hooksCommand);
+commandRegistry.set('fix-hook-variables', fixHookVariablesCommand);
 
 // Command aliases
 const aliases = new Map<string, string>([
   ['ps', 'agent'],
+  ['ls', 'agent'],
   ['agents', 'agent'],
-  ['swarms', 'swarm'],
-  ['mem', 'memory'],
+  ['ps-agent', 'agent'],
+  ['kill-agent', 'kill'],
+  ['exec-agent', 'exec'],
+  ['spawn-agent', 'spawn'],
+  ['log', 'logs'],
   ['cfg', 'config'],
   ['conf', 'config'],
-  ['svc', 'services'],
-  ['service', 'services'],
   ['sys', 'system'],
-  ['systemctl', 'services'],
-  ['tasks', 'task']
+  ['svc', 'services'],
+  ['db', 'query'],
+  ['q', 'query'],
+  ['stats', 'status'],
+  ['st', 'status'],
+  ['mem', 'memory'],
+  ['mem-stats', 'memory'],
+  ['brain', 'hive-mind'],
+  ['hm', 'hive-mind'],
+  ['arch', 'architect'],
+  ['ref', 'refactor'],
+  ['qa', 'quality'],
+  ['check', 'quality']
 ]);
 
 /**
@@ -171,7 +226,18 @@ export function getAllCommands(): CLICommand[] {
  * Get command by name
  */
 export function getCommand(name: string): CLICommand | undefined {
-  return commandRegistry.get(name);
+  // Try direct command name first
+  let command = commandRegistry.get(name);
+  
+  if (!command) {
+    // Try alias
+    const aliasTarget = aliases.get(name);
+    if (aliasTarget) {
+      command = commandRegistry.get(aliasTarget);
+    }
+  }
+  
+  return command;
 }
 
 /**

@@ -64,13 +64,13 @@ export const workflowCommand: CLICommand = {
   name: 'workflow',
   description: 'Manage and execute workflows with real orchestration',
   category: 'Workflow',
-  usage: 'claude-flow workflow <subcommand> [OPTIONS]',
+  usage: 'flowx workflow <subcommand> [OPTIONS]',
   examples: [
-    'claude-flow workflow create --name "CI/CD Pipeline" --file pipeline.tson',
-    'claude-flow workflow list --status active',
-    'claude-flow workflow run workflow-123',
-    'claude-flow workflow status execution-456',
-    'claude-flow workflow template create basic-pipeline'
+    'flowx workflow create --name "CI/CD Pipeline" --file pipeline.tson',
+    'flowx workflow list --status active',
+    'flowx workflow run workflow-123',
+    'flowx workflow status execution-456',
+    'flowx workflow template create basic-pipeline'
   ],
   subcommands: [
     {
@@ -271,7 +271,7 @@ async function createWorkflow(context: CLIContext): Promise<void> {
   
   if (!options.name) {
     printError('Workflow name is required');
-    printInfo('Usage: claude-flow workflow create --name "Workflow Name" [options]');
+    printInfo('Usage: flowx workflow create --name "Workflow Name" [options]');
     return;
   }
 
@@ -377,7 +377,7 @@ async function showWorkflow(context: CLIContext): Promise<void> {
   const workflowId = args[0];
   if (!workflowId) {
     printError('Workflow ID is required');
-    printInfo('Usage: claude-flow workflow show <workflow-id>');
+    printInfo('Usage: flowx workflow show <workflow-id>');
     return;
   }
 
@@ -430,7 +430,7 @@ async function runWorkflow(context: CLIContext): Promise<void> {
   const workflowId = args[0];
   if (!workflowId) {
     printError('Workflow ID is required');
-    printInfo('Usage: claude-flow workflow run <workflow-id> [options]');
+    printInfo('Usage: flowx workflow run <workflow-id> [options]');
     return;
   }
 
@@ -470,7 +470,7 @@ async function runWorkflow(context: CLIContext): Promise<void> {
     printInfo(`Steps: ${workflow.steps.length}`);
 
     if (options.async) {
-      printInfo('Running asynchronously. Use "claude-flow workflow status" to check progress.');
+      printInfo('Running asynchronously. Use "flowx workflow status" to check progress.');
       // Start execution in background
       executeWorkflowAsync(workflow, execution, variables, options.timeout);
     } else {
@@ -490,7 +490,7 @@ async function checkExecutionStatus(context: CLIContext): Promise<void> {
   const executionId = args[0];
   if (!executionId) {
     printError('Execution ID is required');
-    printInfo('Usage: claude-flow workflow status <execution-id>');
+    printInfo('Usage: flowx workflow status <execution-id>');
     return;
   }
 
@@ -541,7 +541,7 @@ async function stopExecution(context: CLIContext): Promise<void> {
   const executionId = args[0];
   if (!executionId) {
     printError('Execution ID is required');
-    printInfo('Usage: claude-flow workflow stop <execution-id> [--force]');
+    printInfo('Usage: flowx workflow stop <execution-id> [--force]');
     return;
   }
 
@@ -577,7 +577,7 @@ async function showExecutionLogs(context: CLIContext): Promise<void> {
   const executionId = args[0];
   if (!executionId) {
     printError('Execution ID is required');
-    printInfo('Usage: claude-flow workflow logs <execution-id> [options]');
+    printInfo('Usage: flowx workflow logs <execution-id> [options]');
     return;
   }
 
@@ -645,7 +645,7 @@ async function validateWorkflow(context: CLIContext): Promise<void> {
   const workflowId = args[0];
   if (!workflowId) {
     printError('Workflow ID is required');
-    printInfo('Usage: claude-flow workflow validate <workflow-id>');
+    printInfo('Usage: flowx workflow validate <workflow-id>');
     return;
   }
 
@@ -684,7 +684,7 @@ async function exportWorkflow(context: CLIContext): Promise<void> {
   const workflowId = args[0];
   if (!workflowId) {
     printError('Workflow ID is required');
-    printInfo('Usage: claude-flow workflow export <workflow-id> [options]');
+    printInfo('Usage: flowx workflow export <workflow-id> [options]');
     return;
   }
 

@@ -1,5 +1,5 @@
 /**
- * Core type definitions for Claude-Flow
+ * Core type definitions for FlowX
  */
 
 // Import orchestrator metrics type
@@ -503,6 +503,8 @@ export interface TerminalCommand {
 export interface MCPContext {
   sessionId: string;
   agentId?: string;
+  userId?: string;
+  headers?: Record<string, string>;
   logger: ILogger;
 }
 

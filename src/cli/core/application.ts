@@ -314,7 +314,7 @@ export class CLIApplication extends EventEmitter {
       const command = this.commands.get(commandName);
       if (!command) {
         this.outputFormatter.printError(`Unknown command: ${commandName}`);
-        this.outputFormatter.printInfo('Run "claude-flow help" to see available commands.');
+        this.outputFormatter.printInfo('Run "flowx help" to see available commands.');
         return;
       }
 
@@ -469,7 +469,7 @@ export class CLIApplication extends EventEmitter {
   }
 
   private async loadConfig(configPath?: string): Promise<Record<string, any> | undefined> {
-    const configFile = configPath || "claude-flow.config.tson";
+    const configFile = configPath || "flowx.config.tson";
     try {
       const { readFile } = await import('node:fs/promises');
       const content = await readFile(configFile, 'utf8');

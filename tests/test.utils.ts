@@ -1,11 +1,10 @@
 /**
- * Test utilities for Claude-Flow
- * Provides consistent testing patterns and utilities
+ * Test utilities and helpers
  */
 
 import { jest } from '@jest/globals';
-import { Logger } from '../src/core/logger.js';
-import { EventBus } from '../src/core/event-bus.js';
+import { Logger } from '../src/core/logger';
+import { EventBus } from '../src/core/event-bus';
 
 // Re-export Jest functions for consistency
 export { describe, it, expect, jest, beforeEach, afterEach, beforeAll, afterAll } from '@jest/globals';
@@ -201,10 +200,10 @@ export function createMockEventBus(): EventBus {
 // Test environment setup
 export function setupTestEnv() {
   process.env.NODE_ENV = 'test';
-  process.env.CLAUDE_FLOW_ENV = 'test';
-  process.env.CLAUDE_FLOW_LOG_LEVEL = 'silent';
-  process.env.CLAUDE_FLOW_DISABLE_METRICS = 'true';
-  process.env.CLAUDE_FLOW_DISABLE_TELEMETRY = 'true';
+  process.env.FLOWX_ENV = 'test';
+  process.env.FLOWX_LOG_LEVEL = 'silent';
+  process.env.FLOWX_DISABLE_METRICS = 'true';
+  process.env.FLOWX_DISABLE_TELEMETRY = 'true';
 }
 
 export function cleanupTestEnv() {
@@ -393,7 +392,7 @@ export const TEST_CONFIG = {
     integration: 45000,
     e2e: 90000
   },
-  tempDir: '/tmp/claude-flow-tests',
+  tempDir: '/tmp/flowx-tests',
   logLevel: 'silent'
 };
 

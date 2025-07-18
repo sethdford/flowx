@@ -1,6 +1,6 @@
 /**
  * Comprehensive Claude Code Workflow E2E Test
- * Tests a complete end-to-end workflow using Claude Code with claude-flow
+ * Tests a complete end-to-end workflow using Claude Code with flowx
  */
 
 import { describe, test, expect, beforeAll, afterAll } from '@jest/globals';

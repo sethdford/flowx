@@ -1585,7 +1585,7 @@ export class MessageBus extends EventEmitter {
     
     try {
       const fs = await import('node:fs/promises');
-      const path = await import('node:path');
+      const { join } = await import('node:path');
       
       const messages = Array.from(this.messageStore.values());
       const persistenceData = {
@@ -1624,23 +1624,23 @@ export class MessageBus extends EventEmitter {
       };
       
       // Create persistence directory if it doesn't exist
-      const persistenceDir = path.join(process.cwd(), '.flowx', 'message-bus');
+      const persistenceDir = join(process.cwd(), '.flowx', 'message-bus');
       await fs.mkdir(persistenceDir, { recursive: true });
       
       // Write persistence data to file
-      const filename = `messages-${Date.now()}.tson`;
-      const filepath = path.join(persistenceDir, filename);
+      const filename = `messages-${Date.now()}.json`;
+      const filepath = join(persistenceDir, filename);
       await fs.writeFile(filepath, JSON.stringify(persistenceData, null, 2));
       
       // Clean up old persistence files (keep last 10)
       const files = await fs.readdir(persistenceDir);
-      const messageFiles = files.filter(f => f.startsWith('messages-') && f.endsWith('.tson'))
+      const messageFiles = files.filter(f => f.startsWith('messages-') && f.endsWith('.json'))
         .sort().reverse();
       
       if (messageFiles.length > 10) {
         const filesToDelete = messageFiles.slice(10);
         for (const file of filesToDelete) {
-          await fs.unlink(path.join(persistenceDir, file));
+          await fs.unlink(join(persistenceDir, file));
         }
       }
       
@@ -1650,16 +1650,8 @@ export class MessageBus extends EventEmitter {
         filepath: filename
       });
       
-      // Emit persistence event
-      this.eventBus.emit('messages:persisted', {
-        count: messages.length,
-        timestamp: Date.now(),
-        filepath: filename
-      });
-      
     } catch (error) {
-      this.logger.error('Failed to persist messages', error);
-      throw error; // Re-throw to indicate persistence failure
+      this.logger.error('Failed to persist messages', { error });
     }
   }
 

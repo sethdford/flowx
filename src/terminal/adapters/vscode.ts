@@ -56,7 +56,7 @@ class VSCodeTerminalWrapper implements Terminal {
     this.vscodeApi = vscodeApi;
     this.shellType = shellType;
     this.logger = logger;
-    this.commandMarker = `__CLAUDE_FLOW_${this.id}__`;
+    this.commandMarker = `__FLOWX_${this.id}__`;
   }
 
   async initialize(): Promise<void> {
@@ -64,11 +64,11 @@ class VSCodeTerminalWrapper implements Terminal {
       // Create VSCode terminal
       const shellPath = this.getShellPath();
       const terminalOptions: any = {
-        name: `Claude-Flow Terminal ${this.id}`,
+        name: `FlowX Terminal ${this.id}`,
         shellArgs: this.getShellArgs(),
         env: {
-          CLAUDE_FLOW_TERMINAL: 'true',
-          CLAUDE_FLOW_TERMINAL_ID: this.id,
+          FLOWX_TERMINAL: 'true',
+          FLOWX_TERMINAL_ID: this.id,
           PS1: '$ ', // Simple prompt
         },
       };

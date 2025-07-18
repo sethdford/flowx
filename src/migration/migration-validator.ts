@@ -4,9 +4,9 @@
 
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import { ValidationResult, ValidationCheck } from './types.ts';
-import { logger } from './logger.ts';
-import { colors } from '../utils/colors.ts';
+import { ValidationResult, ValidationCheck } from './types.js';
+import { logger } from '../core/logger.js';
+import { colors } from '../utils/colors.js';
 import globPkg from 'glob';
 const { glob } = globPkg;
 
@@ -44,22 +44,24 @@ async function remove(filePath: string): Promise<void> {
 }
 
 export class MigrationValidator {
-  private requiredFiles = [
-    '.claude/commands/sparc.md',
-    '.claude/commands/claude-flow-help.md',
-    '.claude/commands/claude-flow-memory.md',
-    '.claude/BATCHTOOLS_GUIDE.md',
-    '.claude/BATCHTOOLS_BEST_PRACTICES.md'
+  private readonly expectedFiles = [
+    '.claude/prompts/sparc.md',
+    '.claude/prompts/claude.md',
+    '.claude/prompts/code-review.md',
+    '.claude/commands/memory-bank.md',
+    '.claude/commands/coordination.md',
+    '.claude/commands/flowx-help.md',
+    '.claude/commands/flowx-memory.md',
+    '.claude/commands/flowx-swarm.md'
   ];
 
-  private requiredCommands = [
+  private readonly expectedCommands = [
     'sparc',
-    'sparc-architect',
-    'sparc-code',
-    'sparc-tdd',
-    'claude-flow-help',
-    'claude-flow-memory',
-    'claude-flow-swarm'
+    'memory-bank',
+    'coordination',
+    'flowx-help',
+    'flowx-memory',
+    'flowx-swarm'
   ];
 
   async validate(projectPath: string): Promise<ValidationResult> {
@@ -112,7 +114,7 @@ export class MigrationValidator {
     }
 
     // Check required files
-    for (const file of this.requiredFiles) {
+    for (const file of this.expectedFiles) {
       const filePath = path.join(projectPath, file);
       if (!await pathExists(filePath)) {
         check.passed = false;
@@ -132,7 +134,7 @@ export class MigrationValidator {
     const commandsPath = path.join(projectPath, '.claude/commands');
     
     if (await pathExists(commandsPath)) {
-      for (const command of this.requiredCommands) {
+      for (const command of this.expectedCommands) {
         const commandFile = path.join(commandsPath, `${command}.md`);
         const sparcCommandFile = path.join(commandsPath, 'sparc', `${command.replace('sparc-', '')}.md`);
         
@@ -309,7 +311,7 @@ export class MigrationValidator {
         // Check for script conflicts
         const scripts = packageJson.scripts || {};
         const conflictingScripts = Object.keys(scripts).filter(script => 
-          script.startsWith('claude-flow') || script.startsWith('sparc')
+          script.startsWith('flowx') || script.startsWith('sparc')
         );
         
         if (conflictingScripts.length > 0) {

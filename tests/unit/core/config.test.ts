@@ -14,14 +14,14 @@ jest.mock('fs/promises', () => ({
   rm: jest.fn()
 }));
 
-const { configManager } = require('../../../src/core/config.js');
+import { configManager } from '../../../src/core/config';
 
 describe('ConfigManager', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset the configManager before each test if it has a reset method
-    if (configManager.reset) {
-      configManager.reset();
+    if ((configManager as any).reset) {
+      (configManager as any).reset();
     }
   });
 
@@ -41,9 +41,20 @@ describe('ConfigManager', () => {
 
   test('should update configuration values', () => {
     configManager.update({
-      orchestrator: { maxConcurrentAgents: 5 },
-      terminal: { poolSize: 3 },
-    });
+      orchestrator: { 
+        maxConcurrentAgents: 5,
+        taskQueueSize: 100,
+        healthCheckInterval: 30000,
+        shutdownTimeout: 10000
+      },
+      terminal: { 
+        poolSize: 3,
+        type: 'auto' as const,
+        recycleAfter: 3600000,
+        healthCheckInterval: 60000,
+        commandTimeout: 30000
+      },
+    } as any);
 
     const config = configManager.get();
     expect(config.orchestrator.maxConcurrentAgents).toBe(5);

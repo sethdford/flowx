@@ -13,7 +13,7 @@ class MaintenanceStrategy(BaseStrategy):
     def __init__(self):
         """Initialize the maintenance strategy."""
         super().__init__()
-        self.claude_flow_client = None
+        self.flowx_client = None
     
     @property
     def name(self) -> str:

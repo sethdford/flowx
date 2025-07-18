@@ -2,7 +2,7 @@
  * Tests for the BackgroundExecutor
  * 
  * This test suite verifies the functionality of the BackgroundExecutor which manages
- * asynchronous tasks in the claude-flow system. The tests ensure proper task submission,
+ * asynchronous tasks in the flowx system. The tests ensure proper task submission,
  * execution, cancellation, and error handling behavior.
  * 
  * Key test areas:

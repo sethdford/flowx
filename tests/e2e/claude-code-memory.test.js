@@ -1,6 +1,6 @@
 /**
  * Claude Code Memory Operations E2E Tests
- * Tests the integration between Claude Code and claude-flow memory system
+ * Tests the integration between Claude Code and flowx memory system
  */
 
 import { describe, test, expect, beforeEach, afterEach } from '@jest/globals';

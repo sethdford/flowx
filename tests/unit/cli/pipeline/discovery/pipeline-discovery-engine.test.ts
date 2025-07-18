@@ -7,8 +7,8 @@ import {
   DataSource,
   DataTarget,
   PipelineRequirements 
-} from '../../../../../src/cli/pipeline/discovery/pipeline-discovery-engine.js';
-import { Logger } from '../../../../../src/core/logger.js';
+} from '../../../../../src/cli/pipeline/discovery/pipeline-discovery-engine';
+import { Logger } from '../../../../../src/core/logger';
 
 // Extend global namespace to include mockFs
 declare global {
@@ -39,13 +39,13 @@ jest.mock('fs', () => {
 });
 
 // Mock Logger
-jest.mock('../../../../../src/core/logger.js');
+jest.mock('../../../../../src/core/logger');
 
 // Import the mock to make it accessible
 const mockFs = global.mockFs as MockFunctions;
 
 // Mock Logger
-jest.mock('../../../../../src/core/logger.js');
+jest.mock('../../../../../src/core/logger');
 
 describe('PipelineDiscoveryEngine', () => {
   let engine: PipelineDiscoveryEngine;

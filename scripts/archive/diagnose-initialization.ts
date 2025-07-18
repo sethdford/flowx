@@ -29,7 +29,7 @@ async function diagnoseInitialization(): Promise<void> {
       syncInterval: 60000,
       conflictResolution: 'last-write' as const,
       retentionDays: 30,
-      sqlitePath: '.claude-flow/memory.db'
+      sqlitePath: '.flowx/memory.db'
     };
     console.log('✅ Memory config created successfully');
 

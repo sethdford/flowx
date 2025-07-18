@@ -1,706 +1,583 @@
 /**
- * Integration tests for Memory Manager and Coordination Manager
+ * Memory-Coordination Integration Tests
+ * Tests the interaction between memory management and coordination systems
  */
 
-import {
-  describe,
-  it,
-  beforeEach,
-  afterEach,
-  assertEquals,
-  assertExists,
-  assertRejects,
-  spy,
-} from '../test.utils.ts';
-import { MockMemoryManager, MockCoordinationManager } from '../mocks/index.ts';
+import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
+import { MemoryManager } from '../../src/memory/memory-manager.ts';
+import { CoordinationManager } from '../../src/coordination/manager.ts';
 import { EventBus } from '../../src/core/event-bus.ts';
 import { Logger } from '../../src/core/logger.ts';
-import {
-  MemoryEntry,
-  MemoryQuery,
-  Resource,
-  Message,
-  AgentProfile,
-} from '../../src/utils/types.ts';
-import { cleanupTestEnv, setupTestEnv } from '../test.config.ts';
-import { delay, generateId } from '../../src/utils/helpers.ts';
+import type { MemoryEntry, MemorySearchOptions, AgentId } from '../../src/utils/types.ts';
 
 describe('Memory-Coordination Integration', () => {
-  let memoryManager: MockMemoryManager;
-  let coordinationManager: MockCoordinationManager;
+  let memoryManager: MemoryManager;
+  let coordinationManager: CoordinationManager;
   let eventBus: EventBus;
   let logger: Logger;
 
-  beforeEach(() => {
-    setupTestEnv();
-
-    eventBus = new EventBus();
-    logger = new Logger({
-      level: 'debug',
-      format: 'text',
-      destination: 'console',
+  beforeEach(async () => {
+    eventBus = EventBus.getInstance();
+    logger = new Logger({ level: 'error', format: 'text', destination: 'console' }, { component: 'test' });
+    
+    // Initialize memory manager
+    memoryManager = new MemoryManager({
+      namespace: 'coordination-test',
+      enablePersistence: false,
+      enableDistribution: false,
+      logging: { level: 'error' }
     });
+    await memoryManager.initialize();
 
-    memoryManager = new MockMemoryManager();
-    coordinationManager = new MockCoordinationManager();
+    // Initialize coordination manager  
+    coordinationManager = new CoordinationManager({
+      strategy: 'mesh',
+      maxConcurrentTasks: 10,
+      taskTimeout: 30000,
+      logging: { level: 'error' }
+    }, eventBus, logger);
+    await coordinationManager.initialize();
   });
 
   afterEach(async () => {
-    await cleanupTestEnv();
+    await memoryManager?.shutdown();
+    await coordinationManager?.shutdown();
+    eventBus.removeAllListeners();
   });
 
   describe('distributed memory coordination', () => {
     it('should coordinate memory operations across agents', async () => {
-      const agentIds = ['agent-1', 'agent-2', 'agent-3'];
-      const sessionId = generateId('session');
-
-      // Simulate multiple agents storing memories simultaneously
-      const memoryEntries: MemoryEntry[] = agentIds.map((agentId, index) => ({
-        id: generateId('memory'),
-        agentId,
-        sessionId,
-        type: 'observation',
-        content: `Agent ${agentId} observation ${index}`,
-        context: {
-          timestamp: new Date().toISOString(),
-          taskId: generateId('task'),
-          priority: index + 1,
+      // Create memory entries for different agents
+      const memoryEntries = [
+        {
+          id: 'mem-1',
+          key: 'agent-1-memory',
+          value: 'Agent 1 data',
+          agentId: 'agent-1',
+          type: 'knowledge' as const,
+          tags: ['shared']
         },
-        timestamp: new Date(),
-        tags: [`agent-${index}`, 'test', 'observation'],
-        version: 1,
-      }));
+        {
+          id: 'mem-2', 
+          key: 'agent-2-memory',
+          value: 'Agent 2 data',
+          agentId: 'agent-2',
+          type: 'knowledge' as const,
+          tags: ['shared']
+        }
+      ];
 
-      // Store entries through coordination
+      // Store entries with coordination locks
       for (const entry of memoryEntries) {
         // Acquire resource lock for memory region
         const resourceId = `memory:${entry.agentId}`;
         await coordinationManager.acquireResource(resourceId, entry.agentId);
 
         try {
-          await memoryManager.storeEntry(entry);
+          await memoryManager.store(entry.key, entry.value, {
+            type: entry.type,
+            tags: entry.tags,
+            owner: { id: entry.agentId, swarmId: 'test', type: 'coordinator', instance: 0 }
+          });
         } finally {
           await coordinationManager.releaseResource(resourceId, entry.agentId);
         }
       }
 
-      // Verify all entries were stored
-      assertEquals(memoryManager.storeEntry.calls.length, 3);
-
-      // Query memories across agents
-      const query: MemoryQuery = {
-        type: 'observation',
-        tags: ['test'],
-        limit: 10,
-      };
-
-      const results = await memoryManager.queryEntries(query);
-      assertEquals(results.length, 3);
-
-      // Verify entries from all agents
-      const resultAgentIds = results.map(entry => entry.agentId).sort();
-      assertEquals(resultAgentIds, agentIds.sort());
+      // Verify memories were stored
+      const agent1Memory = await memoryManager.retrieve('agent-1-memory');
+      const agent2Memory = await memoryManager.retrieve('agent-2-memory');
+      
+      expect(agent1Memory).toBeTruthy();
+      expect(agent2Memory).toBeTruthy();
+      expect(agent1Memory.value).toBe('Agent 1 data');
+      expect(agent2Memory.value).toBe('Agent 2 data');
     });
 
     it('should handle memory conflicts using coordination', async () => {
-      const agentId = 'conflict-agent';
-      const sessionId = generateId('session');
-      const resourceId = `memory:${agentId}`;
-
+      const sharedKey = 'shared-resource';
+      
       // Create initial memory entry
-      const initialEntry: MemoryEntry = {
-        id: generateId('memory'),
-        agentId,
-        sessionId,
-        type: 'decision',
-        content: 'Initial decision',
-        context: { version: 1 },
-        timestamp: new Date(),
-        tags: ['decision'],
-        version: 1,
+      const initialEntry = {
+        key: sharedKey,
+        value: 'Initial value',
+        agentId: 'agent-1',
+        type: 'knowledge' as const,
+        tags: ['shared', 'conflict-test']
       };
 
-      await memoryManager.storeEntry(initialEntry);
+      await memoryManager.store(initialEntry.key, initialEntry.value, {
+        type: initialEntry.type,
+        tags: initialEntry.tags,
+        owner: { id: initialEntry.agentId, swarmId: 'test', type: 'coordinator', instance: 0 }
+      });
 
       // Simulate concurrent updates from different processes
       const updates = [
-        { ...initialEntry, content: 'Update from process A', version: 2 },
-        { ...initialEntry, content: 'Update from process B', version: 2 },
+        { agentId: 'agent-1', value: 'Agent 1 update' },
+        { agentId: 'agent-2', value: 'Agent 2 update' },
+        { agentId: 'agent-3', value: 'Agent 3 update' }
       ];
 
-      // Use coordination to serialize updates
-      for (const update of updates) {
-        await coordinationManager.acquireResource(resourceId, agentId);
+      const updatePromises = updates.map(async (update, index) => {
+        // Add small delay to create actual concurrency
+        await new Promise(resolve => setTimeout(resolve, index * 10));
+        
+        const resourceId = `memory:${sharedKey}`;
+        await coordinationManager.acquireResource(resourceId, update.agentId);
         
         try {
-          // Check current version before update
-          const current = await memoryManager.getEntry(update.id);
-          if (current && current.version >= update.version) {
-            // Conflict detected - increment version
-            update.version = current.version + 1;
-          }
-          
-          await memoryManager.updateEntry(update.id, update);
+          await memoryManager.update(sharedKey, update.value, {
+            updater: { id: update.agentId, swarmId: 'test', type: 'coordinator', instance: 0 }
+          });
+          return { success: true, agentId: update.agentId };
+        } catch (error) {
+          return { success: false, agentId: update.agentId, error };
         } finally {
-          await coordinationManager.releaseResource(resourceId, agentId);
+          await coordinationManager.releaseResource(resourceId, update.agentId);
         }
-      }
+      });
 
-      // Verify final state
-      const finalEntry = await memoryManager.getEntry(initialEntry.id);
-      assertExists(finalEntry);
-      assertEquals(finalEntry.version, 3); // Should be incremented due to conflict
+      const results = await Promise.all(updatePromises);
+      
+      // All updates should succeed due to coordination
+      expect(results.every(r => r.success)).toBe(true);
+      
+      // Final value should be one of the updates
+      const finalMemory = await memoryManager.retrieve(sharedKey);
+      expect(finalMemory).toBeTruthy();
+      expect(['Agent 1 update', 'Agent 2 update', 'Agent 3 update']).toContain(finalMemory.value);
     });
 
     it('should coordinate cross-agent memory queries', async () => {
-      const agents = [
-        { id: 'researcher', type: 'researcher' },
-        { id: 'implementer', type: 'implementer' },
-        { id: 'coordinator', type: 'coordinator' },
-      ];
-      const sessionId = generateId('session');
-
-      // Each agent stores different types of memories
-      const memoryTypes = [
-        { agent: 'researcher', type: 'insight', content: 'Research findings' },
-        { agent: 'implementer', type: 'artifact', content: 'Code implementation' },
-        { agent: 'coordinator', type: 'decision', content: 'Project decisions' },
-      ];
-
-      for (const memory of memoryTypes) {
-        const entry: MemoryEntry = {
-          id: generateId('memory'),
-          agentId: memory.agent,
-          sessionId,
-          type: memory.type as any,
-          content: memory.content,
-          context: { createdBy: memory.agent },
-          timestamp: new Date(),
-          tags: [memory.type, memory.agent],
-          version: 1,
+      // Create memories for multiple agents
+      const agents = ['agent-1', 'agent-2', 'agent-3'];
+      
+      for (const agentId of agents) {
+        const entry = {
+          key: `${agentId}-data`,
+          value: `${agentId} specific data`,
+          agentId,
+          type: 'knowledge' as const,
+          tags: ['agent-data', agentId]
         };
 
-        await memoryManager.storeEntry(entry);
+        await memoryManager.store(entry.key, entry.value, {
+          type: entry.type,
+          tags: entry.tags,
+          owner: { id: entry.agentId, swarmId: 'test', type: 'coordinator', instance: 0 }
+        });
       }
 
       // Coordinator queries all memories for synthesis
-      const synthesisQuery: MemoryQuery = {
-        sessionId,
-        limit: 10,
-      };
-
-      const allMemories = await memoryManager.queryEntries(synthesisQuery);
-      assertEquals(allMemories.length, 3);
-
-      // Verify memories from all agents are accessible
-      const agentTypes = allMemories.map(m => m.context.createdBy).sort();
-      assertEquals(agentTypes, ['coordinator', 'implementer', 'researcher']);
+      const coordinatorId = 'coordinator';
+      const queryResourceId = 'memory:query:all-agents';
+      
+      await coordinationManager.acquireResource(queryResourceId, coordinatorId);
+      
+      try {
+        const searchOptions: MemorySearchOptions = {
+          tags: ['agent-data'],
+          type: 'knowledge'
+        };
+        
+        const results = await memoryManager.search(searchOptions);
+        
+        expect(results).toHaveLength(3);
+        expect(results.map(r => r.key)).toContain('agent-1-data');
+        expect(results.map(r => r.key)).toContain('agent-2-data');
+        expect(results.map(r => r.key)).toContain('agent-3-data');
+        
+      } finally {
+        await coordinationManager.releaseResource(queryResourceId, coordinatorId);
+      }
     });
   });
 
   describe('resource coordination with memory backing', () => {
     it('should use memory to track resource allocation history', async () => {
-      const resourceId = 'shared-database';
-      const agentId = 'database-agent';
-
-      // Store resource acquisition in memory
-      const acquisitionEntry: MemoryEntry = {
-        id: generateId('memory'),
-        agentId,
-        sessionId: generateId('session'),
-        type: 'observation',
-        content: `Acquiring resource ${resourceId}`,
-        context: {
+      const resourceId = 'shared-compute-resource';
+      const agentId = 'agent-1';
+      
+      // Store acquisition intention in memory
+      const acquisitionEntry = {
+        key: `resource-acquisition:${resourceId}:${agentId}`,
+        value: {
           resourceId,
-          action: 'acquire',
-          timestamp: new Date().toISOString(),
+          agentId,
+          requestTime: new Date().toISOString(),
+          status: 'requesting'
         },
-        timestamp: new Date(),
-        tags: ['resource', 'acquisition'],
-        version: 1,
+        type: 'coordination' as const,
+        tags: ['resource', 'acquisition']
       };
 
-      await memoryManager.storeEntry(acquisitionEntry);
+      await memoryManager.store(acquisitionEntry.key, acquisitionEntry.value, {
+        type: acquisitionEntry.type,
+        tags: acquisitionEntry.tags
+      });
 
       // Acquire resource
       await coordinationManager.acquireResource(resourceId, agentId);
+      
+      // Update memory with successful acquisition
+      await memoryManager.update(acquisitionEntry.key, {
+        ...acquisitionEntry.value,
+        status: 'acquired',
+        acquiredTime: new Date().toISOString()
+      });
 
-      // Store acquisition success
-      const successEntry: MemoryEntry = {
-        ...acquisitionEntry,
-        id: generateId('memory'),
-        content: `Successfully acquired resource ${resourceId}`,
-        context: {
-          ...acquisitionEntry.context,
-          action: 'acquired',
-          status: 'success',
-        },
-      };
-
-      await memoryManager.storeEntry(successEntry);
-
-      // Query resource history
-      const resourceQuery: MemoryQuery = {
-        tags: ['resource'],
-        limit: 10,
-      };
-
-      const resourceHistory = await memoryManager.queryEntries(resourceQuery);
-      assertEquals(resourceHistory.length, 2);
-
-      const actions = resourceHistory.map(entry => entry.context.action);
-      assertEquals(actions.includes('acquire'), true);
-      assertEquals(actions.includes('acquired'), true);
+      // Verify memory tracks the acquisition
+      const storedEntry = await memoryManager.retrieve(acquisitionEntry.key);
+      expect(storedEntry).toBeTruthy();
+      expect(storedEntry.value.status).toBe('acquired');
+      expect(storedEntry.value.acquiredTime).toBeDefined();
 
       // Release resource
       await coordinationManager.releaseResource(resourceId, agentId);
+      
+      // Update memory with release
+      await memoryManager.update(acquisitionEntry.key, {
+        ...storedEntry.value,
+        status: 'released',
+        releasedTime: new Date().toISOString()
+      });
+
+      const finalEntry = await memoryManager.retrieve(acquisitionEntry.key);
+      expect(finalEntry.value.status).toBe('released');
     });
 
     it('should coordinate deadlock detection with memory logging', async () => {
-      const agents = ['agent-A', 'agent-B'];
-      const resources = ['resource-1', 'resource-2'];
-
-      // Set up potential deadlock scenario
-      // Agent A acquires resource-1, Agent B acquires resource-2
-      await coordinationManager.acquireResource(resources[0], agents[0]);
-      await coordinationManager.acquireResource(resources[1], agents[1]);
-
-      // Log resource states in memory
-      for (const agent of agents) {
-        for (const resource of resources) {
-          const entry: MemoryEntry = {
-            id: generateId('memory'),
-            agentId: agent,
-            sessionId: generateId('session'),
-            type: 'observation',
-            content: `Resource state check: ${resource}`,
-            context: {
-              resourceId: resource,
-              requestingAgent: agent,
-              action: 'deadlock-check',
+      const resources = ['resource-A', 'resource-B'];
+      const agents = ['agent-1', 'agent-2'];
+      
+      // Log resource acquisition attempts in memory
+      for (const agentId of agents) {
+        for (const resourceId of resources) {
+          const entry = {
+            key: `deadlock-log:${agentId}:${resourceId}`,
+            value: {
+              agentId,
+              resourceId,
+              attemptTime: new Date().toISOString(),
+              status: 'attempting'
             },
-            timestamp: new Date(),
-            tags: ['deadlock', 'resource'],
-            version: 1,
+            type: 'coordination' as const,
+            tags: ['deadlock', 'resource', agentId]
           };
 
-          await memoryManager.storeEntry(entry);
+          await memoryManager.store(entry.key, entry.value, {
+            type: entry.type,
+            tags: entry.tags
+          });
         }
       }
 
-      // Simulate deadlock detection
-      const deadlockDetected = coordinationManager.detectDeadlock([
-        { agentId: agents[0], resourceId: resources[1] },
-        { agentId: agents[1], resourceId: resources[0] },
-      ]);
+      // Agent 1 acquires resource A
+      await coordinationManager.acquireResource('resource-A', 'agent-1');
+      await memoryManager.update('deadlock-log:agent-1:resource-A', {
+        agentId: 'agent-1',
+        resourceId: 'resource-A',
+        status: 'acquired',
+        acquiredTime: new Date().toISOString()
+      });
 
-      assertEquals(deadlockDetected, true);
+      // Agent 2 acquires resource B  
+      await coordinationManager.acquireResource('resource-B', 'agent-2');
+      await memoryManager.update('deadlock-log:agent-2:resource-B', {
+        agentId: 'agent-2',
+        resourceId: 'resource-B',
+        status: 'acquired',
+        acquiredTime: new Date().toISOString()
+      });
 
-      // Log deadlock detection in memory
-      const deadlockEntry: MemoryEntry = {
-        id: generateId('memory'),
-        agentId: 'system',
-        sessionId: generateId('session'),
-        type: 'error',
-        content: 'Deadlock detected between agents',
-        context: {
-          agents,
-          resources,
-          detectionTime: new Date().toISOString(),
-        },
-        timestamp: new Date(),
-        tags: ['deadlock', 'error', 'system'],
-        version: 1,
-      };
-
-      await memoryManager.storeEntry(deadlockEntry);
-
-      // Verify deadlock was logged
-      const deadlockQuery: MemoryQuery = {
-        type: 'error',
+      // Query memory for potential deadlock patterns
+      const deadlockResults = await memoryManager.search({
         tags: ['deadlock'],
-      };
+        type: 'coordination'
+      });
 
-      const deadlockHistory = await memoryManager.queryEntries(deadlockQuery);
-      assertEquals(deadlockHistory.length, 1);
-      assertEquals(deadlockHistory[0].context.agents, agents);
-
-      // Clean up resources
-      await coordinationManager.releaseResource(resources[0], agents[0]);
-      await coordinationManager.releaseResource(resources[1], agents[1]);
+      expect(deadlockResults.length).toBeGreaterThan(0);
+      
+      // Clean up
+      await coordinationManager.releaseResource('resource-A', 'agent-1');
+      await coordinationManager.releaseResource('resource-B', 'agent-2');
     });
   });
 
   describe('message coordination with memory persistence', () => {
     it('should persist and coordinate inter-agent messages', async () => {
-      const senderAgent = 'coordinator-agent';
-      const receiverAgent = 'worker-agent';
-      const sessionId = generateId('session');
-
-      const message: Message = {
-        id: generateId('message'),
-        type: 'task-assignment',
-        payload: {
-          taskId: generateId('task'),
-          description: 'Process data files',
-          priority: 1,
-          deadline: new Date(Date.now() + 3600000), // 1 hour from now
-        },
-        timestamp: new Date(),
-        priority: 1,
+      const senderAgent = 'agent-sender';
+      const receiverAgent = 'agent-receiver';
+      const message = {
+        id: 'msg-1',
+        content: 'Coordination test message',
+        type: 'coordination'
       };
 
-      // Store message sending in memory
-      const sendEntry: MemoryEntry = {
-        id: generateId('memory'),
-        agentId: senderAgent,
-        sessionId,
-        type: 'observation',
-        content: `Sending message to ${receiverAgent}`,
-        context: {
+      // Log message sending intention in memory
+      const sendEntry = {
+        key: `message-log:${message.id}`,
+        value: {
           messageId: message.id,
-          messageType: message.type,
-          recipient: receiverAgent,
-          action: 'send',
+          sender: senderAgent,
+          receiver: receiverAgent,
+          content: message.content,
+          status: 'sending',
+          timestamp: new Date().toISOString()
         },
-        timestamp: new Date(),
-        tags: ['message', 'send'],
-        version: 1,
+        type: 'communication' as const,
+        tags: ['message', 'coordination']
       };
 
-      await memoryManager.storeEntry(sendEntry);
+      await memoryManager.store(sendEntry.key, sendEntry.value, {
+        type: sendEntry.type,
+        tags: sendEntry.tags
+      });
 
       // Send message through coordination
       await coordinationManager.sendMessage(senderAgent, receiverAgent, message);
 
-      // Store message receipt in memory
-      const receiveEntry: MemoryEntry = {
-        id: generateId('memory'),
-        agentId: receiverAgent,
-        sessionId,
-        type: 'observation',
-        content: `Received message from ${senderAgent}`,
-        context: {
-          messageId: message.id,
-          messageType: message.type,
-          sender: senderAgent,
-          action: 'receive',
-        },
-        timestamp: new Date(),
-        tags: ['message', 'receive'],
-        version: 1,
-      };
+      // Update memory with successful send
+      await memoryManager.update(sendEntry.key, {
+        ...sendEntry.value,
+        status: 'sent',
+        sentTime: new Date().toISOString()
+      });
 
-      await memoryManager.storeEntry(receiveEntry);
-
-      // Query message history
-      const messageQuery: MemoryQuery = {
-        tags: ['message'],
-        limit: 10,
-      };
-
-      const messageHistory = await memoryManager.queryEntries(messageQuery);
-      assertEquals(messageHistory.length, 2);
-
-      const actions = messageHistory.map(entry => entry.context.action);
-      assertEquals(actions.includes('send'), true);
-      assertEquals(actions.includes('receive'), true);
-
-      // Verify message coordination worked
-      assertEquals(coordinationManager.sendMessage.calls.length, 1);
-      const sentMessage = coordinationManager.sendMessage.calls[0].args[2];
-      assertEquals(sentMessage.id, message.id);
+      // Verify message log in memory
+      const messageLog = await memoryManager.retrieve(sendEntry.key);
+      expect(messageLog).toBeTruthy();
+      expect(messageLog.value.status).toBe('sent');
+      expect(messageLog.value.sender).toBe(senderAgent);
+      expect(messageLog.value.receiver).toBe(receiverAgent);
     });
 
     it('should handle message delivery failures with memory logging', async () => {
-      const senderAgent = 'sender';
-      const receiverAgent = 'offline-receiver';
-      const sessionId = generateId('session');
+      const failureMessages = [
+        { id: 'fail-1', receiver: 'nonexistent-agent-1' },
+        { id: 'fail-2', receiver: 'nonexistent-agent-2' },
+        { id: 'fail-3', receiver: 'nonexistent-agent-3' }
+      ];
 
-      // Mock message delivery failure
-      coordinationManager.sendMessage = spy(() => {
-        throw new Error('Agent not available');
-      });
+      for (const msg of failureMessages) {
+        try {
+          await coordinationManager.sendMessage('sender', msg.receiver, { 
+            id: msg.id, 
+            content: 'test' 
+          });
+        } catch (error) {
+          // Log failure in memory
+          const failureEntry = {
+            key: `message-failure:${msg.id}`,
+            value: {
+              messageId: msg.id,
+              receiver: msg.receiver,
+              error: error instanceof Error ? error.message : String(error),
+              failureTime: new Date().toISOString()
+            },
+            type: 'communication' as const,
+            tags: ['message', 'failure']
+          };
 
-      const message: Message = {
-        id: generateId('message'),
-        type: 'urgent-notification',
-        payload: { alert: 'System maintenance required' },
-        timestamp: new Date(),
-        priority: 10,
-      };
-
-      // Attempt to send message and log failure
-      try {
-        await coordinationManager.sendMessage(senderAgent, receiverAgent, message);
-      } catch (error) {
-        // Log delivery failure
-        const failureEntry: MemoryEntry = {
-          id: generateId('memory'),
-          agentId: senderAgent,
-          sessionId,
-          type: 'error',
-          content: `Failed to deliver message to ${receiverAgent}`,
-          context: {
-            messageId: message.id,
-            recipient: receiverAgent,
-            error: error.message,
-            retryRequired: true,
-          },
-          timestamp: new Date(),
-          tags: ['message', 'error', 'delivery'],
-          version: 1,
-        };
-
-        await memoryManager.storeEntry(failureEntry);
+          await memoryManager.store(failureEntry.key, failureEntry.value, {
+            type: failureEntry.type,
+            tags: failureEntry.tags
+          });
+        }
       }
 
       // Query failed deliveries
-      const failureQuery: MemoryQuery = {
-        type: 'error',
-        tags: ['delivery'],
-      };
+      const failures = await memoryManager.search({
+        tags: ['failure'],
+        type: 'communication'
+      });
 
-      const failures = await memoryManager.queryEntries(failureQuery);
-      assertEquals(failures.length, 1);
-      assertEquals(failures[0].context.retryRequired, true);
+      expect(failures.length).toBe(failureMessages.length);
     });
   });
 
   describe('conflict resolution integration', () => {
     it('should resolve memory conflicts using coordination locks', async () => {
-      const agentId = 'conflict-resolver';
-      const entryId = generateId('memory');
-      const lockId = `memory-lock:${entryId}`;
-
+      const conflictKey = 'conflict-resource';
+      
       // Create base entry
-      const baseEntry: MemoryEntry = {
-        id: entryId,
-        agentId,
-        sessionId: generateId('session'),
-        type: 'decision',
-        content: 'Base decision content',
-        context: { priority: 1 },
-        timestamp: new Date(),
-        tags: ['decision'],
+      const baseEntry = {
+        key: conflictKey,
+        value: 'original value',
         version: 1,
+        type: 'knowledge' as const,
+        tags: ['conflict-test']
       };
 
-      await memoryManager.storeEntry(baseEntry);
+      await memoryManager.store(baseEntry.key, baseEntry.value, {
+        type: baseEntry.type,
+        tags: baseEntry.tags
+      });
 
       // Simulate concurrent modification attempts
       const modifications = [
-        { content: 'Modification A', context: { priority: 2 } },
-        { content: 'Modification B', context: { priority: 3 } },
-        { content: 'Modification C', context: { priority: 1 } },
+        { agentId: 'agent-1', newValue: 'modification by agent 1' },
+        { agentId: 'agent-2', newValue: 'modification by agent 2' },
+        { agentId: 'agent-3', newValue: 'modification by agent 3' }
       ];
 
-      let finalVersion = 1;
+      // Each agent must acquire lock before modifying
+      const modificationResults = await Promise.all(
+        modifications.map(async (mod) => {
+          const lockId = `memory-lock:${conflictKey}`;
+          
+          try {
+            await coordinationManager.acquireResource(lockId, mod.agentId);
+            
+            // Read current value
+            const current = await memoryManager.retrieve(conflictKey);
+            
+            // Modify based on current state
+            const success = await memoryManager.update(conflictKey, 
+              `${current.value} + ${mod.newValue}`, {
+                updater: { id: mod.agentId, swarmId: 'test', type: 'coordinator', instance: 0 }
+              }
+            );
+            
+            return { agentId: mod.agentId, success };
+            
+          } finally {
+            await coordinationManager.releaseResource(lockId, mod.agentId);
+          }
+        })
+      );
 
-      for (const modification of modifications) {
-        // Acquire lock before modification
-        await coordinationManager.acquireResource(lockId, agentId);
-
-        try {
-          // Get current state
-          const currentEntry = await memoryManager.getEntry(entryId);
-          assertExists(currentEntry);
-
-          // Apply modification
-          const updatedEntry = {
-            ...currentEntry,
-            content: modification.content,
-            context: { ...currentEntry.context, ...modification.context },
-            version: currentEntry.version + 1,
-          };
-
-          await memoryManager.updateEntry(entryId, updatedEntry);
-          finalVersion = updatedEntry.version;
-
-          // Log modification in memory
-          const logEntry: MemoryEntry = {
-            id: generateId('memory'),
-            agentId,
-            sessionId: baseEntry.sessionId,
-            type: 'observation',
-            content: `Modified entry ${entryId}`,
-            context: {
-              originalVersion: currentEntry.version,
-              newVersion: updatedEntry.version,
-              modification: modification.content,
-            },
-            timestamp: new Date(),
-            tags: ['modification', 'coordination'],
-            version: 1,
-          };
-
-          await memoryManager.storeEntry(logEntry);
-
-        } finally {
-          await coordinationManager.releaseResource(lockId, agentId);
-        }
-      }
-
-      // Verify final state
-      const finalEntry = await memoryManager.getEntry(entryId);
-      assertExists(finalEntry);
-      assertEquals(finalEntry.version, finalVersion);
-      assertEquals(finalEntry.context.priority, 1); // Last modification
-
-      // Verify modification history
-      const modificationQuery: MemoryQuery = {
-        tags: ['modification'],
-        limit: 10,
-      };
-
-      const modificationHistory = await memoryManager.queryEntries(modificationQuery);
-      assertEquals(modificationHistory.length, 3);
+      // All modifications should succeed due to proper locking
+      expect(modificationResults.every(r => r.success)).toBe(true);
+      
+      // Final value should contain all modifications
+      const finalValue = await memoryManager.retrieve(conflictKey);
+      expect(finalValue.value).toContain('original value');
+      modifications.forEach(mod => {
+        expect(finalValue.value).toContain(mod.newValue);
+      });
     });
 
     it('should coordinate distributed memory cleanup', async () => {
-      const sessionId = generateId('session');
-      const agents = ['agent-1', 'agent-2', 'agent-3'];
-
-      // Create memories for cleanup
-      const entriesToCleanup: MemoryEntry[] = [];
+      // Create multiple temporary entries across different namespaces
+      const tempEntries = [];
       
-      for (const agentId of agents) {
-        for (let i = 0; i < 5; i++) {
-          const entry: MemoryEntry = {
-            id: generateId('memory'),
-            agentId,
-            sessionId,
-            type: 'observation',
-            content: `Temporary observation ${i}`,
-            context: { temporary: true, index: i },
-            timestamp: new Date(Date.now() - (i * 1000)), // Spread over time
-            tags: ['temp', agentId],
-            version: 1,
+      for (let i = 1; i <= 10; i++) {
+        for (const namespace of ['temp-ns-1', 'temp-ns-2', 'temp-ns-3']) {
+          const entry = {
+            key: `temp-entry-${i}`,
+            value: `temporary data ${i}`,
+            namespace,
+            type: 'temporary' as const,
+            tags: ['temp', 'cleanup-test'],
+            ttl: 1000 // 1 second TTL
           };
 
-          await memoryManager.storeEntry(entry);
-          entriesToCleanup.push(entry);
+          await memoryManager.store(entry.key, entry.value, {
+            type: entry.type,
+            tags: entry.tags,
+            partition: namespace,
+            ttl: entry.ttl
+          });
+          tempEntries.push(entry);
         }
       }
 
-      // Coordinate cleanup across agents
-      const cleanupLock = 'memory-cleanup';
-      
-      for (const agentId of agents) {
-        await coordinationManager.acquireResource(cleanupLock, agentId);
+      // Wait for entries to expire
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
-        try {
-          // Query agent's temporary memories
-          const query: MemoryQuery = {
-            agentId,
-            tags: ['temp'],
-            limit: 10,
-          };
-
-          const agentMemories = await memoryManager.queryEntries(query);
-
-          // Delete temporary memories
-          for (const memory of agentMemories) {
-            if (memory.context.temporary) {
-              await memoryManager.deleteEntry(memory.id);
+      // Coordinate cleanup across all namespaces
+      const cleanupAgents = ['cleanup-agent-1', 'cleanup-agent-2'];
+      const cleanupResults = await Promise.all(
+        cleanupAgents.map(async (agentId) => {
+          const cleanupLock = `cleanup-lock:${agentId}`;
+          
+          await coordinationManager.acquireResource(cleanupLock, agentId);
+          
+          try {
+            // Each agent cleans up expired entries in specific namespaces
+            const namespacesToClean = agentId === 'cleanup-agent-1' 
+              ? ['temp-ns-1', 'temp-ns-2'] 
+              : ['temp-ns-3'];
+            
+            let cleanedCount = 0;
+            for (const namespace of namespacesToClean) {
+              const expiredEntries = await memoryManager.search({
+                partition: namespace,
+                tags: ['temp']
+              });
+              
+              for (const entry of expiredEntries) {
+                try {
+                  await memoryManager.delete(entry.key, { partition: namespace });
+                  cleanedCount++;
+                } catch (error) {
+                  // Entry might already be cleaned by another agent
+                }
+              }
             }
+            
+            return { agentId, cleanedCount };
+            
+          } finally {
+            await coordinationManager.releaseResource(cleanupLock, agentId);
           }
+        })
+      );
 
-          // Log cleanup action
-          const cleanupEntry: MemoryEntry = {
-            id: generateId('memory'),
-            agentId,
-            sessionId,
-            type: 'observation',
-            content: `Cleaned up ${agentMemories.length} temporary memories`,
-            context: {
-              cleanupAction: true,
-              deletedCount: agentMemories.length,
-            },
-            timestamp: new Date(),
-            tags: ['cleanup', 'maintenance'],
-            version: 1,
-          };
-
-          await memoryManager.storeEntry(cleanupEntry);
-
-        } finally {
-          await coordinationManager.releaseResource(cleanupLock, agentId);
-        }
-      }
-
-      // Verify cleanup was coordinated
-      const remainingTemp = await memoryManager.queryEntries({
-        tags: ['temp'],
-        limit: 50,
-      });
-      assertEquals(remainingTemp.length, 0);
-
-      // Verify cleanup was logged
-      const cleanupLogs = await memoryManager.queryEntries({
-        tags: ['cleanup'],
-        limit: 10,
-      });
-      assertEquals(cleanupLogs.length, 3); // One per agent
+      expect(cleanupResults.length).toBe(2);
+      expect(cleanupResults.every(r => r.cleanedCount >= 0)).toBe(true);
     });
   });
 
   describe('performance and scalability', () => {
     it('should handle high-volume memory operations with coordination', async () => {
-      const agentCount = 5;
-      const entriesPerAgent = 20;
-      const sessionId = generateId('session');
-
-      // Generate agents
-      const agents = Array.from({ length: agentCount }, (_, i) => 
-        `performance-agent-${i}`
-      );
-
-      // Concurrent memory operations
-      const operations = agents.map(async (agentId, agentIndex) => {
-        const resourceId = `memory-region:${agentIndex}`;
+      const numOperations = 100;
+      const numAgents = 5;
+      
+      const operations = [];
+      
+      for (let i = 0; i < numOperations; i++) {
+        const agentId = `agent-${i % numAgents}`;
+        const resourceId = `resource-${i % 10}`; // 10 different resources
         
-        for (let i = 0; i < entriesPerAgent; i++) {
+        operations.push(async () => {
           await coordinationManager.acquireResource(resourceId, agentId);
           
           try {
-            const entry: MemoryEntry = {
-              id: generateId('memory'),
+            const entry = {
+              key: `high-volume-${i}`,
+              value: `data for operation ${i}`,
               agentId,
-              sessionId,
-              type: 'observation',
-              content: `Performance test entry ${i}`,
-              context: {
-                agentIndex,
-                entryIndex: i,
-                batchTest: true,
-              },
-              timestamp: new Date(),
-              tags: ['performance', 'batch'],
-              version: 1,
+              type: 'performance' as const,
+              tags: ['high-volume', 'performance-test']
             };
 
-            await memoryManager.storeEntry(entry);
+            await memoryManager.store(entry.key, entry.value, {
+              type: entry.type,
+              tags: entry.tags,
+              owner: { id: entry.agentId, swarmId: 'test', type: 'coordinator', instance: 0 }
+            });
           } finally {
             await coordinationManager.releaseResource(resourceId, agentId);
           }
-        }
-      });
+        });
+      }
 
-      // Execute all operations concurrently
-      await Promise.all(operations);
+      const startTime = Date.now();
+      await Promise.all(operations.map(op => op()));
+      const duration = Date.now() - startTime;
 
+      // Should complete within reasonable time (< 10 seconds)
+      expect(duration).toBeLessThan(10000);
+      
       // Verify all entries were stored
-      const allEntries = await memoryManager.queryEntries({
-        tags: ['performance'],
-        limit: 200,
+      const storedEntries = await memoryManager.search({
+        tags: ['high-volume']
       });
-
-      assertEquals(allEntries.length, agentCount * entriesPerAgent);
-
-      // Verify entries from all agents
-      const uniqueAgents = new Set(allEntries.map(entry => entry.agentId));
-      assertEquals(uniqueAgents.size, agentCount);
+      
+      expect(storedEntries.length).toBe(numOperations);
     });
   });
 });

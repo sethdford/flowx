@@ -35,12 +35,12 @@ export const TEST_CONFIG = {
 
   // Test environment
   env: {
-    CLAUDE_FLOW_ENV: 'test',
-    CLAUDE_FLOW_LOG_LEVEL: 'silent',
-    CLAUDE_FLOW_DATA_DIR: './tests/data',
-    CLAUDE_FLOW_CONFIG_FILE: './tests/fixtures/test-config.json',
-    CLAUDE_FLOW_DISABLE_METRICS: 'true',
-    CLAUDE_FLOW_DISABLE_TELEMETRY: 'true',
+    FLOWX_ENV: 'test',
+    FLOWX_LOG_LEVEL: 'silent',
+    FLOWX_DATA_DIR: './tests/data',
+    FLOWX_CONFIG_FILE: './tests/fixtures/test-config.json',
+    FLOWX_DISABLE_METRICS: 'true',
+    FLOWX_DISABLE_TELEMETRY: 'true',
   },
 
   // Performance test settings
@@ -102,7 +102,7 @@ export async function cleanupTestEnv(): Promise<void> {
 
   // Remove test data directory
   const cleanupPaths = [
-    TEST_CONFIG.env.CLAUDE_FLOW_DATA_DIR,
+    TEST_CONFIG.env.FLOWX_DATA_DIR,
     './tests/temp',
     './tests/fixtures/temp',
     './test-results/temp',

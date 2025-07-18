@@ -1,5 +1,5 @@
 /**
- * Utility helper functions for Claude-Flow
+ * Utility helper functions for FlowX
  */
 
 // Utility helper functions

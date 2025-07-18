@@ -8,7 +8,7 @@ import {
   PipelineTransformationPlan,
   TransformationRequirement,
   DataQualityRule 
-} from '../../../../../src/cli/pipeline/transformation/pipeline-transformation-engine.js';
+} from '../../../../../src/cli/pipeline/transformation/pipeline-transformation-engine';
 
 // Mock fs modules
 jest.mock('fs/promises', () => ({

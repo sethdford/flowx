@@ -12,7 +12,7 @@ const execAsync = promisify(exec);
 
 describe('Start Command Integration Tests', () => {
   const CLI_PATH = path.join(__dirname, '../../cli.js');
-  const PID_FILE = '.claude-flow.pid';
+  const PID_FILE = '.flowx.pid';
   
   beforeEach(async () => {
     // Clean up any existing PID files

@@ -1748,7 +1748,7 @@ export class EnterpriseToolsRegistry extends EventEmitter {
       name: toolDef.name,
       description: toolDef.description,
       version: '1.0.0',
-      author: 'Claude-Flow Enterprise',
+      author: 'FlowX Enterprise',
       license: 'Enterprise',
       enterpriseFeatures: category.enterpriseFeatures,
       securityLevel: 'internal',

@@ -123,8 +123,8 @@ Write enterprise code following these principles:
 
 ```bash
 # Implement mission-critical payment processing
-npx claude-flow sparc run code "implement PCI-compliant payment service with 99.99% uptime"
+npx flowx sparc run code "implement PCI-compliant payment service with 99.99% uptime"
 
 # Build high-performance API endpoint
-npx claude-flow sparc run code "create user authentication API with <50ms response time and comprehensive testing"
+npx flowx sparc run code "create user authentication API with <50ms response time and comprehensive testing"
 ```

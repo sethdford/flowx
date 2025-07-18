@@ -1114,7 +1114,7 @@ export class IssueTracker extends EventEmitter {
         case 'comment':
           const comment: IssueComment = {
             id: `comment_${Date.now()}`,
-            author: { id: 'automation', username: 'claude-flow-automation', type: 'bot', permissions: [] },
+            author: { id: 'automation', username: 'flowx-automation', type: 'bot', permissions: [] },
             body: action.parameters.body,
             createdAt: new Date(),
             updatedAt: new Date(),

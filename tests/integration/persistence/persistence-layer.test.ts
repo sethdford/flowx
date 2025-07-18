@@ -16,7 +16,7 @@ describe('Persistence Layer Tests', () => {
 
   beforeEach(async () => {
     // Create unique test directory for each test
-    testDir = join(tmpdir(), `claude-flow-test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+    testDir = join(tmpdir(), `flowx-test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
     await mkdir(testDir, { recursive: true });
     
     // Initialize persistence manager with test directory

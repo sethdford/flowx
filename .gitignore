@@ -114,16 +114,17 @@ pids/
 *.db
 *.sqlite
 *.sqlite3
-claude-flow.db*
-.claude-flow/
+flowx.db*
+.flowx/
 
 # Submodules (original reference implementation)
 original-claude-flow/
 
 # Configuration files (keep examples)
-claude-flow.config.json
+flowx.config.json
 config-*.json
 !config-example.json
+.flowx-state.json
 
 # Memory and session data
 memory/

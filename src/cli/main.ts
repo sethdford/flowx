@@ -37,11 +37,12 @@ async function main() {
     
     // Check if this is a help or version command (no need to initialize services)
     const args = process.argv.slice(2);
-    // Check if this is a help, version, or test command that doesn't need full initialization
+    // Check if this is a help, version, repl, or test command that doesn't need full initialization
     const isHelpOrVersion = args.includes('--help') || args.includes('-h') || 
                            args.includes('--version') || args.includes('-v') ||
                            args.length === 0 || 
-                           process.env.CLAUDE_FLOW_ENV === 'test';
+                           args[0] === 'repl' ||
+                           process.env.FLOWX_ENV === 'test';
 
     if (isHelpOrVersion) {
       // Fast path for help/version - no service initialization needed

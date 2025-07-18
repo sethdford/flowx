@@ -11,12 +11,12 @@ import {
   spy,
   assertSpyCalls,
   FakeTime,
-} from '../../test.utils.js';
+} from '../../test.utils';
 import { Orchestrator } from '../../../src/core/orchestrator';
 import { SystemEvents } from '../../../src/utils/types';
 import { InitializationError, SystemError, ShutdownError } from '../../../src/utils/errors';
 import { createMocks, MockEventBus } from '../../mocks/index';
-import { TestDataBuilder } from '../../test.utils.js';
+import { TestDataBuilder } from '../../test.utils';
 import { cleanupTestEnv, setupTestEnv } from '../../test.config';
 
 describe('Orchestrator', () => {
@@ -28,31 +28,55 @@ describe('Orchestrator', () => {
   beforeEach(() => {
     setupTestEnv();
     time = new FakeTime();
-    
-    config = TestDataBuilder.config();
     mocks = createMocks();
     
-    // Ensure all components return healthy status
-    (mocks.terminalManager.getHealthStatus as jest.MockedFunction<any>).mockResolvedValue({
+    config = {
+      orchestrator: {
+        maxConcurrentAgents: 3,
+        taskQueueSize: 100,
+        healthCheckInterval: 30000,
+        shutdownTimeout: 5000
+      }
+    };
+    
+    // Mock all the getHealthStatus methods properly
+    jest.spyOn(mocks.terminalManager, 'getHealthStatus').mockResolvedValue({
       healthy: true,
-      metrics: { activeTerminals: 0 }
+      metrics: { terminals: 0 }
     });
     
-    (mocks.memoryManager.getHealthStatus as jest.MockedFunction<any>).mockResolvedValue({
+    jest.spyOn(mocks.memoryManager, 'getHealthStatus').mockResolvedValue({
       healthy: true,
-      metrics: { totalMemoryUsage: 0, bankCount: 0 }
+      metrics: { banks: 0, entries: 0 }
     });
     
-    (mocks.coordinationManager.getHealthStatus as jest.MockedFunction<any>).mockResolvedValue({
+    jest.spyOn(mocks.coordinationManager, 'getHealthStatus').mockResolvedValue({
       healthy: true,
       metrics: { activeTasks: 0, registeredAgents: 0 }
     });
     
-    (mocks.mcpServer.getHealthStatus as jest.MockedFunction<any>).mockResolvedValue({
+    jest.spyOn(mocks.mcpServer, 'getHealthStatus').mockResolvedValue({
       healthy: true,
       metrics: { tools: 0 }
     });
-    
+
+    // Mock initialization methods
+    jest.spyOn(mocks.terminalManager, 'initialize').mockResolvedValue();
+    jest.spyOn(mocks.memoryManager, 'initialize').mockResolvedValue();
+    jest.spyOn(mocks.coordinationManager, 'initialize').mockResolvedValue();
+    jest.spyOn(mocks.mcpServer, 'start').mockResolvedValue();
+
+    // Mock shutdown methods
+    jest.spyOn(mocks.terminalManager, 'shutdown').mockResolvedValue();
+    jest.spyOn(mocks.memoryManager, 'shutdown').mockResolvedValue();
+    jest.spyOn(mocks.coordinationManager, 'shutdown').mockResolvedValue();
+    jest.spyOn(mocks.mcpServer, 'stop').mockResolvedValue();
+
+    // Mock other methods
+    jest.spyOn(mocks.terminalManager, 'performMaintenance').mockResolvedValue();
+    jest.spyOn(mocks.memoryManager, 'performMaintenance').mockResolvedValue();
+    jest.spyOn(mocks.coordinationManager, 'performMaintenance').mockResolvedValue();
+
     orchestrator = new Orchestrator(
       config,
       mocks.terminalManager,

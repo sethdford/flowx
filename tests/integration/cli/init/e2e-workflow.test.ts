@@ -112,10 +112,10 @@ describe("End-to-End Init Workflow Tests", () => {
         "CLAUDE.md",
         "memory-bank.md",
         "coordination.md",
-        "memory/claude-flow-data.json",
+        "memory/flowx-data.json",
         "memory/agents/README.md",
         "memory/sessions/README.md",
-        "claude-flow"
+        "flowx"
       ];
 
       for (const file of expectedFiles) {
@@ -140,7 +140,7 @@ describe("End-to-End Init Workflow Tests", () => {
       }
 
       // Step 2: Test that local executable works
-      const helpCommand = mockDenoCommand(join(testDir, "claude-flow"), {
+      const helpCommand = mockDenoCommand(join(testDir, "flowx"), {
         args: ["--help"],
         cwd: testDir,
         stdout: "piped",
@@ -151,10 +151,10 @@ describe("End-to-End Init Workflow Tests", () => {
       assertEquals(helpResult.success, true);
 
       const helpOutput = String.fromCharCode.apply(null, Array.from)(helpResult.stdout);
-      assertStringIncludes(helpOutput, "claude-flow");
+      assertStringIncludes(helpOutput, "flowx");
 
       // Step 3: Verify memory system is functional
-      const memoryTestCommand = mockDenoCommand(join(testDir, "claude-flow"), {
+      const memoryTestCommand = mockDenoCommand(join(testDir, "flowx"), {
         args: ["memory", "store", "test_key", "test_value"],
         cwd: testDir,
         stdout: "piped",
@@ -193,7 +193,7 @@ describe("End-to-End Init Workflow Tests", () => {
       assertExists(await exists(join(testDir, ".claude/commands/sparc")));
 
       // Step 2: Test SPARC commands
-      const sparcModesCommand = mockDenoCommand(join(testDir, "claude-flow"), {
+      const sparcModesCommand = mockDenoCommand(join(testDir, "flowx"), {
         args: ["sparc", "modes"],
         cwd: testDir,
         stdout: "piped",
@@ -322,7 +322,7 @@ describe("End-to-End Init Workflow Tests", () => {
       assertExists(await exists(join(testDir, "CLAUDE.md")));
       assertExists(await exists(join(testDir, "memory-bank.md")));
       assertExists(await exists(join(testDir, "coordination.md")));
-      assertExists(await exists(join(testDir, "claude-flow")));
+      assertExists(await exists(join(testDir, "flowx")));
 
       // Verify package.json is unchanged
       const packageJson = JSON.parse(await fs.promises.readFile(join(testDir, "package.json")));
@@ -493,12 +493,12 @@ describe("End-to-End Init Workflow Tests", () => {
 
       // Should provide next steps
       assertStringIncludes(output, "Next steps:");
-      assertStringIncludes(output, "./claude-flow start");
+      assertStringIncludes(output, "./flowx start");
       assertStringIncludes(output, "Review and customize");
 
       // Should mention local executable
       assertStringIncludes(output, "Local executable created");
-      assertStringIncludes(output, "Use './claude-flow' instead of 'npx claude-flow'");
+      assertStringIncludes(output, "Use './flowx' instead of 'npx flowx'");
     });
 
     it("should provide SPARC-specific guidance", async () => {

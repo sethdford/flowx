@@ -64,7 +64,7 @@ export class StateManager {
         try {
           const fs = await import('fs');
           const path = await import('path');
-          const stateFile = path.join(process.cwd(), '.claude-flow-state.json');
+          const stateFile = path.join(process.cwd(), '.flowx-state.json');
           
           if (fs.existsSync(stateFile)) {
             const data = fs.readFileSync(stateFile, 'utf8');
@@ -169,11 +169,11 @@ export class StateManager {
       // Save to file system in Node.js
       if (typeof process !== 'undefined') {
         try {
-          const fs = await import('fs');
-          const path = await import('path');
-          const stateFile = path.join(process.cwd(), '.claude-flow-state.json');
-          
-          fs.writeFileSync(stateFile, JSON.stringify(stateData, null, 2));
+                  const fs = await import('fs');
+        const path = await import('path');
+        const stateFile = path.join(process.cwd(), '.flowx-state.json');
+        
+        fs.writeFileSync(stateFile, JSON.stringify(stateData, null, 2));
         } catch (error) {
           console.warn('Could not save state to file system:', error.message);
         }

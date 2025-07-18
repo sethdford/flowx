@@ -275,7 +275,7 @@ export class Bootstrap {
 
   private async initializeCLI(): Promise<void> {
     this.cliApp = new CLIApplication(
-      'claude-flow',
+      'flowx',
       'Claude Flow CLI',
       this.container,
       await this.container.resolve<ILogger>('logger')
@@ -388,7 +388,7 @@ export function createBootstrap(config: BootstrapConfig): Bootstrap {
  */
 export async function quickStart(config: Partial<BootstrapConfig> = {}): Promise<Application> {
   const bootstrap = createBootstrap({
-    name: 'claude-flow',
+    name: 'flowx',
     version: '1.0.0',
     environment: 'development',
     gracefulShutdownTimeout: 30000,

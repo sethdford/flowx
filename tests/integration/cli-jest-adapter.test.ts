@@ -21,12 +21,12 @@ describe('CLI Integration Tests', () => {
 
   // Test basic commands
   describe('Basic Commands', () => {
-    // Update the expected output regex patterns to match both 'flowx' and 'claude-flow' variations
+    // Update the expected output regex patterns to match both 'flowx' and 'flowx' variations
     const updatedBasicTests = basicCommandsTestSuite.tests.map(test => {
       if (test.name === 'Help command') {
         return {
           ...test,
-          expectedOutput: /(flowx|claude-flow).*AI-powered development workflows/
+          expectedOutput: /(flowx|flowx).*AI-powered development workflows/
         };
       }
       return test;

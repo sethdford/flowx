@@ -146,7 +146,7 @@ describe('Analyze Command', () => {
     });
     
     // Import the command after mocks are set up
-    analyzeCommand = require('../../../../../src/cli/commands/data/analyze-command').analyzeCommand;
+    analyzeCommand = require('../../../../../src/cli/commands/system/analyze-command').analyzeCommand;
   });
 
   afterEach(() => {

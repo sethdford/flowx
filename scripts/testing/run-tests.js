@@ -49,7 +49,7 @@ if (!options.unit && !options.e2e && !options.integration && !options.property) 
 }
 
 // Set environment variables for test
-process.env.CLAUDE_FLOW_ENV = 'test';
+process.env.FLOWX_ENV = 'test';
 process.env.NODE_ENV = 'test';
 
 // Base Jest command

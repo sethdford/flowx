@@ -129,7 +129,7 @@ if (errorCount === 0) {
   console.log('1. Open Claude Code in your project');
   console.log('2. Type / to see available commands');
   console.log('3. Use /sparc for SPARC methodology');
-  console.log('4. Use /claude-flow-* for Claude Flow features');
+  console.log('4. Use /flowx-* for FlowX features');
   console.log('\nFor help, see the documentation files in .claude/');
 } else {
   console.log('\n⚠️  Template deployed with errors. Please check the messages above.');

@@ -537,7 +537,7 @@ async function exportMetrics(engine: any, format: string): Promise<void> {
   console.log(`\n📤 Exporting metrics in ${format.toUpperCase()} format...`);
   
   const metrics = await engine.exportMetrics(format);
-  const filename = `claude_flow_metrics_${Date.now()}.${format}`;
+        const filename = `flowx_metrics_${Date.now()}.${format}`;
   
   const fs = await import('fs/promises');
   await fs.writeFile(filename, metrics);

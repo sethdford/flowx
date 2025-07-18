@@ -42,7 +42,7 @@ class NativeTerminal implements Terminal {
     this.id = generateId('native-term');
     this.shell = shell;
     this.logger = logger;
-    this.commandMarker = `__CLAUDE_FLOW_${this.id}__`;
+    this.commandMarker = `__FLOWX_${this.id}__`;
   }
 
   async initialize(): Promise<void> {
@@ -55,8 +55,8 @@ class NativeTerminal implements Terminal {
         env: {
           ...process.env,
           ...shellConfig.env,
-          CLAUDE_FLOW_TERMINAL: 'true',
-          CLAUDE_FLOW_TERMINAL_ID: this.id,
+          FLOWX_TERMINAL: 'true',
+          FLOWX_TERMINAL_ID: this.id,
         },
       });
       

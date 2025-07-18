@@ -9,7 +9,7 @@ import fc from 'fast-check';
 import { describe, test, expect, beforeEach } from '@jest/globals';
 import { EventBus } from '../../src/core/event-bus.js';
 import { Logger } from '../../src/core/logger.js';
-import { DistributedMemorySystem } from '../../original-claude-flow/src/memory/distributed-memory.js';
+import { DistributedMemorySystem } from '../../original-flowx/src/memory/distributed-memory.js';
 
 describe('Memory System Property Tests', () => {
   let eventBus;

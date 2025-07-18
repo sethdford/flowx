@@ -1,5 +1,5 @@
 /**
- * Logging infrastructure for Claude-Flow
+ * Logging infrastructure for FlowX
  */
 
 import * as fs from 'node:fs/promises';
@@ -77,7 +77,7 @@ export class Logger implements ILogger {
     if (!Logger.instance) {
       if (!config) {
         // Use default config if none provided and not in test environment
-        const isTestEnv = process.env.CLAUDE_FLOW_ENV === 'test';
+        const isTestEnv = process.env.FLOWX_ENV === 'test';
         if (isTestEnv) {
           // Skip error in test environment and use defaults
           console.warn('Using default logger configuration in test environment');

@@ -1,7 +1,7 @@
 /**
  * Visual Progress Formatter
  * Implements the visual progress display format with emoji indicators and hierarchical task visualization
- * Based on original claude-flow best practices with modern TypeScript implementation
+ * Based on original flowx best practices with modern TypeScript implementation
  */
 
 import { TodoItem } from './coordination.js';

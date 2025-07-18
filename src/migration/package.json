@@ -1,11 +1,11 @@
 {
-  "name": "@claude-flow/migration",
+  "name": "@flowx/migration",
   "version": "1.0.0",
-  "description": "Migration system for claude-flow projects",
+  "description": "Migration system for flowx projects",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "claude-flow-migrate": "dist/index.js"
+    "flowx-migrate": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -17,7 +17,7 @@
     "prepublishOnly": "npm run clean && npm run build"
   },
   "keywords": [
-    "claude-flow",
+    "flowx",
     "migration",
     "prompts",
     "optimization",

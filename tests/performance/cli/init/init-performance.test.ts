@@ -1,23 +1,36 @@
-import { assertEquals, assertExists } from "@std/assert/mod.ts";
-import { exists } from "@std/fs/mod.ts";
-import { join } from "@std/path/mod.ts";
-import { beforeEach, afterEach, describe, it } from "@std/testing/bdd.ts";
+/**
+ * Init Command Performance Tests
+ * Comprehensive test suite for measuring init command performance in Node.js environment
+ */
+
+import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { promises as fs } from 'fs';
+import { join } from 'path';
+import { spawn } from 'child_process';
+import { promisify } from 'util';
+import { tmpdir } from 'os';
+import { randomBytes } from 'crypto';
+
+const execFile = promisify(spawn);
 
 describe("Init Command Performance Tests", () => {
   let testDir: string;
   let originalCwd: string;
 
   beforeEach(async () => {
-    originalCwd = Deno.cwd();
-    testDir = await Deno.makeTempDir({ prefix: "claude_flow_perf_test_" });
-    Deno.env.set("PWD", testDir);
-    Deno.chdir(testDir);
+    originalCwd = process.cwd();
+    // Create unique temp directory
+    const tempId = randomBytes(8).toString('hex');
+    testDir = join(tmpdir(), `flowx_perf_test_${tempId}`);
+    await fs.mkdir(testDir, { recursive: true });
+    process.env.PWD = testDir;
+    process.chdir(testDir);
   });
 
   afterEach(async () => {
-    Deno.chdir(originalCwd);
+    process.chdir(originalCwd);
     try {
-      await Deno.remove(testDir, { recursive: true });
+      await fs.rm(testDir, { recursive: true, force: true });
     } catch {
       // Ignore cleanup errors
     }
@@ -27,31 +40,43 @@ describe("Init Command Performance Tests", () => {
     it("should complete basic init within reasonable time", async () => {
       const startTime = performance.now();
 
-      const command = new Deno.Command("deno", {
-        args: [
-          "run",
-          "--allow-all",
-          join(originalCwd, "src/cli/simple-cli.ts"),
-          "init"
-        ],
+      const command = spawn('node', [
+        join(originalCwd, 'cli.js'),
+        'init'
+      ], {
         cwd: testDir,
-        stdout: "piped",
-        stderr: "piped"
+        stdio: ['pipe', 'pipe', 'pipe']
       });
 
-      const result = await command.output();
+      const result = await new Promise<{ success: boolean; stdout: string; stderr: string }>((resolve) => {
+        let stdout = '';
+        let stderr = '';
+
+        command.stdout?.on('data', (data) => {
+          stdout += data.toString();
+        });
+
+        command.stderr?.on('data', (data) => {
+          stderr += data.toString();
+        });
+
+        command.on('close', (code) => {
+          resolve({ success: code === 0, stdout, stderr });
+        });
+      });
+
       const endTime = performance.now();
       const duration = endTime - startTime;
 
-      assertEquals(result.success, true);
+      expect(result.success).toBe(true);
       
       // Should complete within 10 seconds for basic init
-      assertEquals(duration < 10000, true);
+      expect(duration).toBeLessThan(10000);
       
       // Should create expected files
-      assertExists(await exists(join(testDir, "CLAUDE.md")));
-      assertExists(await exists(join(testDir, "memory-bank.md")));
-      assertExists(await exists(join(testDir, "coordination.md")));
+      await expect(fs.access(join(testDir, "CLAUDE.md"))).resolves.not.toThrow();
+      await expect(fs.access(join(testDir, "memory-bank.md"))).resolves.not.toThrow();
+      await expect(fs.access(join(testDir, "coordination.md"))).resolves.not.toThrow();
 
       console.log(`Basic init completed in ${duration.toFixed(2)}ms`);
     });
@@ -60,47 +85,47 @@ describe("Init Command Performance Tests", () => {
       // Test minimal init
       const minimalStartTime = performance.now();
       
-      const minimalCommand = new Deno.Command("deno", {
-        args: [
-          "run",
-          "--allow-all",
-          join(originalCwd, "src/cli/simple-cli.ts"),
-          "init",
-          "--minimal"
-        ],
+      const minimalCommand = spawn('node', [
+        join(originalCwd, 'cli.js'),
+        'init',
+        '--minimal'
+      ], {
         cwd: testDir,
-        stdout: "piped",
-        stderr: "piped"
+        stdio: ['pipe', 'pipe', 'pipe']
       });
 
-      await minimalCommand.output();
+      await new Promise<void>((resolve) => {
+        minimalCommand.on('close', () => resolve());
+      });
+
       const minimalDuration = performance.now() - minimalStartTime;
 
       // Clean up for full init test
-      await Deno.remove(testDir, { recursive: true });
-      testDir = await Deno.makeTempDir({ prefix: "claude_flow_perf_test_full_" });
-      Deno.chdir(testDir);
+      await fs.rm(testDir, { recursive: true, force: true });
+      const tempId2 = randomBytes(8).toString('hex');
+      testDir = join(tmpdir(), `flowx_perf_test_full_${tempId2}`);
+      await fs.mkdir(testDir, { recursive: true });
+      process.chdir(testDir);
 
       // Test full init
       const fullStartTime = performance.now();
       
-      const fullCommand = new Deno.Command("deno", {
-        args: [
-          "run",
-          "--allow-all",
-          join(originalCwd, "src/cli/simple-cli.ts"),
-          "init"
-        ],
+      const fullCommand = spawn('node', [
+        join(originalCwd, 'cli.js'),
+        'init'
+      ], {
         cwd: testDir,
-        stdout: "piped",
-        stderr: "piped"
+        stdio: ['pipe', 'pipe', 'pipe']
       });
 
-      await fullCommand.output();
+      await new Promise<void>((resolve) => {
+        fullCommand.on('close', () => resolve());
+      });
+
       const fullDuration = performance.now() - fullStartTime;
 
       // Minimal should be faster or comparable
-      assertEquals(minimalDuration <= fullDuration * 1.5, true); // Allow 50% tolerance
+      expect(minimalDuration).toBeLessThanOrEqual(fullDuration * 1.5); // Allow 50% tolerance
 
       console.log(`Minimal init: ${minimalDuration.toFixed(2)}ms`);
       console.log(`Full init: ${fullDuration.toFixed(2)}ms`);
@@ -111,31 +136,32 @@ describe("Init Command Performance Tests", () => {
     it("should complete SPARC init within reasonable time", async () => {
       const startTime = performance.now();
 
-      const command = new Deno.Command("deno", {
-        args: [
-          "run",
-          "--allow-all",
-          join(originalCwd, "src/cli/simple-cli.ts"),
-          "init",
-          "--sparc"
-        ],
+      const command = spawn('node', [
+        join(originalCwd, 'cli.js'),
+        'init',
+        '--sparc'
+      ], {
         cwd: testDir,
-        stdout: "piped",
-        stderr: "piped"
+        stdio: ['pipe', 'pipe', 'pipe']
       });
 
-      const result = await command.output();
+      const result = await new Promise<{ success: boolean }>((resolve) => {
+        command.on('close', (code) => {
+          resolve({ success: code === 0 });
+        });
+      });
+
       const endTime = performance.now();
       const duration = endTime - startTime;
 
-      assertEquals(result.success, true);
+      expect(result.success).toBe(true);
       
       // SPARC init may take longer due to external processes
-      assertEquals(duration < 30000, true); // 30 seconds max
+      expect(duration).toBeLessThan(30000); // 30 seconds max
       
       // Should create SPARC structure
-      assertExists(await exists(join(testDir, ".roo")));
-      assertExists(await exists(join(testDir, ".roomodes")));
+      await expect(fs.access(join(testDir, ".roo"))).resolves.not.toThrow();
+      await expect(fs.access(join(testDir, ".roomodes"))).resolves.not.toThrow();
 
       console.log(`SPARC init completed in ${duration.toFixed(2)}ms`);
     });
@@ -146,34 +172,35 @@ describe("Init Command Performance Tests", () => {
       
       const startTime = performance.now();
 
-      const command = new Deno.Command("deno", {
-        args: [
-          "run",
-          "--allow-all",
-          join(originalCwd, "src/cli/simple-cli.ts"),
-          "init",
-          "--sparc"
-        ],
+      const command = spawn('node', [
+        join(originalCwd, 'cli.js'),
+        'init',
+        '--sparc'
+      ], {
         cwd: testDir,
         env: {
-          ...Deno.env.toObject(),
+          ...process.env,
           // Simulate environment where create-sparc might fail
           PATH: "/usr/bin:/bin" // Minimal PATH
         },
-        stdout: "piped",
-        stderr: "piped"
+        stdio: ['pipe', 'pipe', 'pipe']
       });
 
-      const result = await command.output();
+      const result = await new Promise<{ success: boolean }>((resolve) => {
+        command.on('close', (code) => {
+          resolve({ success: code === 0 });
+        });
+      });
+
       const endTime = performance.now();
       const duration = endTime - startTime;
 
       // Should still complete successfully with fallback
-      assertEquals(duration < 15000, true); // Should be faster than full external process
+      expect(duration).toBeLessThan(15000); // Should be faster than full external process
       
       // Should create basic SPARC structure manually
-      assertExists(await exists(join(testDir, ".roo")));
-      assertExists(await exists(join(testDir, ".roomodes")));
+      await expect(fs.access(join(testDir, ".roo"))).resolves.not.toThrow();
+      await expect(fs.access(join(testDir, ".roomodes"))).resolves.not.toThrow();
 
       console.log(`SPARC fallback completed in ${duration.toFixed(2)}ms`);
     });
@@ -186,7 +213,9 @@ describe("Init Command Performance Tests", () => {
       
       // Create multiple test directories
       for (let i = 0; i < numConcurrent; i++) {
-        const dir = await Deno.makeTempDir({ prefix: `claude_flow_concurrent_${i}_` });
+        const tempId = randomBytes(8).toString('hex');
+        const dir = join(tmpdir(), `flowx_concurrent_${i}_${tempId}`);
+        await fs.mkdir(dir, { recursive: true });
         testDirs.push(dir);
       }
 
@@ -194,18 +223,19 @@ describe("Init Command Performance Tests", () => {
 
       // Run multiple inits concurrently
       const promises = testDirs.map(dir => {
-        const command = new Deno.Command("deno", {
-          args: [
-            "run",
-            "--allow-all",
-            join(originalCwd, "src/cli/simple-cli.ts"),
-            "init"
-          ],
+        const command = spawn('node', [
+          join(originalCwd, 'cli.js'),
+          'init'
+        ], {
           cwd: dir,
-          stdout: "piped",
-          stderr: "piped"
+          stdio: ['pipe', 'pipe', 'pipe']
         });
-        return command.output();
+
+        return new Promise<{ success: boolean }>((resolve) => {
+          command.on('close', (code) => {
+            resolve({ success: code === 0 });
+          });
+        });
       });
 
       const results = await Promise.all(promises);
@@ -214,24 +244,23 @@ describe("Init Command Performance Tests", () => {
 
       // All should succeed
       for (const result of results) {
-        assertEquals(result.success, true);
+        expect(result.success).toBe(true);
       }
 
       // Concurrent execution should be faster than sequential
-      // (though this depends on system resources)
-      assertEquals(duration < 20000, true); // 20 seconds for 3 concurrent inits
+      expect(duration).toBeLessThan(20000); // 20 seconds for 3 concurrent inits
 
       // Verify all directories were initialized
       for (const dir of testDirs) {
-        assertExists(await exists(join(dir, "CLAUDE.md")));
-        assertExists(await exists(join(dir, "memory-bank.md")));
-        assertExists(await exists(join(dir, "coordination.md")));
+        await expect(fs.access(join(dir, "CLAUDE.md"))).resolves.not.toThrow();
+        await expect(fs.access(join(dir, "memory-bank.md"))).resolves.not.toThrow();
+        await expect(fs.access(join(dir, "coordination.md"))).resolves.not.toThrow();
       }
 
       // Cleanup
       for (const dir of testDirs) {
         try {
-          await Deno.remove(dir, { recursive: true });
+          await fs.rm(dir, { recursive: true, force: true });
         } catch {
           // Ignore cleanup errors
         }
@@ -247,42 +276,43 @@ describe("Init Command Performance Tests", () => {
       const numFiles = 100;
       
       for (let i = 0; i < numFiles; i++) {
-        await Deno.writeTextFile(join(testDir, `file_${i}.txt`), `Content ${i}`);
+        await fs.writeFile(join(testDir, `file_${i}.txt`), `Content ${i}`);
       }
 
       // Create some directories
       for (let i = 0; i < 10; i++) {
-        await Deno.mkdir(join(testDir, `dir_${i}`), { recursive: true });
-        await Deno.writeTextFile(join(testDir, `dir_${i}`, "file.txt"), `Dir ${i} content`);
+        await fs.mkdir(join(testDir, `dir_${i}`), { recursive: true });
+        await fs.writeFile(join(testDir, `dir_${i}`, "file.txt"), `Dir ${i} content`);
       }
 
       const startTime = performance.now();
 
-      const command = new Deno.Command("deno", {
-        args: [
-          "run",
-          "--allow-all",
-          join(originalCwd, "src/cli/simple-cli.ts"),
-          "init"
-        ],
+      const command = spawn('node', [
+        join(originalCwd, 'cli.js'),
+        'init'
+      ], {
         cwd: testDir,
-        stdout: "piped",
-        stderr: "piped"
+        stdio: ['pipe', 'pipe', 'pipe']
       });
 
-      const result = await command.output();
+      const result = await new Promise<{ success: boolean }>((resolve) => {
+        command.on('close', (code) => {
+          resolve({ success: code === 0 });
+        });
+      });
+
       const endTime = performance.now();
       const duration = endTime - startTime;
 
-      assertEquals(result.success, true);
+      expect(result.success).toBe(true);
       
       // Should not be significantly slower due to existing files
-      assertEquals(duration < 15000, true);
+      expect(duration).toBeLessThan(15000);
       
       // Should create init files
-      assertExists(await exists(join(testDir, "CLAUDE.md")));
-      assertExists(await exists(join(testDir, "memory-bank.md")));
-      assertExists(await exists(join(testDir, "coordination.md")));
+      await expect(fs.access(join(testDir, "CLAUDE.md"))).resolves.not.toThrow();
+      await expect(fs.access(join(testDir, "memory-bank.md"))).resolves.not.toThrow();
+      await expect(fs.access(join(testDir, "coordination.md"))).resolves.not.toThrow();
 
       console.log(`Init in large project (${numFiles} files) completed in ${duration.toFixed(2)}ms`);
     });
@@ -291,66 +321,68 @@ describe("Init Command Performance Tests", () => {
   describe("Resource usage optimization", () => {
     it("should use reasonable memory during initialization", async () => {
       // This test monitors memory usage during init
-      const initialMemory = Deno.memoryUsage();
+      const initialMemory = process.memoryUsage();
 
-      const command = new Deno.Command("deno", {
-        args: [
-          "run",
-          "--allow-all",
-          join(originalCwd, "src/cli/simple-cli.ts"),
-          "init",
-          "--sparc"
-        ],
+      const command = spawn('node', [
+        join(originalCwd, 'cli.js'),
+        'init',
+        '--sparc'
+      ], {
         cwd: testDir,
-        stdout: "piped",
-        stderr: "piped"
+        stdio: ['pipe', 'pipe', 'pipe']
       });
 
-      const result = await command.output();
-      const finalMemory = Deno.memoryUsage();
+      const result = await new Promise<{ success: boolean }>((resolve) => {
+        command.on('close', (code) => {
+          resolve({ success: code === 0 });
+        });
+      });
 
-      assertEquals(result.success, true);
+      const finalMemory = process.memoryUsage();
+
+      expect(result.success).toBe(true);
 
       // Memory increase should be reasonable (less than 50MB)
       const memoryIncrease = finalMemory.heapUsed - initialMemory.heapUsed;
-      assertEquals(memoryIncrease < 50 * 1024 * 1024, true);
+      expect(memoryIncrease).toBeLessThan(50 * 1024 * 1024);
 
       console.log(`Memory usage increase: ${(memoryIncrease / 1024 / 1024).toFixed(2)}MB`);
     });
 
     it("should handle force overwrite efficiently", async () => {
       // Create existing files first
-      await Deno.writeTextFile(join(testDir, "CLAUDE.md"), "existing content".repeat(1000));
-      await Deno.writeTextFile(join(testDir, "memory-bank.md"), "existing memory".repeat(1000));
-      await Deno.writeTextFile(join(testDir, "coordination.md"), "existing coord".repeat(1000));
+      await fs.writeFile(join(testDir, "CLAUDE.md"), "existing content".repeat(1000));
+      await fs.writeFile(join(testDir, "memory-bank.md"), "existing memory".repeat(1000));
+      await fs.writeFile(join(testDir, "coordination.md"), "existing coord".repeat(1000));
 
       const startTime = performance.now();
 
-      const command = new Deno.Command("deno", {
-        args: [
-          "run",
-          "--allow-all",
-          join(originalCwd, "src/cli/simple-cli.ts"),
-          "init",
-          "--force"
-        ],
+      const command = spawn('node', [
+        join(originalCwd, 'cli.js'),
+        'init',
+        '--force'
+      ], {
         cwd: testDir,
-        stdout: "piped",
-        stderr: "piped"
+        stdio: ['pipe', 'pipe', 'pipe']
       });
 
-      const result = await command.output();
+      const result = await new Promise<{ success: boolean }>((resolve) => {
+        command.on('close', (code) => {
+          resolve({ success: code === 0 });
+        });
+      });
+
       const endTime = performance.now();
       const duration = endTime - startTime;
 
-      assertEquals(result.success, true);
+      expect(result.success).toBe(true);
       
       // Force overwrite should not be significantly slower
-      assertEquals(duration < 10000, true);
+      expect(duration).toBeLessThan(10000);
 
       // Files should be overwritten
-      const claudeContent = await Deno.readTextFile(join(testDir, "CLAUDE.md"));
-      assertEquals(claudeContent.includes("existing content"), false);
+      const claudeContent = await fs.readFile(join(testDir, "CLAUDE.md"), 'utf-8');
+      expect(claudeContent.includes("existing content")).toBe(false);
 
       console.log(`Force overwrite completed in ${duration.toFixed(2)}ms`);
     });
@@ -360,19 +392,18 @@ describe("Init Command Performance Tests", () => {
     it("should efficiently create directory structure", async () => {
       const startTime = performance.now();
 
-      const command = new Deno.Command("deno", {
-        args: [
-          "run",
-          "--allow-all",
-          join(originalCwd, "src/cli/simple-cli.ts"),
-          "init"
-        ],
+      const command = spawn('node', [
+        join(originalCwd, 'cli.js'),
+        'init'
+      ], {
         cwd: testDir,
-        stdout: "piped",
-        stderr: "piped"
+        stdio: ['pipe', 'pipe', 'pipe']
       });
 
-      await command.output();
+      await new Promise<void>((resolve) => {
+        command.on('close', () => resolve());
+      });
+
       const endTime = performance.now();
       const duration = endTime - startTime;
 
@@ -393,14 +424,17 @@ describe("Init Command Performance Tests", () => {
 
       let createdDirs = 0;
       for (const dir of expectedDirs) {
-        if (await exists(join(testDir, dir))) {
+        try {
+          await fs.access(join(testDir, dir));
           createdDirs++;
+        } catch {
+          // Directory doesn't exist
         }
       }
 
       // Should create directories efficiently
       const dirCreationRate = createdDirs / (duration / 1000); // dirs per second
-      assertEquals(dirCreationRate > 10, true); // Should create > 10 dirs/second
+      expect(dirCreationRate).toBeGreaterThan(10); // Should create > 10 dirs/second
 
       console.log(`Created ${createdDirs} directories in ${duration.toFixed(2)}ms (${dirCreationRate.toFixed(2)} dirs/sec)`);
     });
@@ -408,19 +442,18 @@ describe("Init Command Performance Tests", () => {
     it("should efficiently write template files", async () => {
       const startTime = performance.now();
 
-      const command = new Deno.Command("deno", {
-        args: [
-          "run",
-          "--allow-all",
-          join(originalCwd, "src/cli/simple-cli.ts"),
-          "init"
-        ],
+      const command = spawn('node', [
+        join(originalCwd, 'cli.js'),
+        'init'
+      ], {
         cwd: testDir,
-        stdout: "piped",
-        stderr: "piped"
+        stdio: ['pipe', 'pipe', 'pipe']
       });
 
-      await command.output();
+      await new Promise<void>((resolve) => {
+        command.on('close', () => resolve());
+      });
+
       const endTime = performance.now();
       const duration = endTime - startTime;
 
@@ -429,30 +462,28 @@ describe("Init Command Performance Tests", () => {
         "CLAUDE.md",
         "memory-bank.md",
         "coordination.md",
-        "memory/claude-flow-data.json",
+        "memory/flowx-data.json",
         "memory/agents/README.md",
         "memory/sessions/README.md",
-        "claude-flow"
+        "flowx"
       ];
 
       let createdFiles = 0;
       let totalSize = 0;
       
       for (const file of expectedFiles) {
-        if (await exists(join(testDir, file))) {
+        try {
+          const stat = await fs.stat(join(testDir, file));
           createdFiles++;
-          try {
-            const stat = await Deno.stat(join(testDir, file));
-            totalSize += stat.size;
-          } catch {
-            // Ignore stat errors
-          }
+          totalSize += stat.size;
+        } catch {
+          // File doesn't exist or stat failed
         }
       }
 
       // Should write files efficiently
       const writeRate = totalSize / (duration / 1000); // bytes per second
-      assertEquals(writeRate > 1000, true); // Should write > 1KB/second
+      expect(writeRate).toBeGreaterThan(1000); // Should write > 1KB/second
 
       console.log(`Created ${createdFiles} files (${totalSize} bytes) in ${duration.toFixed(2)}ms (${(writeRate / 1024).toFixed(2)} KB/sec)`);
     });

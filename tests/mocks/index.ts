@@ -4,7 +4,11 @@
 
 import { jest } from '@jest/globals';
 import type { MockedFunction } from 'jest-mock';
-import type { AgentProfile, Task } from "../../src/utils/types.ts";
+import type { AgentProfile, Task } from "../../src/utils/types";
+import { MockMCPServer, MockMCPTransport } from './mock-mcp-server';
+
+// Re-export the MCP server and transport mocks
+export { MockMCPServer, MockMCPTransport };
 
 // Since we can't import the actual interfaces yet, we'll define minimal interfaces
 interface IEventBus {
@@ -74,14 +78,20 @@ interface ICoordinationManager {
 }
 
 interface IMCPServer {
-  start(): Promise<void>;
-  stop(): Promise<void>;
-  registerTool?(tool: any): void;
-  getHealthStatus(): Promise<{ healthy: boolean; error?: string; metrics?: Record<string, number> }>;
-  getMetrics(): any;
-  getSessions(): any[];
-  getSession(sessionId: string): any | undefined;
-  terminateSession(sessionId: string): void;
+  // Methods from the detailed MockMCPServer in mock-mcp-server.ts
+  initialize(): Promise<void>;
+  shutdown(): Promise<void>;
+  registerTool(tool: any): Promise<void>;
+  listTools(): Promise<any[]>;
+  executeTool(toolCall: any, context?: any): Promise<any>;
+  handleRequest(request: any): Promise<any>;
+  
+  // Additional methods from the simplified MockMCPServer
+  getHealthStatus?(): Promise<{ healthy: boolean; error?: string; metrics?: Record<string, number> }>;
+  getMetrics?(): any;
+  getSessions?(): any[];
+  getSession?(sessionId: string): any | undefined;
+  terminateSession?(sessionId: string): void;
 }
 
 // Helper function to create Jest mock
@@ -630,77 +640,21 @@ export class MockCoordinationManager implements ICoordinationManager {
   }
 }
 
-/**
- * Mock MCP Server
- */
-export class MockMCPServer implements IMCPServer {
-  private started = false;
-  private tools = new Map<string, any>();
-
-  start = createSpy(async (): Promise<void> => {
-    this.started = true;
-  });
-
-  stop = createSpy(async (): Promise<void> => {
-    this.started = false;
-    this.tools.clear();
-  });
-
-  registerTool = createSpy((tool: any): void => {
-    this.tools.set(tool.name || 'unknown', tool);
-  });
-
-  getHealthStatus = createSpy(async (): Promise<{ healthy: boolean; error?: string; metrics?: Record<string, number> }> => {
-    return {
-      healthy: this.started,
-      metrics: {
-        tools: this.tools.size,
-      },
-    };
-  });
-
-  getMetrics = createSpy((): any => {
-    return {
-      totalRequests: 0,
-      activeConnections: this.started ? 1 : 0,
-      uptime: 0,
-      toolInvocations: {},
-      errorCounts: {}
-    };
-  });
-
-  getSessions = createSpy((): any[] => {
-    return [];
-  });
-
-  getSession = createSpy((sessionId: string): any | undefined => {
-    return undefined;
-  });
-
-  terminateSession = createSpy((sessionId: string): void => {
-    // Mock implementation
-  });
-
-  isStarted() {
-    return this.started;
-  }
-
-  getTools() {
-    return new Map(this.tools);
-  }
-}
+// Note: MockMCPServer is imported from mock-mcp-server.ts above, not redefined here
 
 /**
  * Create a complete set of mocks for testing
  */
 export function createMocks() {
+  const logger = new MockLogger();
+  const transport = new MockMCPTransport();
   return {
     eventBus: new MockEventBus(),
-    logger: new MockLogger(),
+    logger,
     terminalManager: new MockTerminalManager(),
     memoryManager: new MockMemoryManager(),
     coordinationManager: new MockCoordinationManager(),
-    mcpServer: new MockMCPServer(),
+    mcpServer: new MockMCPServer(transport, logger),
   };
 }
 
@@ -713,5 +667,6 @@ export function isMock(obj: any): boolean {
          obj instanceof MockTerminalManager ||
          obj instanceof MockMemoryManager ||
          obj instanceof MockCoordinationManager ||
-         obj instanceof MockMCPServer;
+         obj instanceof MockMCPServer ||
+         obj instanceof MockMCPTransport;
 }

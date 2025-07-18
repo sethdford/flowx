@@ -330,8 +330,8 @@ We will use PostgreSQL with read replicas and connection pooling.
 
 ```bash
 # Create comprehensive API documentation
-npx claude-flow sparc run docs-writer "document PCI-compliant payment API with OpenAPI specification and security guidelines"
+npx flowx sparc run docs-writer "document PCI-compliant payment API with OpenAPI specification and security guidelines"
 
 # Generate operational runbooks
-npx claude-flow sparc run docs-writer "create incident response runbooks for mission-critical payment service with 99.99% uptime SLA"
+npx flowx sparc run docs-writer "create incident response runbooks for mission-critical payment service with 99.99% uptime SLA"
 ```

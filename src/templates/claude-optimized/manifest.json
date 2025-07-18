@@ -73,21 +73,21 @@
       "category": "command"
     },
     {
-      "source": "commands/claude-flow-help.md",
-      "destination": "commands/claude-flow-help.md",
-      "description": "Claude Flow help and documentation command",
+      "source": "commands/flowx-help.md",
+      "destination": "commands/flowx-help.md",
+      "description": "FlowX help and documentation command",
       "category": "command"
     },
     {
-      "source": "commands/claude-flow-memory.md",
-      "destination": "commands/claude-flow-memory.md",
-      "description": "Claude Flow memory system interaction command",
+      "source": "commands/flowx-memory.md",
+      "destination": "commands/flowx-memory.md",
+      "description": "FlowX memory system interaction command",
       "category": "command"
     },
     {
-      "source": "commands/claude-flow-swarm.md",
-      "destination": "commands/claude-flow-swarm.md",
-      "description": "Claude Flow swarm coordination command",
+      "source": "commands/flowx-swarm.md",
+      "destination": "commands/flowx-swarm.md",
+      "description": "FlowX swarm coordination command",
       "category": "command"
     },
     {

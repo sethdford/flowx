@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach } from '@jest/globals';
-import { createNeuralTools } from '../../src/mcp/neural-tools.js';
+import { createNeuralTools } from '../../src/mcp/neural-tools';
 
 // Mock logger
 const mockLogger = {
@@ -242,7 +242,7 @@ describe('MCP Neural Tools Integration', () => {
       
       expect(result.success).toBe(true);
       expect(mockLogger.info).toHaveBeenCalledWith(
-        'Checking neural status',
+        'Getting real neural status',
         { input: {}, sessionId: 'test-session' }
       );
     });

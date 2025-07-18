@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Simple CLI Entry Point for Claude-Flow
+ * Simple CLI Entry Point for FlowX
  * Used primarily for tests and local development
  */
 

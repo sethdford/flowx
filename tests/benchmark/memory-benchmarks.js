@@ -6,7 +6,7 @@
  */
 
 import { createBenchmarkSuite, saveResults } from './benchmark-suite.js';
-import { DistributedMemorySystem } from '../../original-claude-flow/src/memory/distributed-memory.js';
+import { DistributedMemorySystem } from '../../original-flowx/src/memory/distributed-memory.js';
 import { Logger } from '../../src/core/logger.js';
 import { EventBus } from '../../src/core/event-bus.js';
 

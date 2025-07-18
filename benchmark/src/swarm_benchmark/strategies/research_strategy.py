@@ -13,7 +13,7 @@ class ResearchStrategy(BaseStrategy):
     def __init__(self):
         """Initialize the research strategy."""
         super().__init__()
-        self.claude_flow_client = None
+        self.flowx_client = None
         self._research_depth = 0
         self._sources_consulted = 0
     
@@ -40,8 +40,8 @@ class ResearchStrategy(BaseStrategy):
         
         try:
             # Execute research through claude-flow swarm
-            if self.claude_flow_client:
-                swarm_result = await self.claude_flow_client.execute_swarm(
+            if self.flowx_client:
+                swarm_result = await self.flowx_client.execute_swarm(
                     objective=task.objective,
                     strategy="research",
                     mode=task.mode.value if hasattr(task.mode, 'value') else task.mode,

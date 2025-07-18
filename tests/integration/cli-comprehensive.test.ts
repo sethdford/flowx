@@ -38,7 +38,7 @@ export class CLITestRunner {
 
   constructor(cliPath = './cli.js') {
     this.cliPath = resolve(cliPath);
-    this.testDir = join(tmpdir(), 'claude-flow-cli-tests');
+    this.testDir = join(tmpdir(), 'flowx-cli-tests');
   }
 
   async setup(): Promise<void> {

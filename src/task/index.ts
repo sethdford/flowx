@@ -302,7 +302,7 @@ await coordinator.coordinateSwarm(
 export const CLI_EXAMPLES = {
   taskCreate: `
 # Create a complex task with dependencies and scheduling
-claude-flow task create development "Implement user authentication system" \\
+flowx task create development "Implement user authentication system" \\
   --priority 80 \\
   --dependencies "task-123,task-456" \\
   --dep-type finish-to-start \\
@@ -317,7 +317,7 @@ claude-flow task create development "Implement user authentication system" \\
 
   taskList: `
 # List tasks with advanced filtering and visualization
-claude-flow task list \\
+flowx task list \\
   --status running,pending \\
   --priority 70-100 \\
   --tags auth,security \\
@@ -331,7 +331,7 @@ claude-flow task list \\
 
   taskStatus: `
 # Get detailed task status with all metrics
-claude-flow task status task-789 \\
+flowx task status task-789 \\
   --show-logs \\
   --show-checkpoints \\
   --show-metrics \\
@@ -342,7 +342,7 @@ claude-flow task status task-789 \\
 
   taskCancel: `
 # Cancel task with safe rollback and cascade
-claude-flow task cancel task-789 \\
+flowx task cancel task-789 \\
   --reason "Requirements changed" \\
   --cascade \\
   --dry-run
@@ -350,17 +350,17 @@ claude-flow task cancel task-789 \\
 
   taskWorkflow: `
 # Create and execute workflows
-claude-flow task workflow create "E-commerce Platform" \\
+flowx task workflow create "E-commerce Platform" \\
   --description "Complete e-commerce development workflow" \\
   --max-concurrent 8 \\
   --strategy priority-based \\
   --error-handling continue-on-error
 
-claude-flow task workflow execute workflow-123 \\
+flowx task workflow execute workflow-123 \\
   --variables '{"environment":"staging","version":"2.1.0"}' \\
   --monitor
 
-claude-flow task workflow visualize workflow-123 \\
+flowx task workflow visualize workflow-123 \\
   --format dot \\
   --output workflow-graph.dot
 `

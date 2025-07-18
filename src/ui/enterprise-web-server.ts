@@ -216,7 +216,7 @@ export class EnterpriseWebServer {
     app.get('/api/health', (req: any, res: any) => {
       res.json({
         status: 'healthy',
-        server: 'claude-flow-enterprise',
+        server: 'flowx-enterprise',
         version: '2.0.0',
         features: this.config.features,
         tools: this.getToolCounts(),
@@ -394,7 +394,7 @@ export class EnterpriseWebServer {
       // Send welcome message
       ws.send(JSON.stringify({
         type: 'welcome',
-        server: 'claude-flow-enterprise',
+        server: 'flowx-enterprise',
         features: this.config.features,
         tools: this.getToolCounts()
       }));

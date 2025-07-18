@@ -197,7 +197,7 @@ class TestSwarmStrategies:
     
     def __init__(self):
         """Initialize test suite"""
-        self.claude_flow_path = Path(__file__).parent.parent.parent.parent / "claude-flow"
+        self.flowx_path = Path(__file__).parent.parent.parent.parent / "claude-flow"
         self.results: List[SwarmTestResult] = []
         self.temp_dirs: List[Path] = []
         self.process_monitor = None
@@ -230,7 +230,7 @@ class TestSwarmStrategies:
             special_flags = []
             
         command = [
-            str(self.claude_flow_path),
+            str(self.flowx_path),
             "swarm",
             objective,
             "--strategy", strategy,
@@ -273,7 +273,7 @@ class TestSwarmStrategies:
                 capture_output=True,
                 text=True,
                 timeout=120,  # 2 minute timeout
-                env={**os.environ, "CLAUDE_FLOW_NON_INTERACTIVE": "true"}
+                env={**os.environ, "FLOWX_NON_INTERACTIVE": "true"}
             )
             
             duration = time.time() - start_time

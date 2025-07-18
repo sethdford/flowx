@@ -81,15 +81,15 @@ import {
   ValidationResult,
   MigrationProgress,
   MigrationManifest
-} from './types.ts';
-import { MigrationAnalyzer } from './migration-analyzer.ts';
-import { logger } from './logger.ts';
-import { ProgressReporter } from './progress-reporter.ts';
-import { MigrationValidator } from './migration-validator.ts';
+} from './types.js';
+import { MigrationAnalyzer } from './migration-analyzer.js';
+import { logger } from '../core/logger.js';
+import { ProgressReporter } from './progress-reporter.js';
+import { MigrationValidator } from './migration-validator.js';
 import globPkg from 'glob';
 const { glob } = globPkg;
 import * as inquirer from 'inquirer';
-import { colors } from '../utils/colors.ts';
+import { colors } from '../utils/colors.js';
 
 export class MigrationRunner {
   private options: MigrationOptions;
@@ -182,7 +182,7 @@ export class MigrationRunner {
         logger.warn('Attempting automatic rollback...');
         try {
           await this.rollback(result.rollbackPath);
-          logger.success('Rollback completed');
+          logger.info('Rollback completed');
         } catch (rollbackError) {
           const rollbackMessage = rollbackError instanceof Error ? rollbackError.message : String(rollbackError);
           logger.error('Rollback failed:', rollbackMessage);
@@ -335,9 +335,9 @@ export class MigrationRunner {
       }
 
       const scripts = {
-        'migrate': 'claude-flow migrate',
-        'migrate:analyze': 'claude-flow migrate analyze',
-        'migrate:rollback': 'claude-flow migrate rollback'
+        'migrate': 'flowx migrate',
+        'migrate:analyze': 'flowx migrate analyze',
+        'migrate:rollback': 'flowx migrate rollback'
       };
 
       let modified = false;
@@ -413,7 +413,7 @@ export class MigrationRunner {
     const manifestPath = path.join(backupPath, 'backup-manifest.tson');
     await writeJson(manifestPath, backup, { spaces: 2 });
 
-    logger.success(`Backup created at ${backupPath}`);
+    logger.info(`Backup created at ${backupPath}`);
     return backup;
   }
 
@@ -468,7 +468,7 @@ export class MigrationRunner {
       await fs.writeFile(targetPath, file.content);
     }
 
-    logger.success('Rollback completed successfully');
+    logger.info('Rollback completed successfully');
   }
 
   async validate(verbose: boolean = false): Promise<boolean> {
@@ -555,9 +555,9 @@ export class MigrationRunner {
           'sparc-architect': { source: 'sparc/architect.md', target: 'sparc-architect.md' },
           'sparc-code': { source: 'sparc/code.md', target: 'sparc-code.md' },
           'sparc-tdd': { source: 'sparc/tdd.md', target: 'sparc-tdd.md' },
-          'claude-flow-help': { source: 'claude-flow-help.md', target: 'claude-flow-help.md' },
-          'claude-flow-memory': { source: 'claude-flow-memory.md', target: 'claude-flow-memory.md' },
-          'claude-flow-swarm': { source: 'claude-flow-swarm.md', target: 'claude-flow-swarm.md' }
+          'flowx-help': { source: 'flowx-help.md', target: 'flowx-help.md' },
+          'flowx-memory': { source: 'flowx-memory.md', target: 'flowx-memory.md' },
+          'flowx-swarm': { source: 'flowx-swarm.md', target: 'flowx-swarm.md' }
         },
         configurations: {},
         templates: {}
@@ -628,7 +628,7 @@ export class MigrationRunner {
 
     if (result.rollbackPath) {
       console.log(`\n${colors.bold('Rollback Available:')} ${result.rollbackPath}`);
-      console.log(colors.gray(`  Run "claude-flow migrate rollback -t ${result.rollbackPath}" to revert`));
+      console.log(colors.gray(`  Run "flowx migrate rollback -t ${result.rollbackPath}" to revert`));
     }
 
     console.log(colors.gray('\n' + '─'.repeat(50)));

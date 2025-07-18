@@ -368,8 +368,8 @@ const businessMetrics = {
 
 ```bash
 # Set up comprehensive monitoring for payment system
-npx claude-flow sparc run post-deployment-monitoring-mode "implement SRE monitoring for PCI-compliant payment system with 99.99% uptime SLO"
+npx flowx sparc run post-deployment-monitoring-mode "implement SRE monitoring for PCI-compliant payment system with 99.99% uptime SLO"
 
 # Create DORA metrics dashboard
-npx claude-flow sparc run post-deployment-monitoring-mode "build executive dashboard tracking deployment frequency, lead time, MTTR, and change failure rate"
+npx flowx sparc run post-deployment-monitoring-mode "build executive dashboard tracking deployment frequency, lead time, MTTR, and change failure rate"
 ```

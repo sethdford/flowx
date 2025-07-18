@@ -1,5 +1,5 @@
 /**
- * Claude-Flow specific MCP tools
+ * FlowX specific MCP tools
  */
 
 import { MCPTool, MCPContext, AgentProfile, Task, MemoryEntry } from "../utils/types.ts";
@@ -11,7 +11,7 @@ export interface ClaudeFlowToolContext extends MCPContext {
 }
 
 /**
- * Create all Claude-Flow specific MCP tools
+ * Create all FlowX specific MCP tools
  */
 export function createClaudeFlowTools(logger: ILogger): MCPTool[] {
   return [

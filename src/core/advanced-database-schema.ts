@@ -300,7 +300,7 @@ export class AdvancedDatabaseSchema {
   constructor(config: Partial<DatabaseConfig>, logger: ILogger) {
     this.logger = logger;
     this.config = {
-      path: './data/claude-flow-advanced.db',
+      path: './data/flowx-advanced.db',
       enableWAL: true,
       enableForeignKeys: true,
       enableTriggers: true,

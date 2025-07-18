@@ -3,13 +3,13 @@
  */
 
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
-import { PipelineLoadingEngine, LoadingPlan, DestinationConfig, LoadingStrategy } from '../../../../../src/cli/pipeline/loading/pipeline-loading-engine.js';
-import { Logger } from '../../../../../src/core/logger.js';
+import { PipelineLoadingEngine, LoadingPlan, DestinationConfig, LoadingStrategy } from '../../../../../src/cli/pipeline/loading/pipeline-loading-engine';
+import { Logger } from '../../../../../src/core/logger';
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 
 // Mock dependencies
-jest.mock('../../../../../src/core/logger.js');
+jest.mock('../../../../../src/core/logger');
 jest.mock('fs/promises');
 jest.mock('fs');
 

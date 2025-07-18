@@ -37,7 +37,7 @@ jest.mock('../../../src/core/logger.ts', () => ({
 }));
 import { EventBus } from '../../../src/core/event-bus.js';
 import { Logger } from '../../../src/core/logger.ts';
-import { DistributedMemorySystem } from '../../../original-claude-flow/src/memory/distributed-memory.js';
+import { DistributedMemorySystem } from '../../../original-flowx/src/memory/distributed-memory.js';
 
 describe('DistributedMemorySystem Integration', () => {
   let eventBus;

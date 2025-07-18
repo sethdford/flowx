@@ -2,7 +2,7 @@
  * Hive Mind Type Definitions
  * 
  * Core types and interfaces for the Hive Mind collective intelligence system
- * Based on original claude-flow v2.0.0 Alpha architecture
+ * Based on original flowx v2.0.0 Alpha architecture
  */
 
 // === CORE ENUMS ===

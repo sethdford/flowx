@@ -1,6 +1,6 @@
 /**
  * Claude Code Swarm Operations E2E Tests
- * Tests the integration between Claude Code and claude-flow swarm operations
+ * Tests the integration between Claude Code and flowx swarm operations
  */
 
 import { describe, test, expect, beforeEach, afterEach } from '@jest/globals';

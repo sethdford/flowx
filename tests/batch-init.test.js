@@ -130,7 +130,7 @@ Deno.test('Batch Initialization - Minimal', async () => {
     await Deno.stat(`${project}/CLAUDE.md`);
     await Deno.stat(`${project}/memory-bank.md`);
     await Deno.stat(`${project}/coordination.md`);
-    await Deno.stat(`${project}/memory/claude-flow-data.json`);
+    await Deno.stat(`${project}/memory/flowx-data.json`);
   }
   
   console.log('✅ Minimal batch initialization tests passed');
@@ -193,8 +193,8 @@ Deno.test('Multi-Environment Initialization', async () => {
   await Deno.stat('multi-env-app-staging');
   
   // Check environment-specific configuration
-  const devData = JSON.parse(await Deno.readTextFile('multi-env-app-dev/memory/claude-flow-data.json'));
-  const stagingData = JSON.parse(await Deno.readTextFile('multi-env-app-staging/memory/claude-flow-data.json'));
+  const devData = JSON.parse(await Deno.readTextFile('multi-env-app-dev/memory/flowx-data.json'));
+  const stagingData = JSON.parse(await Deno.readTextFile('multi-env-app-staging/memory/flowx-data.json'));
   
   assertEquals(devData.environment, 'dev');
   assertEquals(stagingData.environment, 'staging');

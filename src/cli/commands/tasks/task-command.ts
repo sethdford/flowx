@@ -5,7 +5,7 @@
  * This is the SINGLE SOURCE OF TRUTH for task management in Claude Flow
  * Eliminates technical debt by consolidating 3 separate implementations
  * 
- * Feature Complete Implementation matching original Claude-Flow capabilities
+ * Feature Complete Implementation matching original FlowX capabilities
  */
 
 import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
@@ -260,7 +260,7 @@ async function getLocalSwarmCoordinator(): Promise<SwarmCoordinator> {
 
 export const taskCommand: CLICommand = {
   name: 'task',
-  description: 'Comprehensive task management system with full Claude-Flow feature parity',
+  description: 'Comprehensive task management system with full FlowX feature parity',
   category: 'Tasks',
   usage: 'flowx task <subcommand> [OPTIONS]',
   examples: [

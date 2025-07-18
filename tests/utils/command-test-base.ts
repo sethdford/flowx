@@ -40,7 +40,7 @@ export function createCommandTestRunner(options: CommandTestRunnerOptions = {}) 
   // Default environment variables
   const defaultEnv = {
     ...process.env,
-    CLAUDE_FLOW_ENV: 'test',
+    FLOWX_ENV: 'test',
     NODE_ENV: 'test',
     NO_COLOR: '1', // Disable colors for consistent output
     DEBUG: debug ? '*' : undefined,

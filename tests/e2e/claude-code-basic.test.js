@@ -1,6 +1,6 @@
 /**
  * Basic Claude Code CLI Integration Tests
- * Tests basic integration between Claude Code and claude-flow
+ * Tests basic integration between Claude Code and flowx
  */
 
 import { describe, test, expect, beforeEach, afterEach } from '@jest/globals';
@@ -22,7 +22,7 @@ describe('Claude Code Basic Integration E2E', () => {
   });
   
   describe('Basic Claude Code CLI commands', () => {
-    test('should execute claude-flow help command via Claude Code', async () => {
+    test('should execute flowx help command via Claude Code', async () => {
       const { stdout, code } = await runner.runCommand([
         '--claude-code',
         'help'

@@ -17,7 +17,7 @@ export interface PluginMetadata {
   peerDependencies?: string[];
   engines?: {
     node?: string;
-    'claude-flow'?: string;
+    'flowx'?: string;
   };
   keywords?: string[];
   category?: string;

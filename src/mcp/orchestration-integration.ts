@@ -1,5 +1,5 @@
 /**
- * MCP Integration with Claude-Flow Orchestration System
+ * MCP Integration with FlowX Orchestration System
  * Provides seamless integration between MCP servers and the broader orchestration components
  */
 

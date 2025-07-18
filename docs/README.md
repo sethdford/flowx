@@ -26,6 +26,7 @@ Welcome to the comprehensive documentation for Claude-Flow v1.0.50!
 - **[Terminal Management](./08-terminal-management.md)** - Terminal pool management
 - **[Swarm Documentation](./SWARM_DOCUMENTATION.md)** - Advanced swarm coordination
 - **[Advanced Usage](./10-advanced-usage.md)** - Power user features
+- **[Enterprise Atlassian Integration](./enterprise-atlassian-integration.md)** - JIRA & Confluence integration
 
 ## 🛠️ Specialized Guides
 

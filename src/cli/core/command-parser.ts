@@ -205,7 +205,7 @@ export function parseArgs(args: string[], options?: ParserOptions): ParsedArgs {
 /**
  * Parse environment variables into options
  */
-export function parseEnvVars(prefix: string = 'CLAUDE_FLOW_'): Record<string, any> {
+export function parseEnvVars(prefix: string = 'FLOWX_'): Record<string, any> {
   const options: Record<string, any> = {};
   
   for (const [key, value] of Object.entries(process.env)) {

@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import { rm, mkdir } from 'node:fs/promises';
 
 // Mock the global initialization to use test directory
-const testDir = join(tmpdir(), `claude-flow-cli-test-${Date.now()}`);
+const testDir = join(tmpdir(), `flowx-cli-test-${Date.now()}`);
 
 jest.mock('../../../src/cli/core/global-initialization.ts', () => {
   const { PersistenceManager } = require('../../../src/core/persistence.ts');
@@ -421,7 +421,7 @@ describe('CLI Agent and Task Persistence Integration Tests', () => {
   describe('Cross-Command Persistence', () => {
     it('should maintain persistence across different command invocations', async () => {
       // Set environment variable for consistent database path during tests
-      process.env.CLAUDE_FLOW_DATA_PATH = testDir;
+      process.env.FLOWX_DATA_PATH = testDir;
       
       const { agentCommand } = await import('../../../src/cli/commands/agents/agent-management-command.ts');
       const { taskCommand } = await import('../../../src/cli/commands/tasks/task-command.ts');
@@ -470,7 +470,7 @@ describe('CLI Agent and Task Persistence Integration Tests', () => {
   describe('Database Initialization and State', () => {
     it('should verify database is properly initialized', async () => {
       // Set environment variable for consistent database path during tests
-      process.env.CLAUDE_FLOW_DATA_PATH = testDir;
+      process.env.FLOWX_DATA_PATH = testDir;
       
       const { getPersistenceManager, initializeGlobalServices } = await import('../../../src/cli/core/global-initialization.ts');
       
@@ -497,7 +497,7 @@ describe('CLI Agent and Task Persistence Integration Tests', () => {
 
     it('should verify table schemas are correct', async () => {
       // Set environment variable for consistent database path during tests
-      process.env.CLAUDE_FLOW_DATA_PATH = testDir;
+      process.env.FLOWX_DATA_PATH = testDir;
       
       const { getPersistenceManager, initializeGlobalServices } = await import('../../../src/cli/core/global-initialization.ts');
       

@@ -102,8 +102,8 @@ Design enterprise systems with focus on:
 
 ```bash
 # Design mission-critical payment system
-npx claude-flow sparc run architect "design fault-tolerant payment processing system with 99.99% uptime"
+npx flowx sparc run architect "design fault-tolerant payment processing system with 99.99% uptime"
 
 # Create microservices architecture
-npx claude-flow sparc run architect "design microservices for e-commerce platform optimized for DORA metrics"
+npx flowx sparc run architect "design microservices for e-commerce platform optimized for DORA metrics"
 ```

@@ -23,7 +23,7 @@ export function simulateClaudeCodeCommand(args, options = {}, stores = {}) {
       output: `Claude Flow Command Line Interface
         
 USAGE:
-  claude-flow [OPTIONS] [COMMAND]
+  flowx [OPTIONS] [COMMAND]
 
 COMMANDS:
   agent       Manage agent operations

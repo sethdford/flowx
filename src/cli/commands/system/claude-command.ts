@@ -292,13 +292,13 @@ export const claudeCommand: CLICommand = {
           ...process.env,
           ...securityEnv, // Security-enhanced environment variables
           CLAUDE_INSTANCE_ID: instanceId,
-          CLAUDE_FLOW_MODE: options.mode || 'full',
-          CLAUDE_FLOW_COVERAGE: (options.coverage || 80).toString(),
-          CLAUDE_FLOW_COMMIT: options.commit || 'phase',
-          CLAUDE_FLOW_MEMORY_ENABLED: 'true',
-          CLAUDE_FLOW_MEMORY_NAMESPACE: 'default',
-          CLAUDE_FLOW_COORDINATION_ENABLED: options.parallel ? 'true' : 'false',
-          CLAUDE_FLOW_FEATURES: 'memory,coordination,swarm',
+          FLOWX_MODE: options.mode || 'full',
+          FLOWX_COVERAGE: (options.coverage || 80).toString(),
+          FLOWX_COMMIT: options.commit || 'phase',
+          FLOWX_MEMORY_ENABLED: 'true',
+          FLOWX_MEMORY_NAMESPACE: 'default',
+          FLOWX_COORDINATION_ENABLED: options.parallel ? 'true' : 'false',
+          FLOWX_FEATURES: 'memory,coordination,swarm',
         }
       });
 

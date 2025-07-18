@@ -379,8 +379,8 @@ spec:
 
 ```bash
 # Deploy mission-critical payment system
-npx claude-flow sparc run devops "deploy PCI-compliant payment processing with 99.99% uptime and automated rollback"
+npx flowx sparc run devops "deploy PCI-compliant payment processing with 99.99% uptime and automated rollback"
 
 # Set up enterprise monitoring
-npx claude-flow sparc run devops "implement comprehensive monitoring with SLI/SLO tracking and automated alerting"
+npx flowx sparc run devops "implement comprehensive monitoring with SLI/SLO tracking and automated alerting"
 ```

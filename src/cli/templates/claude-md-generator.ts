@@ -1,7 +1,7 @@
 /**
  * Enhanced CLAUDE.md Template Generator
  * Creates comprehensive CLAUDE.md templates with TodoWrite best practices and batching rules
- * Based on original claude-flow patterns with modern TypeScript implementation
+ * Based on original flowx patterns with modern TypeScript implementation
  */
 
 export interface ProjectContext {
@@ -263,7 +263,7 @@ When using swarms, ALL initialization must be in ONE message:
 // ✅ CORRECT - Complete Swarm Initialization
 [Single Message]:
   // MCP coordination setup
-  mcp__claude-flow__swarm_init { topology: "hierarchical", maxAgents: ${context.agentCount || 6} }
+  mcp__flowx__swarm_init { topology: "hierarchical", maxAgents: ${context.agentCount || 6} }
   ${this.generateSwarmAgentSpawns(context)}
   
   // TodoWrite with comprehensive task breakdown
@@ -278,8 +278,8 @@ When using swarms, ALL initialization must be in ONE message:
   ]}
   
   // Initial memory coordination
-  mcp__claude-flow__memory_store { key: "project/context", value: ${JSON.stringify(context)} }
-  mcp__claude-flow__task_orchestrate { strategy: "parallel" }
+  mcp__flowx__memory_store { key: "project/context", value: ${JSON.stringify(context)} }
+  mcp__flowx__task_orchestrate { strategy: "parallel" }
 \`\`\`
 
 ### 🎛️ COORDINATION MODES:
@@ -296,25 +296,25 @@ When using swarms, ALL initialization must be in ONE message:
   private static generateSwarmAgentSpawns(context: ProjectContext): string {
     const agentTemplates = {
       'web-app': [
-        'mcp__claude-flow__agent_spawn { type: "architect", name: "Frontend Architect" }',
-        'mcp__claude-flow__agent_spawn { type: "coder", name: "React/Vue Developer" }',
-        'mcp__claude-flow__agent_spawn { type: "coder", name: "CSS/UI Developer" }',
-        'mcp__claude-flow__agent_spawn { type: "tester", name: "Frontend Tester" }',
-        'mcp__claude-flow__agent_spawn { type: "coordinator", name: "Project Manager" }'
+        'mcp__flowx__agent_spawn { type: "architect", name: "Frontend Architect" }',
+        'mcp__flowx__agent_spawn { type: "coder", name: "React/Vue Developer" }',
+        'mcp__flowx__agent_spawn { type: "coder", name: "CSS/UI Developer" }',
+        'mcp__flowx__agent_spawn { type: "tester", name: "Frontend Tester" }',
+        'mcp__flowx__agent_spawn { type: "coordinator", name: "Project Manager" }'
       ],
       'api': [
-        'mcp__claude-flow__agent_spawn { type: "architect", name: "API Architect" }',
-        'mcp__claude-flow__agent_spawn { type: "coder", name: "Backend Developer" }',
-        'mcp__claude-flow__agent_spawn { type: "analyst", name: "Database Designer" }',
-        'mcp__claude-flow__agent_spawn { type: "tester", name: "API Tester" }',
-        'mcp__claude-flow__agent_spawn { type: "coordinator", name: "Tech Lead" }'
+        'mcp__flowx__agent_spawn { type: "architect", name: "API Architect" }',
+        'mcp__flowx__agent_spawn { type: "coder", name: "Backend Developer" }',
+        'mcp__flowx__agent_spawn { type: "analyst", name: "Database Designer" }',
+        'mcp__flowx__agent_spawn { type: "tester", name: "API Tester" }',
+        'mcp__flowx__agent_spawn { type: "coordinator", name: "Tech Lead" }'
       ],
       'data-pipeline': [
-        'mcp__claude-flow__agent_spawn { type: "architect", name: "Data Architect" }',
-        'mcp__claude-flow__agent_spawn { type: "coder", name: "Pipeline Developer" }',
-        'mcp__claude-flow__agent_spawn { type: "analyst", name: "Data Analyst" }',
-        'mcp__claude-flow__agent_spawn { type: "researcher", name: "ML Engineer" }',
-        'mcp__claude-flow__agent_spawn { type: "coordinator", name: "Data Lead" }'
+        'mcp__flowx__agent_spawn { type: "architect", name: "Data Architect" }',
+        'mcp__flowx__agent_spawn { type: "coder", name: "Pipeline Developer" }',
+        'mcp__flowx__agent_spawn { type: "analyst", name: "Data Analyst" }',
+        'mcp__flowx__agent_spawn { type: "researcher", name: "ML Engineer" }',
+        'mcp__flowx__agent_spawn { type: "coordinator", name: "Data Lead" }'
       ]
     };
 
@@ -329,12 +329,12 @@ When using swarms, ALL initialization must be in ONE message:
     return `## 🔧 MCP TOOLS INTEGRATION
 
 ### Available MCP Tools:
-- **mcp__claude-flow__swarm_init**: Initialize swarm coordination
-- **mcp__claude-flow__agent_spawn**: Spawn specialized agents
-- **mcp__claude-flow__task_orchestrate**: Coordinate task execution
-- **mcp__claude-flow__memory_store**: Store coordination data
-- **mcp__claude-flow__memory_retrieve**: Retrieve shared knowledge
-- **mcp__claude-flow__swarm_monitor**: Monitor swarm progress
+- **mcp__flowx__swarm_init**: Initialize swarm coordination
+- **mcp__flowx__agent_spawn**: Spawn specialized agents
+- **mcp__flowx__task_orchestrate**: Coordinate task execution
+- **mcp__flowx__memory_store**: Store coordination data
+- **mcp__flowx__memory_retrieve**: Retrieve shared knowledge
+- **mcp__flowx__swarm_monitor**: Monitor swarm progress
 
 ### 🎯 MCP Coordination Pattern:
 1. **Planning Phase**: Use MCP tools to set up coordination

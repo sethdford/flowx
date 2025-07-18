@@ -388,7 +388,7 @@ export class SessionManager implements ISessionManager {
       }
       
       // Check if token has required claims
-      if (payload.sub && (payload.aud === 'claude-flow' || payload.azp === 'claude-flow')) {
+      if (payload.sub && (payload.aud === 'flowx' || payload.azp === 'flowx')) {
         return true;
       }
 

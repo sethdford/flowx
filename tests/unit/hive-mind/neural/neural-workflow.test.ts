@@ -16,9 +16,9 @@ import { EventBus } from '../../../../src/core/event-bus';
 import { Logger } from '../../../../src/core/logger';
 
 // Mock dependencies
-jest.mock('../../../../src/hive-mind/neural/pattern-recognizer.js');
-jest.mock('../../../../src/hive-mind/neural/neural-manager.js');
-jest.mock('../../../../src/core/event-bus.js');
+jest.mock('../../../../src/hive-mind/neural/pattern-recognizer');
+jest.mock('../../../../src/hive-mind/neural/neural-manager');
+jest.mock('../../../../src/core/event-bus');
 
 describe('NeuralWorkflow', () => {
   let workflow: NeuralWorkflow;

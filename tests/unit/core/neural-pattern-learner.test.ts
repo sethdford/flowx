@@ -3,9 +3,9 @@
  */
 
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
-import { NeuralPatternLearner, getNeuralPatternLearner, resetNeuralPatternLearner } from '../../../src/core/neural-pattern-learner.js';
-import { createMockLogger } from '../../test.utils.js';
-import { EventBus } from '../../../src/core/event-bus.js';
+import { NeuralPatternLearner, getNeuralPatternLearner, resetNeuralPatternLearner } from '../../../src/core/neural-pattern-learner';
+import { createMockLogger } from '../../test.utils';
+import { EventBus } from '../../../src/core/event-bus';
 
 describe('NeuralPatternLearner', () => {
   let learner: NeuralPatternLearner;

@@ -1,9 +1,9 @@
 /**
- * Unit tests for EventBus
+ * Tests for EventBus functionality
  */
 
 import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
-import { EventBus, TypedEventBus } from '../../../src/core/event-bus.js';
+import { EventBus, TypedEventBus } from '../../../src/core/event-bus';
 
 describe('TypedEventBus', () => {
   let eventBus;

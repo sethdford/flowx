@@ -43,9 +43,9 @@ I have successfully created a comprehensive optimized .claude folder template st
 
 #### Command Files (4)
 - `commands/sparc.md` - Main SPARC methodology command
-- `commands/claude-flow-help.md` - Help and documentation
-- `commands/claude-flow-memory.md` - Memory system interaction
-- `commands/claude-flow-swarm.md` - Swarm coordination
+- `commands/flowx-help.md` - Help and documentation
+- `commands/flowx-memory.md` - Memory system interaction
+- `commands/flowx-swarm.md` - Swarm coordination
 
 #### SPARC Mode Commands (16)
 - `architect.md` - System design and architecture
@@ -193,7 +193,7 @@ node deploy-to-project.js /path/to/project
 ### For End Users
 After deployment, users get:
 - All SPARC mode commands via `/sparc-*`
-- Claude Flow integration via `/claude-flow-*`
+- FlowX integration via `/flowx-*`
 - Comprehensive documentation in `.claude/`
 - Complete test suite for validation
 

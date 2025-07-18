@@ -150,6 +150,9 @@ export class NeuralPatternEngine extends EventEmitter {
         await this.initializeCorePatterns();
       }
       
+      // Set up feature extractors
+      this.setupFeatureExtractors();
+      
       // Set up automatic pattern saving
       this.setupPatternPersistence();
       
@@ -931,6 +934,12 @@ export class NeuralPatternEngine extends EventEmitter {
   }
   
   private startTrainingLoops(): void {
+    // Skip intervals in test environment to prevent hanging
+    if (process.env.NODE_ENV === 'test') {
+      this.logger.debug('Skipping training loops in test environment');
+      return;
+    }
+    
     // Auto-retraining loop
     if (this.config.autoRetraining) {
       setInterval(() => {
@@ -965,9 +974,10 @@ export class NeuralPatternEngine extends EventEmitter {
    * Predict optimal coordination mode for given context
    */
   async predictCoordinationMode(context: LearningContext): Promise<PatternPrediction> {
-    const pattern = this.patterns.get('coordination_optimizer');
+    // Find coordination pattern by type instead of hardcoded name
+    const pattern = Array.from(this.patterns.values()).find(p => p.type === 'coordination');
     if (!pattern) {
-      throw new Error('Coordination optimizer pattern not found');
+      throw new Error('Coordination pattern not found');
     }
     
     const features = this.featureExtractors.get('coordination_optimizer')!(context);
@@ -1006,9 +1016,10 @@ export class NeuralPatternEngine extends EventEmitter {
    * Predict task completion metrics
    */
   async predictTaskMetrics(context: LearningContext): Promise<PatternPrediction> {
-    const pattern = this.patterns.get('task_predictor');
+    // Find task prediction pattern by type instead of hardcoded name
+    const pattern = Array.from(this.patterns.values()).find(p => p.type === 'task_prediction');
     if (!pattern) {
-      throw new Error('Task predictor pattern not found');
+      throw new Error('Task prediction pattern not found');
     }
     
     const features = this.featureExtractors.get('task_predictor')!(context);
@@ -1039,9 +1050,10 @@ export class NeuralPatternEngine extends EventEmitter {
    * Analyze agent behavior for anomalies
    */
   async analyzeAgentBehavior(agent: AgentState, metrics: any): Promise<PatternPrediction> {
-    const pattern = this.patterns.get('behavior_analyzer');
+    // Find behavior analysis pattern by type instead of hardcoded name
+    const pattern = Array.from(this.patterns.values()).find(p => p.type === 'behavior_analysis');
     if (!pattern) {
-      throw new Error('Behavior analyzer pattern not found');
+      throw new Error('Behavior analysis pattern not found');
     }
     
     const context: LearningContext = {

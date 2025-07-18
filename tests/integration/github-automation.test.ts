@@ -1,12 +1,12 @@
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
-import { GitHubCoordinator } from '../../src/enterprise/github-coordinator.js';
-import { PullRequestManager } from '../../src/enterprise/pull-request-manager.js';
-import { IssueTracker } from '../../src/enterprise/issue-tracker.js';
-import { ReleaseManager } from '../../src/enterprise/release-manager.js';
-import { RepositoryArchitect } from '../../src/enterprise/repository-architect.js';
-import { SyncCoordinator } from '../../src/enterprise/sync-coordinator.js';
-import { GitHubCommand } from '../../src/cli/commands/system/github-command.js';
-import { ConfigManager } from '../../src/config/config-manager.js';
+import { GitHubCoordinator } from '../../src/enterprise/github-coordinator';
+import { PullRequestManager } from '../../src/enterprise/pull-request-manager';
+import { IssueTracker } from '../../src/enterprise/issue-tracker';
+import { ReleaseManager } from '../../src/enterprise/release-manager';
+import { RepositoryArchitect } from '../../src/enterprise/repository-architect';
+import { SyncCoordinator } from '../../src/enterprise/sync-coordinator';
+import { GitHubCommand } from '../../src/cli/commands/system/github-command';
+import { ConfigManager } from '../../src/config/config-manager';
 
 describe('GitHub Automation Integration Tests', () => {
   let coordinator: GitHubCoordinator;
@@ -362,7 +362,7 @@ describe('GitHub Automation Integration Tests', () => {
       const aiReview = await prManager.performAiReview(pr.id);
 
       expect(aiReview.id).toBeDefined();
-      expect(aiReview.reviewer.username).toBe('claude-flow-ai');
+      expect(aiReview.reviewer.username).toBe('flowx-ai');
       expect(aiReview.aiGenerated).toBe(true);
       expect(aiReview.confidence).toBeGreaterThanOrEqual(0);
       expect(aiReview.confidence).toBeLessThanOrEqual(1);

@@ -30,7 +30,7 @@ async function pathExists(filePath: string): Promise<boolean> {
 export class MigrationAnalyzer {
   private optimizedCommands = [
     'sparc', 'sparc-architect', 'sparc-code', 'sparc-tdd',
-    'claude-flow-help', 'claude-flow-memory', 'claude-flow-swarm'
+    'flowx-help', 'flowx-memory', 'flowx-swarm'
   ];
 
   async analyze(projectPath: string): Promise<MigrationAnalysis> {

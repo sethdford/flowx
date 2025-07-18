@@ -1,6 +1,6 @@
 -- Hive Mind SQLite Database Schema
 -- Collective intelligence and swarm coordination
--- Based on original claude-flow v2.0.0 architecture
+-- Based on original flowx v2.0.0 architecture
 
 -- Enable foreign keys and performance optimizations
 PRAGMA foreign_keys = ON;

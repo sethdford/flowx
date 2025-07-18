@@ -2,7 +2,7 @@
  * Neural Network MCP Tools Implementation
  * Enterprise-grade neural processing with WASM acceleration and pattern recognition
  * 
- * Implements all 15 neural tools from original claude-flow with performance enhancements:
+ * Implements all 15 neural tools from original flowx with performance enhancements:
  * - WASM SIMD acceleration (2.8-4.4x performance improvements)
  * - Pattern recognition and cognitive analysis
  * - Model training, compression, and ensemble methods

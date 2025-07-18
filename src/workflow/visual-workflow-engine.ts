@@ -349,7 +349,7 @@ export class VisualWorkflowEngine {
         created: new Date(),
         lastModified: new Date(),
         version: '1.0.0',
-        author: 'claude-flow-user'
+        author: 'flowx-user'
       }
     };
 

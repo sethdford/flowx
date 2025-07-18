@@ -66,7 +66,7 @@ export class MCPIntegrationLayer {
       }
       
       // Check for Node.js environment with MCP tools
-      if (typeof process !== 'undefined' && process.env.CLAUDE_FLOW_MCP_ENABLED === 'true') {
+      if (typeof process !== 'undefined' && process.env.FLOWX_MCP_ENABLED === 'true') {
         return 'connected';
       }
       

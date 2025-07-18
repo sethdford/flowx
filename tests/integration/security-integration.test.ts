@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
-import { ClaudeProcessIntegration, enhanceClaudeArgsWithSecurity, SecurityProfiles } from '../../src/agents/claude-process-integration.js';
-import { Logger } from '../../src/core/logger.js';
+import { ClaudeProcessIntegration, enhanceClaudeArgsWithSecurity, SecurityProfiles } from '../../src/agents/claude-process-integration';
+import { Logger } from '../../src/core/logger';
 
 // Mock child_process for testing
 jest.mock('child_process', () => ({

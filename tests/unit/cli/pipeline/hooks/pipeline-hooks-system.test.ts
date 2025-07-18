@@ -6,12 +6,12 @@ import PipelineHooksSystem, {
   PipelinePhase, 
   HookEvent,
   PipelineWorkflow
-} from '../../../../../src/cli/pipeline/hooks/pipeline-hooks-system.js';
-import { Logger } from '../../../../../src/core/logger.js';
+} from '../../../../../src/cli/pipeline/hooks/pipeline-hooks-system';
+import { Logger } from '../../../../../src/core/logger';
 import { writeFile, mkdir } from 'fs/promises';
 
 // Mock dependencies
-jest.mock('../../../../../src/core/logger.js');
+jest.mock('../../../../../src/core/logger');
 jest.mock('fs/promises');
 
 describe('PipelineHooksSystem', () => {

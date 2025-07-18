@@ -1,7 +1,7 @@
 /**
  * VSCode Extension Bridge for Terminal Integration
  * 
- * This file provides the bridge between Claude-Flow and VSCode extension API
+ * This file provides the bridge between FlowX and VSCode extension API
  * for terminal management and output capture.
  */
 
@@ -65,7 +65,7 @@ export function initializeTerminalBridge(context: VSCodeExtensionContext): void 
     return;
   }
 
-  // Inject VSCode API into global scope for Claude-Flow
+  // Inject VSCode API into global scope for FlowX
   (globalThis as any).vscode = vscode;
 
   // Register terminal output processor function
@@ -86,7 +86,7 @@ export function initializeTerminalBridge(context: VSCodeExtensionContext): void 
     terminalWriteEmulators.set(terminal, writeEmulator);
 
     // Find terminal ID from name
-    const match = options.name?.match(/Claude-Flow Terminal ([\w-]+)/);
+    const match = options.name?.match(/FlowX Terminal ([\w-]+)/);
     if (match) {
       const terminalId = match[1];
       activeTerminals.set(terminalId, terminal);

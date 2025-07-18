@@ -17,7 +17,7 @@
 
 **FlowX** is an advanced AI agent orchestration platform that revolutionizes software development through intelligent agent coordination, neural pattern recognition, and sophisticated memory systems. Built for developers who want to harness the power of AI-driven workflows.
 
-> 🔥 **Enterprise Ready**: Real TensorFlow.js neural networks, advanced agent behaviors, and production-grade monitoring systems!
+> 🔥 **Enterprise Ready**: Real TensorFlow.js neural networks, 87+ MCP tools, advanced agent behaviors, and production-grade monitoring systems!
 
 ### 📦 **Package Information**
 - **Package Name**: `claude-code-flow` (NPM package name - CLI is `flowx`)
@@ -185,37 +185,103 @@ flowx sparc optimize "Database queries" --performance
 
 ---
 
-## 📋 **Command Reference**
+## 📋 **Complete Command Reference**
 
-### **🤖 Agent Commands**
+FlowX provides 60+ comprehensive commands organized into logical categories:
+
+### **🏛️ System Core Commands**
 | Command | Description | Example |
 |---------|-------------|---------|
-| `agent spawn` | Create specialized agent | `flowx agent spawn researcher --name "AI Researcher"` |
-| `agent list` | List active agents | `flowx agent list --status --performance` |
-| `agent kill` | Terminate agent | `flowx agent kill agent-123` |
-| `swarm` | Multi-agent coordination | `flowx swarm "Build API" --agents 3 --strategy development` |
+| `init` | Initialize FlowX project | `flowx init MyProject --sparc --advanced` |
+| `start` | Start FlowX orchestration system | `flowx start --ui --port 3000` |
+| `stop` | Stop all FlowX services | `flowx stop --graceful` |
+| `restart` | Restart FlowX system | `flowx restart --preserve-state` |
+| `status` | Show comprehensive system status | `flowx status --detailed --real-time` |
+| `health` | Run system health checks | `flowx health --comprehensive --fix` |
+| `config` | Configuration management | `flowx config set memory.backend sqlite` |
+| `validate` | Validate system configuration | `flowx validate --fix-issues` |
 
-### **🧠 Memory Commands**
+### **🤖 Agent Management Commands**
 | Command | Description | Example |
 |---------|-------------|---------|
-| `memory store` | Store with neural enhancement | `flowx memory store "architecture" "microservices pattern" --neural` |
-| `memory query` | Intelligent search | `flowx memory query "authentication" --neural --similarity 0.8` |
-| `memory learn` | Trigger learning cycle | `flowx memory learn --pattern "development" --optimize` |
-| `memory stats` | Performance analytics | `flowx memory stats --neural-metrics` |
+| `agent` | Advanced agent lifecycle management | `flowx agent spawn researcher --capabilities=["analysis"]` |
+| `spawn` | Quick agent spawning | `flowx spawn coder --name "Senior Dev" --priority 9` |
+| `kill` | Terminate specific agents | `flowx kill agent-123 --graceful` |
+| `exec` | Execute commands through agents | `flowx exec agent-123 "run tests"` |
 
-### **📊 Monitoring Commands**
+### **🧠 Memory & Neural Commands**
 | Command | Description | Example |
 |---------|-------------|---------|
-| `monitor-dashboard` | Launch real-time dashboard | `flowx monitor-dashboard --port 3001 --refresh 5` |
-| `status` | System status overview | `flowx status --detailed --performance` |
-| `health` | Health check reports | `flowx health --comprehensive` |
+| `memory` | Neural-enhanced memory management | `flowx memory store "patterns" --neural --namespace "dev"` |
+| `neural` | TensorFlow.js neural operations | `flowx neural train --pattern coordination --epochs 100` |
+| `hive-mind` | Collective intelligence coordination | `flowx hive-mind create enterprise --neural --agents 10` |
 
-### **⚡ Development Commands**
+### **🐝 Swarm Coordination Commands**
 | Command | Description | Example |
 |---------|-------------|---------|
-| `sparc` | SPARC methodology | `flowx sparc architect "System design" --detailed` |
-| `task` | Task management | `flowx task create research "Market analysis" --priority high` |
-| `config` | Configuration management | `flowx config show --detailed` |
+| `swarm` | Multi-agent swarm orchestration | `flowx swarm "Build API" --strategy development --monitor` |
+
+### **📋 Task & Workflow Management**
+| Command | Description | Example |
+|---------|-------------|---------|
+| `task` | Comprehensive task management | `flowx task create research "Market analysis" --priority 8` |
+| `todo` | TodoWrite integration with visual formatting | `flowx todo create "Implement auth" --priority high` |
+| `workflow` | Advanced workflow orchestration | `flowx workflow create --template enterprise-pipeline` |
+| `workflow-designer` | Visual workflow designer (71+ tools) | `flowx workflow-designer start --template ai-pipeline` |
+
+### **⚡ Development & SPARC Commands**
+| Command | Description | Example |
+|---------|-------------|---------|
+| `sparc` | SPARC methodology execution | `flowx sparc architect "System design" --neural-patterns` |
+| `claude` | Claude Code integration | `flowx claude "Build app" --tools=all --parallel` |
+| `claude-api` | Direct Claude API operations | `flowx claude-api chat --model claude-3-sonnet` |
+| `batch` | Batch operations | `flowx batch --parallel --tasks="./batch-config.json"` |
+
+### **🔧 MCP & Tool Integration**
+| Command | Description | Example |
+|---------|-------------|---------|
+| `mcp` | MCP server management | `flowx mcp start --port 3030 --transport http` |
+| `github` | GitHub workflow automation | `flowx github repo analyze --repo owner/name` |
+
+### **📊 Monitoring & Analytics**
+| Command | Description | Example |
+|---------|-------------|---------|
+| `monitor` | Real-time system monitoring | `flowx monitor --agents --performance --alerts` |
+| `monitor-dashboard` | Launch web monitoring dashboard | `flowx monitor-dashboard --port 3001 --refresh 5` |
+| `benchmark` | Performance benchmarking | `flowx benchmark run --suite comprehensive` |
+| `logs` | Intelligent log management | `flowx logs --level error --follow --neural-analysis` |
+
+### **🌐 User Interface Commands**
+| Command | Description | Example |
+|---------|-------------|---------|
+| `ui` | Enterprise web console | `flowx ui start --port 8080 --enterprise` |
+| `web-ui` | Advanced web interface (71+ tools) | `flowx web-ui start --features all` |
+| `terminal` | Terminal session management | `flowx terminal spawn --agent researcher` |
+
+### **🗄️ Data & Query Commands**
+| Command | Description | Example |
+|---------|-------------|---------|
+| `query` | Advanced data querying | `flowx query tasks --status running --output table` |
+| `analyze` | Data analysis with neural insights | `flowx analyze performance --neural --time-range 24h` |
+
+### **🔄 System Administration**
+| Command | Description | Example |
+|---------|-------------|---------|
+| `services` | Service lifecycle management | `flowx services status --detailed --health` |
+| `system` | Low-level system operations | `flowx system diagnostics --fix --category performance` |
+| `daemon` | Background service management | `flowx daemon start --services core,monitoring` |
+| `scale` | Dynamic system scaling | `flowx scale agents --target 20 --strategy adaptive` |
+| `backup` | System backup operations | `flowx backup create --include config,memory,logs` |
+| `restore` | System restoration | `flowx restore --backup latest --verify` |
+
+### **🔄 Migration & Maintenance**
+| Command | Description | Example |
+|---------|-------------|---------|
+| `migration` | Database & system migrations | `flowx migration run --version latest --backup` |
+| `session` | Session management | `flowx session create --name "dev-session" --persist` |
+| `run` | Execute custom workflows | `flowx run --workflow ./custom-pipeline.json` |
+| `hooks` | Git hooks integration | `flowx hooks install --pre-commit --neural-check` |
+| `fix-hook-variables` | Fix environment variables in hooks | `flowx fix-hook-variables --dry-run` |
 
 ---
 
@@ -300,6 +366,39 @@ flowx sparc test "Payment processing module" \
 # Optimization phase
 flowx sparc optimize "Database queries and API performance" \
   --benchmarking --monitoring --alerts
+```
+
+### **🌐 Enterprise Web Interface**
+```bash
+# Launch comprehensive web interface with all 71+ tools
+flowx web-ui start --port 8080 --features all
+
+# Start visual workflow designer
+flowx workflow-designer start --template ai-pipeline --collaborate
+
+# Access enterprise features:
+# • Real-time agent coordination dashboard
+# • Visual workflow designer with 71+ MCP tools
+# • Neural pattern recognition interface
+# • Performance analytics and monitoring
+# • Collaborative development environment
+```
+
+### **📊 Advanced Monitoring & Analytics**
+```bash
+# Real-time system monitoring
+flowx monitor --agents --swarms --memory --performance
+
+# Launch web monitoring dashboard
+flowx monitor-dashboard --port 3001 --refresh 2
+
+# Run comprehensive benchmarks
+flowx benchmark run --suite comprehensive --compare-baseline
+
+# Query system data with advanced filters
+flowx query agents --type researcher --status active --performance-above 0.8
+flowx query tasks --status completed --created-after "24h ago" --output csv
+flowx query memory --namespace development --neural-score-above 0.9
 ```
 
 ---

@@ -7,19 +7,19 @@ import {
   createFullClaudeMd, 
   createMinimalClaudeMd, 
   createSparcClaudeMd 
-} from "../../../../../src/cli/simple-commands/init/templates/claude-md.js";
+} from "../../../../../src/cli/simple-commands/init/templates/claude-md";
 import { 
   createFullMemoryBankMd, 
   createMinimalMemoryBankMd 
-} from "../../../../../src/cli/simple-commands/init/templates/memory-bank-md.js";
+} from "../../../../../src/cli/simple-commands/init/templates/memory-bank-md";
 import { 
   createFullCoordinationMd, 
   createMinimalCoordinationMd 
-} from "../../../../../src/cli/simple-commands/init/templates/coordination-md.js";
+} from "../../../../../src/cli/simple-commands/init/templates/coordination-md";
 import { 
   createAgentsReadme, 
   createSessionsReadme 
-} from "../../../../../src/cli/simple-commands/init/templates/readme-files.js";
+} from "../../../../../src/cli/simple-commands/init/templates/readme-files";
 
 describe("Template Generation Tests", () => {
   describe("CLAUDE.md templates", () => {
@@ -53,7 +53,7 @@ describe("Template Generation Tests", () => {
 
     it("should include proper SPARC commands in SPARC template", () => {
       const content = createSparcClaudeMd("Test Project", { 
-        commands: ["npx claude-flow sparc modes"] 
+        commands: ["npx flowx sparc modes"] 
       });
       
       expect(content).toContain("Test Project");
@@ -129,7 +129,7 @@ describe("Template Generation Tests", () => {
 
     it("should include proper command examples", () => {
       const content = createFullClaudeMd("Test Project", { 
-        commands: ["claude-flow start", "claude-flow agent spawn"] 
+        commands: ["flowx start", "flowx agent spawn"] 
       });
       
       expect(content).toContain("Test Project");

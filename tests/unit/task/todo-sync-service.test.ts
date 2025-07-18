@@ -4,10 +4,10 @@
 
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
 import { EventEmitter } from 'node:events';
-import { TodoSyncService, SyncConfiguration, TodoTaskMapping } from '../../../src/task/todo-sync-service.js';
-import { TaskEngine, WorkflowTask } from '../../../src/task/engine.js';
-import { TaskCoordinator, TodoItem } from '../../../src/task/coordination.js';
-import { Logger } from '../../../src/core/logger.js';
+import { TodoSyncService, SyncConfiguration, TodoTaskMapping } from '../../../src/task/todo-sync-service';
+import { TaskEngine, WorkflowTask } from '../../../src/task/engine';
+import { TaskCoordinator, TodoItem } from '../../../src/task/coordination';
+import { Logger } from '../../../src/core/logger';
 
 // Mock implementations
 class MockTaskEngine extends EventEmitter {

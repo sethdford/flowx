@@ -6,11 +6,11 @@ import PipelineAISuggestions, {
   PipelinePhase,
   OptimizationPattern,
   IndustryBenchmark
-} from '../../../../../src/cli/pipeline/ai/pipeline-ai-suggestions.js';
-import { Logger } from '../../../../../src/core/logger.js';
+} from '../../../../../src/cli/pipeline/ai/pipeline-ai-suggestions';
+import { Logger } from '../../../../../src/core/logger';
 
 // Mock dependencies
-jest.mock('../../../../../src/core/logger.js');
+jest.mock('../../../../../src/core/logger');
 
 describe('PipelineAISuggestions', () => {
   let aiSuggestions: PipelineAISuggestions;

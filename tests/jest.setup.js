@@ -5,15 +5,18 @@
 import { jest } from '@jest/globals';
 
 // Set test environment variable for proper logger initialization
-process.env.CLAUDE_FLOW_ENV = 'test';
+process.env.FLOWX_ENV = 'test';
 process.env.NODE_ENV = 'test';
 
 // Set test timeout - increased to avoid timeouts in complex tests
-jest.setTimeout(60000);
+jest.setTimeout(30000);
+
+// Store working directory reference for mocks
+const mockTestWorkingDir = process.cwd();
 
 // Mock Deno runtime for tests that import Deno modules
 global.Deno = {
-  cwd: jest.fn(() => process.cwd()),
+  cwd: jest.fn(() => mockTestWorkingDir),
   readTextFile: jest.fn(),
   writeTextFile: jest.fn(),
   mkdir: jest.fn(),
@@ -21,66 +24,99 @@ global.Deno = {
   env: {
     get: jest.fn((key) => process.env[key]),
     set: jest.fn((key, value) => { process.env[key] = value; }),
-    has: jest.fn((key) => key in process.env)
+    has: jest.fn((key) => key in process.env),
+    toObject: jest.fn(() => ({ ...process.env }))
   },
   errors: {
     NotFound: class extends Error { name = 'NotFound' }
-  }
+  },
+  makeTempDir: jest.fn(() => Promise.resolve('/tmp/test-dir')),
+  stat: jest.fn(() => Promise.resolve({ isFile: true, isDirectory: false, size: 0 })),
+  Command: jest.fn().mockImplementation(() => ({
+    output: jest.fn(() => Promise.resolve({ success: true, code: 0, stdout: '', stderr: '' }))
+  }))
 };
 
 // Mock fs promises for modules that use them
 jest.mock('fs/promises', () => ({
-  readFile: jest.fn(),
-  writeFile: jest.fn(),
-  mkdir: jest.fn(),
-  unlink: jest.fn(),
-  stat: jest.fn(),
-  access: jest.fn()
+  readFile: jest.fn(() => Promise.resolve('mock file content')),
+  writeFile: jest.fn(() => Promise.resolve()),
+  mkdir: jest.fn(() => Promise.resolve()),
+  unlink: jest.fn(() => Promise.resolve()),
+  stat: jest.fn(() => Promise.resolve({ isFile: () => true, isDirectory: () => false, size: 0 })),
+  access: jest.fn(() => Promise.resolve()),
+  rm: jest.fn(() => Promise.resolve())
 }));
 
 // Mock child_process spawn/exec for CLI tests
 jest.mock('child_process', () => ({
-  spawn: jest.fn(),
-  exec: jest.fn(),
-  execSync: jest.fn(),
-  fork: jest.fn()
+  spawn: jest.fn(() => ({
+    stdout: { on: jest.fn() },
+    stderr: { on: jest.fn() },
+    on: jest.fn((event, cb) => {
+      if (event === 'close') {
+        setTimeout(() => cb(0), 10);
+      }
+    }),
+    kill: jest.fn()
+  })),
+  exec: jest.fn((cmd, cb) => cb(null, 'mock output', '')),
+  execSync: jest.fn(() => 'mock output'),
+  fork: jest.fn(() => ({
+    on: jest.fn(),
+    send: jest.fn(),
+    kill: jest.fn()
+  }))
 }));
 
-// Store original functions
+// Mock path module for consistent behavior  
+jest.mock('path', () => ({
+  ...jest.requireActual('path'),
+  resolve: jest.fn((...args) => {
+    const path = jest.requireActual('path');
+    // Use the stored working directory instead of a variable reference
+    return path.resolve(process.cwd(), ...args);
+  })
+}));
+
+// Mock os module for temp directory operations
+jest.mock('os', () => ({
+  ...jest.requireActual('os'),
+  tmpdir: jest.fn(() => '/tmp'),
+  homedir: jest.fn(() => '/home/test'),
+  hostname: jest.fn(() => 'test-host')
+}));
+
+// Override process.cwd to be stable during tests
 const originalCwd = process.cwd;
-const originalExit = process.exit;
+process.cwd = jest.fn(() => mockTestWorkingDir);
 
-// Mock process.exit to prevent tests from exiting
-process.exit = jest.fn((code) => {
-  throw new Error(`process.exit called with code: ${code}`);
-});
-
-// Suppress console.log/warn in tests unless explicitly needed
+// Console cleanup - suppress noisy output during tests
 const originalConsole = { ...console };
-beforeEach(() => {
-  // Only suppress if not in verbose mode
-  if (!process.env.JEST_VERBOSE) {
-    jest.spyOn(console, 'log').mockImplementation(() => {});
-    jest.spyOn(console, 'warn').mockImplementation(() => {});
-    // Note: console.info is an alias for console.log in Node.js, so we don't need to mock it separately
-  }
+global.console = {
+  ...console,
+  log: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+  debug: jest.fn()
+};
+
+// Restore console for test output when needed
+global.testConsole = originalConsole;
+
+// Error boundary for uncaught exceptions in tests
+process.on('uncaughtException', (error) => {
+  originalConsole.error('Uncaught exception in test:', error);
 });
 
+process.on('unhandledRejection', (reason) => {
+  originalConsole.error('Unhandled rejection in test:', reason);
+});
+
+// Global cleanup after each test
 afterEach(() => {
-  // Restore console
-  if (!process.env.JEST_VERBOSE) {
-    console.log.mockRestore?.();
-    console.warn.mockRestore?.();
-    // Note: console.info restoration is handled by console.log restoration
-  }
-});
-
-// Restore on cleanup
-afterAll(() => {
-  // Don't restore process.cwd as it may cause issues
-  // process.cwd = originalCwd;
-  process.exit = originalExit;
-  Object.assign(console, originalConsole);
+  jest.clearAllMocks();
 });
 
 // Add global test utilities

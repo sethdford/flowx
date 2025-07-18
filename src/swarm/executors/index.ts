@@ -103,7 +103,7 @@ export class TaskExecutorFactory implements ExecutorFactory {
         
       case 'claude':
         return [
-          'claude_flow_integration', // Coming soon
+          'flowx_integration', // Coming soon
           'full_sparc_integration',
           'advanced_context_handling'
         ];

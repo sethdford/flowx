@@ -2,7 +2,7 @@
  * Database Manager for Hive-Mind System
  * 
  * Manages SQLite database operations for the collective intelligence system
- * Based on original claude-flow v2.0.0 Alpha architecture
+ * Based on original flowx v2.0.0 Alpha architecture
  */
 
 import Database from 'better-sqlite3';

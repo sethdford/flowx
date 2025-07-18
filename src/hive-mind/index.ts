@@ -2,7 +2,7 @@
  * Hive Mind Collective Intelligence System
  * 
  * Main entry point and exports for the Hive Mind collective intelligence system
- * Based on original claude-flow v2.0.0 Alpha architecture
+ * Based on original flowx v2.0.0 Alpha architecture
  */
 
 // Core components

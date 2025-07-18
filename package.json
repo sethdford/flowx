@@ -84,6 +84,7 @@
   "dependencies": {
     "@anthropic-ai/claude-code": "^1.0.35",
     "@tensorflow/tfjs": "^4.22.0",
+    "@tensorflow/tfjs-backend-wasm": "^4.22.0",
     "@tensorflow/tfjs-node": "^4.22.0",
     "better-sqlite3": "^11.10.0",
     "blessed": "^0.1.81",
@@ -110,7 +111,8 @@
     "socket.io": "^4.8.1",
     "sql.js": "^1.13.0",
     "uuid": "^9.0.1",
-    "ws": "^8.18.3"
+    "ws": "^8.18.3",
+    "yaml": "^2.8.0"
   },
   "devDependencies": {
     "@babel/core": "^7.24.3",

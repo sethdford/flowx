@@ -15,7 +15,7 @@ import {
 } from '../test.utils.ts';
 import { Orchestrator } from '../../src/core/orchestrator.ts';
 import { TerminalManager } from '../../src/terminal/manager.ts';
-import { EventBus } from '../../src/core/event-bus.ts';
+import eventBus, { EventBus } from '../../src/core/event-bus.ts';
 import { Logger } from '../../src/core/logger.ts';
 import { ConfigManager } from '../../src/core/config.ts';
 import {
@@ -62,7 +62,8 @@ describe('Full System Integration', () => {
     config.logging.level = 'debug';
 
     // Initialize core components
-    eventBus = new EventBus();
+    EventBus.reset();
+    eventBus = EventBus.getInstance();
     logger = new Logger(config.logging);
     memoryManager = new MockMemoryManager();
     coordinationManager = new MockCoordinationManager();

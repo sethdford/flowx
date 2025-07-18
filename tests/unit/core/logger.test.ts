@@ -18,10 +18,10 @@ describe('Logger', () => {
     };
 
     // Save original environment
-    originalEnv = process.env.CLAUDE_FLOW_ENV;
+    originalEnv = process.env.FLOWX_ENV;
     
     // Set environment to avoid singleton initialization errors
-    process.env.CLAUDE_FLOW_ENV = 'development';
+    process.env.FLOWX_ENV = 'development';
 
     // Mock console methods
     console.debug = jest.fn();
@@ -42,9 +42,9 @@ describe('Logger', () => {
     
     // Restore original environment
     if (originalEnv !== undefined) {
-      process.env.CLAUDE_FLOW_ENV = originalEnv;
+      process.env.FLOWX_ENV = originalEnv;
     } else {
-      delete process.env.CLAUDE_FLOW_ENV;
+      delete process.env.FLOWX_ENV;
     }
   });
 

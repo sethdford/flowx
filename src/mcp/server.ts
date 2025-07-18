@@ -67,7 +67,7 @@ export class MCPServer implements IMCPServer {
   private currentSession?: MCPSession | undefined;
 
   private readonly serverInfo = {
-    name: 'Claude-Flow MCP Server',
+    name: 'FlowX MCP Server',
     version: '2.0.0-alpha.56',
   };
 
@@ -399,7 +399,7 @@ export class MCPServer implements IMCPServer {
         protocolVersion: this.supportedProtocolVersion,
         capabilities: this.serverCapabilities,
         serverInfo: this.serverInfo,
-        instructions: 'Claude-Flow Enterprise MCP Server ready for advanced tool execution',
+        instructions: 'FlowX Enterprise MCP Server ready for advanced tool execution',
       };
 
       this.logger.info('Session initialized', {

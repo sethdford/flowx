@@ -163,8 +163,8 @@ Commit → Unit Tests → Integration Tests → Contract Tests → Performance T
 
 ```bash
 # Implement TDD for payment processing
-npx claude-flow sparc run tdd "implement PCI-compliant payment processing with comprehensive test coverage"
+npx flowx sparc run tdd "implement PCI-compliant payment processing with comprehensive test coverage"
 
 # Create high-performance API tests
-npx claude-flow sparc run tdd "create test suite for user authentication API with <50ms response time validation"
+npx flowx sparc run tdd "create test suite for user authentication API with <50ms response time validation"
 ```

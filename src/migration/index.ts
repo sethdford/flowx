@@ -1,28 +1,26 @@
 #!/usr/bin/env node
 /**
- * Claude-Flow Migration Tool
- * Helps existing projects migrate to optimized prompts and configurations
+ * FlowX Migration Tool
+ * Provides CLI commands for migrating existing projects to optimized configurations
  */
 
 import { Command } from 'commander';
-import { MigrationRunner } from './migration-runner.ts';
-import { MigrationAnalyzer } from './migration-analyzer.ts';
-import { MigrationStrategy } from './types.ts';
-import { logger } from './logger.ts';
-import { ProgressReporter } from './progress-reporter.ts';
-import { ValidationError } from '../utils/errors.ts';
-import { MigrationValidator } from './migration-validator.ts';
-import { colors } from '../utils/colors.ts';
+import { MigrationAnalyzer } from './migration-analyzer.js';
+import { MigrationRunner } from './migration-runner.js';
+import { RollbackManager } from './rollback-manager.js';
+import { logger } from '../core/logger.js';
+import { colors } from '../utils/colors.js';
+import { MigrationStrategy } from './types.js';
+import { ValidationError } from '../utils/errors.js';
+import { MigrationValidator } from './migration-validator.js';
 import * as path from 'node:path';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { mkdir } from 'node:fs/promises';
 
-const program = new Command();
-
-program
-  .name('claude-flow-migrate')
-  .description('Migrate existing claude-flow projects to optimized prompts')
+const program = new Command()
+  .name('flowx-migrate')
+  .description('Migrate existing flowx projects to optimized prompts')
   .version('1.0.0');
 
 program
@@ -37,7 +35,7 @@ program
       
       if (options.output) {
         await analyzer.saveAnalysis(analysis, options.output);
-        logger.success(`Analysis saved to ${options.output}`);
+        logger.info(`Analysis saved to ${options.output}`);
       }
       
       analyzer.printAnalysis(analysis, options.detailed);
@@ -68,7 +66,11 @@ program
         skipValidation: options.skipValidation
       });
       
-      await runner.run();
+      const result = await runner.run();
+      logger.info(colors.green('Migration completed successfully!'));
+      if (result.rollbackPath) {
+        logger.info(colors.gray(`Backup created at: ${result.rollbackPath}`));
+      }
     } catch (error) {
       logger.error('Migration failed:', error);
       process.exit(1);
@@ -111,7 +113,7 @@ program
       const isValid = await runner.validate(options.verbose);
       
       if (isValid) {
-        logger.success('Migration validated successfully!');
+        logger.info('Migration validated successfully!');
       } else {
         logger.error('Migration validation failed');
         process.exit(1);

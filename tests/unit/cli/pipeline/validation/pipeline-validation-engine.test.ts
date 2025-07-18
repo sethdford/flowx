@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
-import { PipelineValidationEngine, ValidationPlan } from '../../../../../src/cli/pipeline/validation/pipeline-validation-engine.js';
+import { PipelineValidationEngine, ValidationPlan } from '../../../../../src/cli/pipeline/validation/pipeline-validation-engine';
 
 // Mock fs module
 jest.mock('fs/promises');

@@ -1,7 +1,14 @@
 // Main exports for the swarm system
-export * from './coordinator.ts';
 export * from './executor.ts';
 export * from './types.ts';
+// Export from coordinator.ts without TaskPattern
+import { 
+  SwarmCoordinator
+  // Explicitly not exporting TaskPattern to avoid duplicate exports
+} from './coordinator.ts';
+
+// Export types
+export { SwarmCoordinator };
 export * from './strategies/base.ts';
 export * from './strategies/auto.ts';
 export * from './strategies/research.ts';

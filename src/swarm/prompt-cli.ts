@@ -26,7 +26,7 @@ const program = new Command();
 
 program
   .name('prompt-copier')
-  .description('Enterprise-grade prompt copying mechanism for Claude-Flow')
+  .description('Enterprise-grade prompt copying mechanism for FlowX')
   .version('2.0.0');
 
 program

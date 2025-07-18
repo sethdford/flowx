@@ -99,8 +99,8 @@ class TestResearchStrategy:
         task = Task(objective="Research microservices architecture")
         
         # Mock the claude-flow client
-        strategy.claude_flow_client = AsyncMock()
-        strategy.claude_flow_client.execute_swarm.return_value = {
+        strategy.flowx_client = AsyncMock()
+        strategy.flowx_client.execute_swarm.return_value = {
             "status": "success",
             "output": "Research findings...",
             "metrics": {"duration": 120}
@@ -138,8 +138,8 @@ class TestDevelopmentStrategy:
         task = Task(objective="Build user authentication API")
         
         # Mock the claude-flow client
-        strategy.claude_flow_client = AsyncMock()
-        strategy.claude_flow_client.execute_swarm.return_value = {
+        strategy.flowx_client = AsyncMock()
+        strategy.flowx_client.execute_swarm.return_value = {
             "status": "success",
             "output": "Code implementation completed",
             "metrics": {"lines_of_code": 500, "test_coverage": 0.95}

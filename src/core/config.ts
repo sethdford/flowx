@@ -1,5 +1,5 @@
 /**
- * Enterprise Configuration Management for Claude-Flow
+ * Enterprise Configuration Management for FlowX
  * Features: Security masking, change tracking, multi-format support, credential management
  */
 
@@ -937,7 +937,7 @@ export class ConfigManager {
     const config: Partial<Config> = {};
 
     // Orchestrator settings
-    const maxAgents = process.env.CLAUDE_FLOW_MAX_AGENTS;
+    const maxAgents = process.env.FLOWX_MAX_AGENTS;
     if (maxAgents) {
       if (!config.orchestrator) {
         config.orchestrator = {} as any;
@@ -950,7 +950,7 @@ export class ConfigManager {
     }
 
     // Terminal settings
-    const terminalType = process.env.CLAUDE_FLOW_TERMINAL_TYPE;
+    const terminalType = process.env.FLOWX_TERMINAL_TYPE;
     if (terminalType === 'vscode' || terminalType === 'native' || terminalType === 'auto') {
       config.terminal = {
         ...DEFAULT_CONFIG.terminal,
@@ -960,7 +960,7 @@ export class ConfigManager {
     }
 
     // Memory settings
-    const memoryBackend = process.env.CLAUDE_FLOW_MEMORY_BACKEND;
+    const memoryBackend = process.env.FLOWX_MEMORY_BACKEND;
     if (memoryBackend === 'sqlite' || memoryBackend === 'markdown' || memoryBackend === 'hybrid') {
       config.memory = {
         ...DEFAULT_CONFIG.memory,
@@ -970,7 +970,7 @@ export class ConfigManager {
     }
 
     // MCP settings
-    const mcpTransport = process.env.CLAUDE_FLOW_MCP_TRANSPORT;
+    const mcpTransport = process.env.FLOWX_MCP_TRANSPORT;
     if (mcpTransport === 'stdio' || mcpTransport === 'http' || mcpTransport === 'websocket') {
       config.mcp = {
         ...DEFAULT_CONFIG.mcp,
@@ -979,7 +979,7 @@ export class ConfigManager {
       };
     }
 
-    const mcpPort = process.env.CLAUDE_FLOW_MCP_PORT;
+    const mcpPort = process.env.FLOWX_MCP_PORT;
     if (mcpPort) {
       config.mcp = {
         ...DEFAULT_CONFIG.mcp,
@@ -989,7 +989,7 @@ export class ConfigManager {
     }
 
     // Logging settings
-    const logLevel = process.env.CLAUDE_FLOW_LOG_LEVEL;
+    const logLevel = process.env.FLOWX_LOG_LEVEL;
     if (logLevel === 'debug' || logLevel === 'info' || logLevel === 'warn' || logLevel === 'error') {
       config.logging = {
         ...DEFAULT_CONFIG.logging,

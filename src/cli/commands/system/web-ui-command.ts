@@ -116,7 +116,7 @@ async function launchEnterpriseWebUI(options: WebUIOptions): Promise<void> {
     
     if (!options.background) {
       console.log('\n⌨️  Press Ctrl+C to stop the server');
-      console.log('📖 Documentation: https://github.com/ruvnet/claude-flow');
+      console.log('📖 Documentation: https://github.com/ruvnet/flowx');
       
       // Keep process running
       process.on('SIGINT', async () => {

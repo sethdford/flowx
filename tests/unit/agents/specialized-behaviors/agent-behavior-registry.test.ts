@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
-import { AgentBehaviorRegistry, SpecializedAgentBehavior } from '../../../../src/agents/specialized-behaviors/agent-behavior-registry.js';
-import { AgentType } from '../../../../src/hive-mind/types.js';
+import { AgentBehaviorRegistry, SpecializedAgentBehavior } from '../../../../src/agents/specialized-behaviors/agent-behavior-registry';
+import { AgentType } from '../../../../src/hive-mind/types';
 
 // Mock logger
 const mockLogger = {

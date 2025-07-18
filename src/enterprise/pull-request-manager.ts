@@ -396,7 +396,7 @@ export class PullRequestManager extends EventEmitter {
         id: `ai_review_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         reviewer: {
           id: 'ai-reviewer',
-          username: 'claude-flow-ai',
+          username: 'flowx-ai',
           type: 'bot',
           permissions: ['review']
         },
@@ -708,7 +708,7 @@ export class PullRequestManager extends EventEmitter {
         id: `comment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         author: {
           id: 'ai-reviewer',
-          username: 'claude-flow-ai',
+          username: 'flowx-ai',
           type: 'bot',
           permissions: ['comment']
         },

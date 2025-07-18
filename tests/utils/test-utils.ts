@@ -513,7 +513,7 @@ export class FileSystemTestUtils {
   /**
    * Create temporary directory
    */
-  static async createTempDir(prefix = 'claude-flow-test-'): Promise<string> {
+  static async createTempDir(prefix = 'flowx-test-'): Promise<string> {
     const { tmpdir } = await import('node:os');
     const { join } = await import('node:path');
     const { mkdir } = await import('node:fs/promises');

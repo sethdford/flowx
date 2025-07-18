@@ -64,5 +64,5 @@ Follow systematic debugging methodology:
 ## Usage
 
 ```bash
-npx claude-flow sparc run debug "investigate login timeout errors"
+npx flowx sparc run debug "investigate login timeout errors"
 ```

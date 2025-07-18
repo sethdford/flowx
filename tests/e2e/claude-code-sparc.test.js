@@ -1,6 +1,6 @@
 /**
  * Claude Code SPARC Mode Operations E2E Tests
- * Tests the integration between Claude Code and claude-flow SPARC modes
+ * Tests the integration between Claude Code and flowx SPARC modes
  */
 
 import { describe, test, expect, beforeEach, afterEach } from '@jest/globals';

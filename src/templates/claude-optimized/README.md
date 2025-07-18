@@ -82,7 +82,7 @@ The `manifest.json` file contains:
 After installation, the commands are available in Claude Code:
 - Type `/` to see all available commands
 - Use `/sparc` for SPARC methodology
-- Use `/claude-flow-*` for Claude Flow features
+- Use `/flowx-*` for FlowX features
 
 ## Performance Improvements
 

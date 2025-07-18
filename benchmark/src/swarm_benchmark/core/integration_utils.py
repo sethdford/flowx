@@ -574,10 +574,10 @@ def create_workspace(base_dir: str = None) -> Path:
     import tempfile
     
     if base_dir:
-        workspace = Path(base_dir) / f"claude_flow_workspace_{int(time.time())}"
+        workspace = Path(base_dir) / f"flowx_workspace_{int(time.time())}"
         workspace.mkdir(parents=True, exist_ok=True)
     else:
-        workspace = Path(tempfile.mkdtemp(prefix="claude_flow_"))
+        workspace = Path(tempfile.mkdtemp(prefix="flowx_"))
         
     logger.info(f"Created workspace: {workspace}")
     return workspace

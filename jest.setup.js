@@ -2,7 +2,7 @@
 import { jest } from '@jest/globals';
 
 // Set test environment
-process.env.CLAUDE_FLOW_ENV = 'test';
+process.env.FLOWX_ENV = 'test';
 process.env.NODE_ENV = 'test';
 
 // Configure longer timeout for E2E tests

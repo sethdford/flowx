@@ -1,6 +1,6 @@
 /**
  * Claude Flow SPARC Executor
- * Executes tasks using the full claude-flow SPARC system in non-interactive mode
+ * Executes tasks using the full flowx SPARC system in non-interactive mode
  */
 
 import { TaskDefinition, AgentState, TaskResult } from "./types.ts";
@@ -28,7 +28,7 @@ export class ClaudeFlowExecutor {
       { level: 'info', format: 'text', destination: 'console' },
       { component: 'ClaudeFlowExecutor' }
     );
-    this.claudeFlowPath = config.claudeFlowPath || '/workspaces/claude-code-flow/bin/claude-flow';
+    this.claudeFlowPath = config.claudeFlowPath || '/workspaces/claude-code-flow/bin/flowx';
     this.enableSparc = config.enableSparc ?? true;
     this.verbose = config.verbose ?? false;
     this.timeoutMinutes = config.timeoutMinutes ?? 59;
@@ -223,8 +223,8 @@ export class ClaudeFlowExecutor {
         shell: true,
         env: {
           ...process.env,
-          CLAUDE_FLOW_NON_INTERACTIVE: 'true',
-          CLAUDE_FLOW_AUTO_CONFIRM: 'true'
+          FLOWX_NON_INTERACTIVE: 'true',
+          FLOWX_AUTO_CONFIRM: 'true'
         }
       });
 

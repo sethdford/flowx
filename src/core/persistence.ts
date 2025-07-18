@@ -1,5 +1,5 @@
 /**
- * Persistence layer for Claude-Flow using SQLite
+ * Persistence layer for FlowX using SQLite
  */
 
 // @ts-ignore - sql.js doesn't have proper type definitions

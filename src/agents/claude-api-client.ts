@@ -459,8 +459,8 @@ Please implement this requirement completely.
       const processEnv: Record<string, string> = {
         ...process.env,
         CLAUDE_INSTANCE_ID: `claude-api-${Date.now()}`,
-        CLAUDE_FLOW_MODE: 'api-client',
-        CLAUDE_FLOW_MEMORY_ENABLED: 'true',
+        FLOWX_MODE: 'api-client',
+        FLOWX_MEMORY_ENABLED: 'true',
         CLAUDE_WORKING_DIRECTORY: options.cwd || this.config.workingDirectory,
         // Add any additional environment variables
         ...options.env

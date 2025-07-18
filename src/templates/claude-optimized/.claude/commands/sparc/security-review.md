@@ -201,8 +201,8 @@ const securityPipeline = {
 
 ```bash
 # Comprehensive security review for payment system
-npx claude-flow sparc run security-review "conduct security assessment for PCI-compliant payment processing system"
+npx flowx sparc run security-review "conduct security assessment for PCI-compliant payment processing system"
 
 # Security architecture review
-npx claude-flow sparc run security-review "review security architecture for microservices with zero-trust implementation"
+npx flowx sparc run security-review "review security architecture for microservices with zero-trust implementation"
 ```

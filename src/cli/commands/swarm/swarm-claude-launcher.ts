@@ -45,7 +45,7 @@ async function ensureMCPConfig(): Promise<void> {
     const mcpServers = settings.mcpServers || {};
     const flowxServers = Object.keys(mcpServers).filter(name => 
       name.includes('flowx') || 
-      name.includes('claude-flow') || 
+      name.includes('flowx') || 
       name.includes('claude-code-flow')
     );
     
@@ -310,7 +310,7 @@ async function launchClaudeCodeWithSwarm(objective: string, options: any): Promi
       env: { 
         ...process.env,
         ...securityEnv, // Security-enhanced environment variables
-        CLAUDE_FLOW_MODE: 'swarm',
+        FLOWX_MODE: 'swarm',
         CLAUDE_SWARM_STRATEGY: options.strategy,
         CLAUDE_SWARM_MODE: options.mode
       }
@@ -372,47 +372,47 @@ function buildSwarmPrompt(objective: string, options: any): string {
 \`\`\`javascript
 [Single Message with Multiple Tools]:
   // Spawn ALL agents at once
-  mcp__claude-flow__agent_spawn {"type": "coordinator", "name": "SwarmLead"}
-  mcp__claude-flow__agent_spawn {"type": "researcher", "name": "DataAnalyst"}
-  mcp__claude-flow__agent_spawn {"type": "coder", "name": "BackendDev"}
-  mcp__claude-flow__agent_spawn {"type": "coder", "name": "FrontendDev"}
-  mcp__claude-flow__agent_spawn {"type": "tester", "name": "QAEngineer"}
+  mcp__flowx__agent_spawn {"type": "coordinator", "name": "SwarmLead"}
+  mcp__flowx__agent_spawn {"type": "researcher", "name": "DataAnalyst"}
+  mcp__flowx__agent_spawn {"type": "coder", "name": "BackendDev"}
+  mcp__flowx__agent_spawn {"type": "coder", "name": "FrontendDev"}
+  mcp__flowx__agent_spawn {"type": "tester", "name": "QAEngineer"}
   
   // Initialize ALL memory keys
-  mcp__claude-flow__memory_store {"key": "swarm/objective", "value": "${objective}"}
-  mcp__claude-flow__memory_store {"key": "swarm/config", "value": ${JSON.stringify(options)}}
+  mcp__flowx__memory_store {"key": "swarm/objective", "value": "${objective}"}
+  mcp__flowx__memory_store {"key": "swarm/config", "value": ${JSON.stringify(options)}}
   
   // Create task hierarchy
-  mcp__claude-flow__task_create {"name": "Main Objective", "description": "${objective}", "type": "parent"}
+  mcp__flowx__task_create {"name": "Main Objective", "description": "${objective}", "type": "parent"}
 \`\`\`
 
 2️⃣ **AGENT COORDINATION** - Batch communications:
 \`\`\`javascript
 [Single Message]:
-  mcp__claude-flow__agent_communicate {"to": "SwarmLead", "message": "Begin coordination"}
-  mcp__claude-flow__agent_communicate {"to": "DataAnalyst", "message": "Start research phase"}
-  mcp__claude-flow__agent_communicate {"to": "BackendDev", "message": "Prepare for development"}
-  mcp__claude-flow__memory_store {"key": "coordination/phase", "value": "initialization"}
+  mcp__flowx__agent_communicate {"to": "SwarmLead", "message": "Begin coordination"}
+  mcp__flowx__agent_communicate {"to": "DataAnalyst", "message": "Start research phase"}
+  mcp__flowx__agent_communicate {"to": "BackendDev", "message": "Prepare for development"}
+  mcp__flowx__memory_store {"key": "coordination/phase", "value": "initialization"}
 \`\`\`
 
 3️⃣ **TASK EXECUTION** - Parallel task management:
 \`\`\`javascript
 [Single Message]:
-  mcp__claude-flow__task_create {"name": "Research Phase", "assignTo": "DataAnalyst"}
-  mcp__claude-flow__task_create {"name": "Architecture Design", "assignTo": "SwarmLead", "dependsOn": ["Research Phase"]}
-  mcp__claude-flow__task_create {"name": "Backend Implementation", "assignTo": "BackendDev", "dependsOn": ["Architecture Design"]}
-  mcp__claude-flow__task_create {"name": "Frontend Implementation", "assignTo": "FrontendDev", "dependsOn": ["Architecture Design"]}
-  mcp__claude-flow__task_create {"name": "Quality Assurance", "assignTo": "QAEngineer", "dependsOn": ["Backend Implementation", "Frontend Implementation"]}
+  mcp__flowx__task_create {"name": "Research Phase", "assignTo": "DataAnalyst"}
+  mcp__flowx__task_create {"name": "Architecture Design", "assignTo": "SwarmLead", "dependsOn": ["Research Phase"]}
+  mcp__flowx__task_create {"name": "Backend Implementation", "assignTo": "BackendDev", "dependsOn": ["Architecture Design"]}
+  mcp__flowx__task_create {"name": "Frontend Implementation", "assignTo": "FrontendDev", "dependsOn": ["Architecture Design"]}
+  mcp__flowx__task_create {"name": "Quality Assurance", "assignTo": "QAEngineer", "dependsOn": ["Backend Implementation", "Frontend Implementation"]}
 \`\`\`
 
 4️⃣ **PROGRESS MONITORING** - Combined status checks:
 \`\`\`javascript
 [Single Message]:
-  mcp__claude-flow__swarm_monitor {}
-  mcp__claude-flow__swarm_status {}
-  mcp__claude-flow__agent_list {"status": "active"}
-  mcp__claude-flow__task_status {"includeCompleted": false}
-  mcp__claude-flow__memory_retrieve {"key": "swarm/*"}
+  mcp__flowx__swarm_monitor {}
+  mcp__flowx__swarm_status {}
+  mcp__flowx__agent_list {"status": "active"}
+  mcp__flowx__task_status {"includeCompleted": false}
+  mcp__flowx__memory_retrieve {"key": "swarm/*"}
 \`\`\`
 
 🎯 ${options.strategy.toUpperCase()} STRATEGY GUIDANCE:
