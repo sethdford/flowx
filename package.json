@@ -1,5 +1,5 @@
 {
-  "name": "flowx",
+  "name": "flowx-ai",
   "version": "8.1.0",
   "description": "Advanced AI agent orchestration system with enterprise streaming and mesh coordination - FlowX",
   "main": "cli.js",
