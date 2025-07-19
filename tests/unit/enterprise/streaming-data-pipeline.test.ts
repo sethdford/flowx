@@ -95,7 +95,7 @@ describe('StreamingDataPipeline', () => {
           },
           accessControl: {
             enabled: true,
-            rbac: [{ role: 'admin', permissions: ['read', 'write'] as const }],
+            rbac: [{ role: 'admin', permissions: ['read', 'write'] as ('read' | 'write' | 'admin' | 'delete')[] }],
             abac: []
           },
           compliance: {
@@ -614,10 +614,11 @@ describe('StreamingDataPipeline', () => {
 
   describe('Governance and Compliance', () => {
     it('should apply governance policies during stream creation', async () => {
-      const streamDef = createValidStreamDef();
+      const streamDef = createValidStreamDef() as any;
       streamDef.governance.piiDetection.enabled = true;
       streamDef.governance.accessControl.enabled = true;
       streamDef.governance.compliance.frameworks = ['GDPR', 'HIPAA'];
+      streamDef.governance.compliance.auditLevel = 'standard';
 
       const streamId = await pipeline.createStream(streamDef);
       expect(streamId).toBeDefined();
@@ -766,9 +767,9 @@ describe('StreamingDataPipeline', () => {
       const streamId = await pipeline.createStream(createValidStreamDef());
       await pipeline.startStream(streamId);
       
-      const processorDef = createValidProcessorDef(streamId);
+      const processorDef = createValidProcessorDef(streamId) as any;
       processorDef.errorHandling = {
-        strategy: 'circuit-breaker' as const,
+        strategy: 'circuit-breaker',
         circuitBreaker: {
           enabled: true,
           failureThreshold: 3,
@@ -861,8 +862,8 @@ describe('StreamingDataPipeline', () => {
       });
       
       // Mock a method to fail during initialization
-      const originalInitializeAuditTrail = (failingPipeline as any).initializeAuditTrail;
-      (failingPipeline as any).initializeAuditTrail = jest.fn().mockRejectedValue(new Error('Audit initialization failed'));
+      const mockFn = jest.fn(() => Promise.reject(new Error('Audit initialization failed')));
+      (failingPipeline as any).initializeAuditTrail = mockFn;
       
       await expect(failingPipeline.initialize()).rejects.toThrow('Audit initialization failed');
     });
@@ -918,7 +919,7 @@ function createValidStreamDef() {
       classification: 'internal' as const,
       piiDetection: { enabled: false, fields: [], maskingStrategy: 'hash' as const },
       accessControl: { enabled: false, rbac: [], abac: [] },
-      compliance: { frameworks: [], controls: [], auditLevel: 'minimal' as const },
+      compliance: { frameworks: [] as string[], controls: [] as string[], auditLevel: 'minimal' as const },
       lineage: { tracking: false, upstreamSources: [], downstreamConsumers: [] }
     },
     replication: {
