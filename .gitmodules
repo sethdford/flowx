@@ -1,3 +1,0 @@
-[submodule "original-claude-flow"]
-	path = original-claude-flow
-	url = https://github.com/ruvnet/claude-flow.git
