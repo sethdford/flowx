@@ -137,7 +137,7 @@ class ClaudeCodeConsole {
     this.wsClient.on('connected', () => {
       this.updateConnectionStatus(true, false);
       this.terminal.writeSuccess('Connected to Claude Code server');
-      this.terminal.setPrompt('claude-flow>');
+      this.terminal.setPrompt('flowx>');
     });
     
     this.wsClient.on('disconnected', (info) => {
@@ -329,7 +329,7 @@ class ClaudeCodeConsole {
     }
     
     // Handle Claude Flow notifications
-    if (message.method && message.method.startsWith('claude-flow/')) {
+    if (message.method && message.method.startsWith('flowx/')) {
       this.handleClaudeFlowNotification(message);
     }
   }
@@ -389,15 +389,15 @@ class ClaudeCodeConsole {
     const { method, params } = message;
     
     switch (method) {
-      case 'claude-flow/started':
+      case 'flowx/started':
         this.terminal.writeSuccess(`Claude Flow started in ${params.mode} mode`);
         break;
         
-      case 'claude-flow/stopped':
+      case 'flowx/stopped':
         this.terminal.writeInfo('Claude Flow stopped');
         break;
         
-      case 'claude-flow/error':
+      case 'flowx/error':
         this.terminal.writeError(`Claude Flow error: ${params.message}`);
         break;
         

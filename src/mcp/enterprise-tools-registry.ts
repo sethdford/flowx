@@ -4,9 +4,9 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { ILogger } from '../core/logger.ts';
-import { MCPTool, MCPContext } from '../utils/types.ts';
-import { generateId } from '../utils/helpers.ts';
+import { ILogger } from '../core/logger.js';
+import { MCPTool, MCPContext } from '../utils/types.js';
+import { generateId } from '../utils/helpers.js';
 
 export interface EnterpriseToolConfig {
   category: string;

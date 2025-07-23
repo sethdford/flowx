@@ -51,8 +51,9 @@ describe('Security Integration', () => {
 
       expect(result.args).toContain('--model');
       expect(result.args).toContain('claude-3-5-sonnet-20241022');
-      expect(result.args).toContain('--temperature');
-      expect(result.args).toContain('0.1');
+      // Note: --temperature not supported by Claude CLI, only API - test removed
+      // expect(result.args).toContain('--temperature');
+      // expect(result.args).toContain('0.1');
       expect(result.args).toContain('--dangerously-skip-permissions');
       expect(result.args).toContain('--add-dir');
       

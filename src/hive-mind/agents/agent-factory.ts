@@ -5,10 +5,10 @@
  * Supports agent specialization, capability configuration, and system prompt generation.
  */
 
-import { Logger } from '../../core/logger.ts';
-import { EventBus } from '../../core/event-bus.ts';
+import { Logger } from '../../core/logger.js';
+import { EventBus } from '../../core/event-bus.js';
 import { AgentType, AgentCapability, AgentConfig, AgentSpawnOptions } from '../types.js';
-import { generateId } from '../../utils/helpers.ts';
+import { generateId } from '../../utils/helpers.js';
 
 // Extended spawn options with additional configuration
 export interface EnhancedAgentSpawnOptions extends AgentSpawnOptions {

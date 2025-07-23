@@ -1,0 +1,19 @@
+{
+  "taskId": "mdf5iepj_tjljlv1ia",
+  "taskName": "Complete Objective",
+  "taskType": "coding",
+  "assignedAgent": "mdf5ieph_waz4zzcd4",
+  "agentName": "coordinator-SwarmLead",
+  "workspaceDir": "swarm-workspaces/swarm-mdf5iepc_140scexzy/tasks/coding-mdf5iepj_tjljlv1ia-mdf5ieph_waz4zzcd4",
+  "objective": "Create a package.json with name 'end-to-end-test' and version '2.0.0' Create a package.json with name 'end-to-end-test' and version '2.0.0'",
+  "requirements": {
+    "capabilities": [
+      "code-generation"
+    ],
+    "tools": [],
+    "permissions": [],
+    "estimatedDuration": 600000
+  },
+  "createdAt": "2025-07-22T23:13:50.072Z",
+  "status": "active"
+}

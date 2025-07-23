@@ -5,7 +5,7 @@
  * This provides the core TodoWrite functionality in a format that works with our CLI system
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
 import { VisualProgressFormatter } from '../../../task/visual-progress-formatter.js';
 import { TodoItem } from '../../../task/coordination.js';
 import { 
@@ -19,7 +19,7 @@ import {
   printWarning, 
   printInfo,
   type TableColumn
-} from '../../core/output-formatter.ts';
+} from '../../core/output-formatter.js';
 
 export const todoCommand: CLICommand = {
   name: 'todo',

@@ -4,11 +4,11 @@
  * Provides enterprise-grade WASM acceleration and pattern recognition
  */
 
-import { MCPTool, MCPCapabilities } from "../utils/types.ts";
-import { Logger } from "../core/logger.ts";
+import { MCPTool, MCPCapabilities } from "../utils/types.js";
+import { Logger } from "../core/logger.js";
 import { EventEmitter } from 'node:events';
-import { NeuralMCPTools } from './neural-mcp-tools.ts';
-import { swarmTools } from './swarm-tools.ts';
+import { NeuralMCPTools } from './neural-mcp-tools.js';
+import { createSwarmTools } from './swarm-tools.js';
 
 export interface EnhancedMCPTool extends MCPTool {
   category: 'neural' | 'swarm' | 'memory' | 'system' | 'workflow';
@@ -27,7 +27,7 @@ export interface EnhancedMCPTool extends MCPTool {
 export class MCPToolsRegistry extends EventEmitter {
   private logger: Logger;
   private neuralTools: NeuralMCPTools;
-  private swarmTools: typeof swarmTools;
+  private swarmTools: MCPTool[];
   private tools = new Map<string, EnhancedMCPTool>();
   private toolMetrics = new Map<string, any>();
   
@@ -39,7 +39,7 @@ export class MCPToolsRegistry extends EventEmitter {
       { component: 'MCPToolsRegistry' }
     );
     this.neuralTools = new NeuralMCPTools();
-    this.swarmTools = swarmTools;
+    this.swarmTools = createSwarmTools(this.logger);
     
     this.initializeAllTools();
     

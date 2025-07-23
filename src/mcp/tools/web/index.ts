@@ -13,8 +13,8 @@
  * and follow a standard interface pattern with name, description, schema and handler.
  */
 
-import { MCPTool, MCPContext } from "../../../utils/types.ts";
-import { ILogger } from "../../../core/logger.ts";
+import { MCPTool, MCPContext } from "../../../utils/types.js";
+import { ILogger } from "../../../core/logger.js";
 import { join } from 'node:path';
 import { promises as fs } from 'node:fs';
 import { createWriteStream } from 'node:fs';

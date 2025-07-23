@@ -10,7 +10,7 @@
  * - Rollback capabilities for safe refactoring
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
 import { 
   formatTable, 
   successBold, 
@@ -22,7 +22,7 @@ import {
   printWarning, 
   printInfo,
   type TableColumn
-} from '../../core/output-formatter.ts';
+} from '../../core/output-formatter.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 

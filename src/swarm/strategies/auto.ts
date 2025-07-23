@@ -3,10 +3,10 @@
  * Uses machine learning-inspired heuristics and intelligent task decomposition
  */
 
-import { BaseStrategy, DecompositionResult, TaskBatch, AgentAllocation, TaskPattern } from "./base.ts";
-import { SwarmObjective, TaskDefinition, AgentState, TaskType, TaskPriority, TaskId, AgentType } from "../types.ts";
-import { generateId } from "../../utils/helpers.ts";
-import { Logger } from "../../core/logger.ts";
+import { BaseStrategy, DecompositionResult, TaskBatch, AgentAllocation, TaskPattern } from "./base.js";
+import { SwarmObjective, TaskDefinition, AgentState, TaskType, TaskPriority, TaskId, AgentType } from "../types.js";
+import { generateId } from "../../utils/helpers.js";
+import { Logger } from "../../core/logger.js";
 
 interface MLHeuristics {
   taskTypeWeights: Record<string, number>;

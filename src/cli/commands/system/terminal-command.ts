@@ -3,13 +3,13 @@
  * Manage terminal sessions and execution environments
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { formatTable, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.ts';
-import { TerminalManager } from '../../../terminal/manager.ts';
-import { TerminalConfig, AgentProfile } from '../../../utils/types.ts';
-import { EventBus } from '../../../core/event-bus.ts';
-import { createConsoleLogger } from '../../../utils/logger.ts';
-import { generateId } from '../../../utils/helpers.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { formatTable, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.js';
+import { TerminalManager } from '../../../terminal/manager.js';
+import { TerminalConfig, AgentProfile } from '../../../utils/types.js';
+import { EventBus } from '../../../core/event-bus.js';
+import { createConsoleLogger } from '../../../utils/logger.js';
+import { generateId } from '../../../utils/helpers.js';
 
 // Global terminal manager instance
 let terminalManager: TerminalManager | null = null;

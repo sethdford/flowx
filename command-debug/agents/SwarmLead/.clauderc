@@ -1,0 +1,34 @@
+{
+  "mcp": {
+    "servers": {
+      "flowx-swarm": {
+        "command": "node",
+        "args": [
+          "/Users/sethford/Downloads/Projects/claude-code-flow/src/mcp/server.js"
+        ],
+        "env": {
+          "AGENT_ID": "agent_mdf51l0c_2hd8j2i0i",
+          "AGENT_TYPE": "coordinator",
+          "AGENT_NAME": "coordinator-SwarmLead",
+          "WORKING_DIR": "command-debug/agents/SwarmLead",
+          "OBJECTIVE": "Create a package.json Create a package.json",
+          "STRATEGY": "development"
+        }
+      }
+    }
+  },
+  "tools": [
+    "mcp__flowx__agent_spawn",
+    "mcp__flowx__agent_list",
+    "mcp__flowx__agent_communicate",
+    "mcp__flowx__task_create",
+    "mcp__flowx__task_assign",
+    "mcp__flowx__task_list",
+    "mcp__flowx__task_update",
+    "mcp__flowx__memory_store",
+    "mcp__flowx__memory_retrieve",
+    "mcp__flowx__memory_query",
+    "mcp__flowx__swarm_status",
+    "mcp__flowx__swarm_monitor"
+  ]
+}

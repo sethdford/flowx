@@ -5,7 +5,24 @@
 
 import { ProcessManager } from '../../src/cli/commands/start/process-manager.ts';
 import { ProcessUI } from '../../src/cli/commands/start/process-ui.ts';
-import { colors } from '@cliffy/ansi/colors';
+
+// Mock @cliffy/ansi/colors for Node.js environment
+const colorFn = (text: string) => ({ 
+  bold: (t: string) => t,
+  dim: (t: string) => t,
+  toString: () => text
+});
+const colors = {
+  green: colorFn,
+  red: colorFn,
+  yellow: colorFn,
+  blue: colorFn,
+  cyan: colorFn,
+  magenta: colorFn,
+  gray: colorFn,
+  bold: colorFn,
+  dim: colorFn
+};
 
 async function testProcessUI() {
   console.log(colors.cyan.bold('Testing ProcessUI...'));

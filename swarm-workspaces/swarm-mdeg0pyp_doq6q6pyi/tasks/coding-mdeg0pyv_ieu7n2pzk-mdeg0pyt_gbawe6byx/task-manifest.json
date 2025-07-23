@@ -1,0 +1,19 @@
+{
+  "taskId": "mdeg0pyv_ieu7n2pzk",
+  "taskName": "Complete Objective",
+  "taskType": "coding",
+  "assignedAgent": "mdeg0pyt_gbawe6byx",
+  "agentName": "coordinator-SwarmLead",
+  "workspaceDir": "swarm-workspaces/swarm-mdeg0pyp_doq6q6pyi/tasks/coding-mdeg0pyv_ieu7n2pzk-mdeg0pyt_gbawe6byx",
+  "objective": "Create a package.json with name 'fixed-tools-app' and version '4.0.0' Create a package.json with name 'fixed-tools-app' and version '4.0.0'",
+  "requirements": {
+    "capabilities": [
+      "code-generation"
+    ],
+    "tools": [],
+    "permissions": [],
+    "estimatedDuration": 600000
+  },
+  "createdAt": "2025-07-22T11:20:14.456Z",
+  "status": "active"
+}

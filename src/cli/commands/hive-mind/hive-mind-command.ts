@@ -4,8 +4,8 @@
  * Command-line interface for the Hive-Mind collective intelligence system
  */
 
-import { CLIContext, CLICommand } from '../../interfaces/index.ts';
-import { printSuccess, printError, printInfo, printWarning } from '../../core/output-formatter.ts';
+import { CLIContext, CLICommand } from '../../interfaces/index.js';
+import { printSuccess, printError, printInfo, printWarning } from '../../core/output-formatter.js';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 

@@ -4,7 +4,14 @@
  */
 
 import { ProcessManager } from '../../src/cli/commands/start/process-manager.ts';
-import { colors } from '@cliffy/ansi/colors';
+// import { colors } from '@cliffy/ansi/colors'; // Module not available
+const colors = { 
+  green: (s: string) => ({ bold: (t: string) => t, ...s }), 
+  red: (s: string) => ({ bold: (t: string) => t, ...s }), 
+  yellow: (s: string) => ({ bold: (t: string) => t, ...s }),
+  cyan: (s: string) => ({ bold: (t: string) => t, ...s }),
+  gray: (s: string) => ({ bold: (t: string) => t, ...s })
+};
 
 async function testProcessManager() {
   console.log(colors.cyan.bold('Testing ProcessManager...'));

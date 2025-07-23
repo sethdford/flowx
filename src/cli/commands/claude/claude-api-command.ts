@@ -4,10 +4,11 @@
  * Exceeds original with advanced configuration, analytics, and model recommendations
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
 import { Logger } from '../../../core/logger.js';
 import { ConfigManager } from '../../../config/config-manager.js';
 import { ClaudeAPIClient, ClaudeModel, createClaudeAPIClient } from '../../../api/claude-api-client.js';
+import { ModelSelector, DEFAULT_MODEL_ID } from '../../../config/models.js';
 
 // Interactive prompts for configuration
 async function promptClaudeConfiguration(): Promise<any> {
@@ -25,7 +26,7 @@ async function promptClaudeConfiguration(): Promise<any> {
   // Model Selection
   console.log('\n2. Model Selection');
   console.log('   Available models:');
-  console.log('   - claude-3-5-sonnet-20241022 (Recommended - Latest & Most Capable)');
+  console.log(`   - ${ModelSelector.getDefault().id} (Recommended - Latest & Most Capable)`);
   console.log('   - claude-3-5-haiku-20241022  (Fast & Efficient)');
   console.log('   - claude-3-opus-20240229     (Most Advanced Reasoning)');
   console.log('   - claude-3-sonnet-20240229   (Balanced Performance)');
@@ -33,7 +34,7 @@ async function promptClaudeConfiguration(): Promise<any> {
   console.log('   - claude-2.1, claude-2.0    (Legacy Support)');
   console.log('   - claude-instant-1.2         (Fastest & Cheapest)');
   
-  config.model = 'claude-3-5-sonnet-20241022'; // Default to best
+      config.model = DEFAULT_MODEL_ID; // Default to best
   
   // Temperature
   console.log('\n3. Temperature (0.0-1.0)');
@@ -111,7 +112,7 @@ export const claudeApiCommand: CLICommand = {
           
           if (options.model) {
             const validModels = [
-              'claude-3-5-sonnet-20241022', 'claude-3-5-sonnet-20240620', 'claude-3-5-haiku-20241022',
+              ...Object.keys(ModelSelector.getAllModels()),
               'claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307',
               'claude-2.1', 'claude-2.0', 'claude-instant-1.2', 'claude-instant-1.1', 'claude-instant-1.0'
             ];
@@ -166,7 +167,7 @@ export const claudeApiCommand: CLICommand = {
             const currentConfig = configManager.get('claude') || {};
             console.log('📋 Current Claude API Configuration:');
             console.log('=====================================');
-            console.log('Model:', currentConfig.model || 'claude-3-5-sonnet-20241022');
+            console.log('Model:', currentConfig.model || DEFAULT_MODEL_ID);
             console.log('Temperature:', currentConfig.temperature || 0.7);
             console.log('Max Tokens:', currentConfig.maxTokens || 4096);
             console.log('Streaming:', currentConfig.streamingEnabled || false);
@@ -411,7 +412,7 @@ export const claudeApiCommand: CLICommand = {
           
           const client = createClaudeAPIClient(logger, configManager, clientConfig);
           
-          console.log('🤖 Model:', clientConfig.model || 'claude-3-5-sonnet-20241022');
+          console.log('🤖 Model:', clientConfig.model || DEFAULT_MODEL_ID);
           console.log('👤 You:', message);
           console.log('🤖 Claude:');
           console.log('');

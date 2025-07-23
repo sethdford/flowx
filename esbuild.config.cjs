@@ -1,81 +1,17 @@
-const { build } = require('esbuild');
-const fs = require('fs');
+const esbuild = require('esbuild');
+const fs = require('fs-extra');
 const path = require('path');
+const { nodeExternalsPlugin } = require('esbuild-node-externals');
 
-// Plugin to fix import extensions from .ts to .js
-const fixImportExtensionsPlugin = {
-  name: 'fix-import-extensions',
-  setup(build) {
-    build.onLoad({ filter: /\.ts$/ }, async (args) => {
-      const contents = await fs.promises.readFile(args.path, 'utf8');
-      
-      // Replace .ts imports with .js imports (static imports)
-      let fixedContents = contents.replace(
-        /from\s+['"]([^'"]+)\.ts['"]/g,
-        'from "$1.js"'
-      ).replace(
-        /import\s+['"]([^'"]+)\.ts['"]/g,
-        'import "$1.js"'
-      );
-      
-      // Replace .ts imports with .js imports (dynamic imports)
-      fixedContents = fixedContents.replace(
-        /import\s*\(\s*['"]([^'"]+)\.ts['"]\s*\)/g,
-        'import("$1.js")'
-      );
-      
-      // Replace export * from .ts imports
-      fixedContents = fixedContents.replace(
-        /export\s+\*\s+from\s+['"]([^'"]+)\.ts['"]/g,
-        'export * from "$1.js"'
-      );
-      
-      return {
-        contents: fixedContents,
-        loader: 'ts',
-      };
-    });
-  },
-};
-
-// Plugin to strip "npm:" prefixes
-const stripNpmPrefixPlugin = {
-  name: 'strip-npm-prefix',
-  setup(build) {
-    build.onResolve({ filter: /^npm:/ }, args => {
-      return {
-        path: args.path.substring(4), // Remove "npm:"
-        external: true,
-      };
-    });
-  },
-};
-
-// Plugin to exclude problematic native modules
-const excludeNativeModulesPlugin = {
-  name: 'exclude-native-modules',
-  setup(build) {
-    build.onResolve({ filter: /^node-pty$/ }, () => {
-      return { path: 'node-pty', external: true, sideEffects: false };
-    });
-  },
-};
-
-// Plugin to mark all other non-relative paths as external
-const makeAllPackagesExternalPlugin = {
-  name: 'make-all-packages-external',
-  setup(build) {
-    let filter = /^[^./]|^\.[^./]|^\.\.[^/]/; // Must not start with "/" or "./" or "../"
-    build.onResolve({ filter }, args => ({ path: args.path, external: true }));
-  },
-};
-
-// Function to copy static files after build
 async function copyStaticFiles() {
   const staticFiles = [
     {
       src: 'src/hive-mind/database/schema.sql',
       dest: 'dist/schema.sql'
+    },
+    {
+      src: 'src/swarm/claude-worker.js',
+      dest: 'dist/claude-worker.js'
     }
   ];
 
@@ -89,348 +25,46 @@ async function copyStaticFiles() {
   }
 }
 
-
 (async () => {
   try {
-    // Main CLI entrypoint
-    await build({
+    // Ensure dist directory exists
+    await fs.ensureDir('dist');
+    
+    // Main CLI entrypoint only
+    await esbuild.build({
       entryPoints: ['src/cli/main.ts'],
       bundle: true,
       platform: 'node',
       outfile: 'dist/main.js',
       format: 'esm',
-      plugins: [fixImportExtensionsPlugin, stripNpmPrefixPlugin, excludeNativeModulesPlugin, makeAllPackagesExternalPlugin],
-      banner: {
-        js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);'
-      }
-    });
-    
-    // Hive Mind core files
-    await build({
-      entryPoints: [
-        'src/hive-mind/index.ts',
-        'src/hive-mind/hive-coordinator.ts',
-        'src/hive-mind/hive-initializer.ts',
-        'src/hive-mind/types.ts'
+      target: 'node18',
+      plugins: [
+          nodeExternalsPlugin()
       ],
-      bundle: false,
-      platform: 'node',
-      outdir: 'dist/hive-mind',
-      format: 'esm',
-      plugins: [fixImportExtensionsPlugin, stripNpmPrefixPlugin, excludeNativeModulesPlugin, makeAllPackagesExternalPlugin],
       banner: {
         js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);'
-      }
-    });
-    
-    // Hive Mind core components
-    await build({
-      entryPoints: ['src/hive-mind/core/hive-mind.ts'],
-      bundle: false,
-      platform: 'node',
-      outdir: 'dist/hive-mind/core',
-      format: 'esm',
-      plugins: [fixImportExtensionsPlugin, stripNpmPrefixPlugin, excludeNativeModulesPlugin, makeAllPackagesExternalPlugin],
-      banner: {
-        js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);'
-      }
-    });
-    
-    // Hive Mind agents
-    await build({
-      entryPoints: [
-        'src/hive-mind/agents/agent-factory.ts',
-        'src/hive-mind/agents/agent-spawner.ts'
+      },
+      external: [
+        'sqlite3',
+        'better-sqlite3',
+        'canvas',
+        'sharp',
+        'puppeteer',
+        'playwright',
+        '@tensorflow/tfjs-node',
+        'fsevents'
       ],
-      bundle: false,
-      platform: 'node',
-      outdir: 'dist/hive-mind/agents',
-      format: 'esm',
-      plugins: [fixImportExtensionsPlugin, stripNpmPrefixPlugin, excludeNativeModulesPlugin, makeAllPackagesExternalPlugin],
-      banner: {
-        js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);'
-      }
+      sourcemap: false,
+      minify: false
     });
+
+    console.log('✅ Build completed successfully');
     
-    // Hive Mind tasks
-    await build({
-      entryPoints: ['src/hive-mind/tasks/task-executor.ts'],
-      bundle: false,
-      platform: 'node',
-      outdir: 'dist/hive-mind/tasks',
-      format: 'esm',
-      plugins: [fixImportExtensionsPlugin, stripNpmPrefixPlugin, excludeNativeModulesPlugin, makeAllPackagesExternalPlugin],
-      banner: {
-        js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);'
-      }
-    });
-    
-    // Hive Mind database
-    await build({
-      entryPoints: ['src/hive-mind/database/database-manager.ts'],
-      bundle: false,
-      platform: 'node',
-      outdir: 'dist/hive-mind/database',
-      format: 'esm',
-      plugins: [fixImportExtensionsPlugin, stripNpmPrefixPlugin, excludeNativeModulesPlugin, makeAllPackagesExternalPlugin],
-      banner: {
-        js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);'
-      }
-    });
-    
-    // Hive Mind neural system
-    await build({
-      entryPoints: [
-        'src/hive-mind/neural/neural-manager.ts',
-        'src/hive-mind/neural/neural-integration.ts',
-        'src/hive-mind/neural/neural-workflow.ts',
-        'src/hive-mind/neural/pattern-recognizer.ts',
-        'src/hive-mind/neural/tensorflow-model.ts',
-        'src/hive-mind/neural/index.ts'
-      ],
-      bundle: false,
-      platform: 'node',
-      outdir: 'dist/hive-mind/neural',
-      format: 'esm',
-      plugins: [fixImportExtensionsPlugin, stripNpmPrefixPlugin, excludeNativeModulesPlugin, makeAllPackagesExternalPlugin],
-      banner: {
-        js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);'
-      }
-    });
-    
-    // Hive Mind consensus
-    await build({
-      entryPoints: ['src/hive-mind/consensus/consensus-engine.ts'],
-      bundle: false,
-      platform: 'node',
-      outdir: 'dist/hive-mind/consensus',
-      format: 'esm',
-      plugins: [fixImportExtensionsPlugin, stripNpmPrefixPlugin, excludeNativeModulesPlugin, makeAllPackagesExternalPlugin],
-      banner: {
-        js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);'
-      }
-    });
-    
-    // Hive Mind utilities
-    await build({
-      entryPoints: ['src/hive-mind/utilities/resource-manager.ts'],
-      bundle: false,
-      platform: 'node',
-      outdir: 'dist/hive-mind/utilities',
-      format: 'esm',
-      plugins: [fixImportExtensionsPlugin, stripNpmPrefixPlugin, excludeNativeModulesPlugin, makeAllPackagesExternalPlugin],
-      banner: {
-        js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);'
-      }
-    });
-    
-    // Utils
-    await build({
-      entryPoints: [
-        'src/utils/helpers.ts', 
-        'src/utils/types.ts', 
-        'src/utils/errors.ts',
-        'src/utils/colors.ts',
-        'src/utils/logger.ts',
-        'src/utils/formatters.ts',
-        'src/utils/event-bus.ts'
-      ],
-      bundle: false,
-      platform: 'node',
-      outdir: 'dist/utils',
-      format: 'esm',
-      plugins: [fixImportExtensionsPlugin, stripNpmPrefixPlugin, excludeNativeModulesPlugin, makeAllPackagesExternalPlugin],
-      banner: {
-        js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);'
-      }
-    });
-    
-    // Agents
-    await build({
-      entryPoints: ['src/agents/queen-agent.ts'],
-      bundle: false,
-      platform: 'node',
-      outdir: 'dist/agents',
-      format: 'esm',
-      plugins: [fixImportExtensionsPlugin, stripNpmPrefixPlugin, excludeNativeModulesPlugin, makeAllPackagesExternalPlugin],
-      banner: {
-        js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);'
-      }
-    });
-    
-    // Terminal
-    await build({
-      entryPoints: [
-        'src/terminal/manager.ts',
-        'src/terminal/session.ts',
-        'src/terminal/pool.ts',
-        'src/terminal/vscode-bridge.ts',
-        'src/terminal/adapters/base.ts',
-        'src/terminal/adapters/vscode.ts',
-        'src/terminal/adapters/native.ts'
-      ],
-      bundle: false,
-      platform: 'node',
-      outdir: 'dist/terminal',
-      format: 'esm',
-      plugins: [fixImportExtensionsPlugin, stripNpmPrefixPlugin, excludeNativeModulesPlugin, makeAllPackagesExternalPlugin],
-      banner: {
-        js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);'
-      }
-    });
-    
-    // Memory
-    await build({
-      entryPoints: [
-        'src/memory/manager.ts',
-        'src/memory/cache.ts',
-        'src/memory/indexer.ts',
-        'src/memory/memory-vault.ts',
-        'src/memory/distributed-memory.ts',
-        'src/memory/swarm-memory.ts',
-        'src/memory/backends/base.ts',
-        'src/memory/backends/markdown.ts',
-        'src/memory/backends/sqlite.ts',
-        'src/memory/backends/sqljs.ts'
-      ],
-      bundle: false,
-      platform: 'node',
-      outdir: 'dist/memory',
-      format: 'esm',
-      plugins: [fixImportExtensionsPlugin, stripNpmPrefixPlugin, excludeNativeModulesPlugin, makeAllPackagesExternalPlugin],
-      banner: {
-        js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);'
-      }
-    });
-    
-    // MCP
-    await build({
-      entryPoints: [
-        'src/mcp/server.ts',
-        'src/mcp/client.ts',
-        'src/mcp/auth.ts',
-        'src/mcp/flowx-tools.ts',
-        'src/mcp/claude-flow-tools.ts',
-        'src/mcp/gemini-tools.ts',
-        'src/mcp/lifecycle-manager.ts',
-        'src/mcp/load-balancer.ts',
-        'src/mcp/enterprise-tools-registry.ts',
-        'src/mcp/index.ts'
-      ],
-      bundle: false,
-      platform: 'node',
-      outdir: 'dist/mcp',
-      format: 'esm',
-      plugins: [fixImportExtensionsPlugin, stripNpmPrefixPlugin, excludeNativeModulesPlugin, makeAllPackagesExternalPlugin],
-      banner: {
-        js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);'
-      }
-    });
-    
-    // Core modules
-    await build({
-      entryPoints: [
-        'src/core/logger.ts',
-        'src/core/event-bus.ts',
-        'src/core/config.ts',
-        'src/core/container.ts',
-        'src/core/bootstrap.ts',
-        'src/core/orchestrator.ts',
-        'src/core/persistence.ts',
-        'src/core/plugin-system.ts'
-      ],
-      bundle: false,
-      platform: 'node',
-      outdir: 'dist/core',
-      format: 'esm',
-      plugins: [fixImportExtensionsPlugin, stripNpmPrefixPlugin, excludeNativeModulesPlugin, makeAllPackagesExternalPlugin],
-      banner: {
-        js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);'
-      }
-    });
-    
-    // Coordination modules
-    await build({
-      entryPoints: [
-        'src/coordination/neural-pattern-engine.ts',
-        'src/coordination/background-executor.ts',
-        'src/coordination/conflict-resolution.ts',
-        'src/coordination/dependency-graph.ts',
-        'src/coordination/swarm-monitor.ts',
-        'src/coordination/multi-model-orchestrator.ts',
-        'src/coordination/messaging.ts',
-        'src/coordination/manager.ts',
-        'src/coordination/work-stealing.ts',
-        'src/coordination/resources.ts',
-        'src/coordination/load-balancer.ts',
-        'src/coordination/circuit-breaker.ts',
-        'src/coordination/hive-orchestrator.ts',
-        'src/coordination/message-coordinator.ts',
-        'src/coordination/task-coordinator.ts',
-        'src/coordination/index.ts',
-        'src/coordination/task-execution-engine.ts',
-        'src/coordination/task-orchestrator.ts',
-        'src/coordination/metrics.ts'
-      ],
-      bundle: false,
-      platform: 'node',
-      outdir: 'dist/coordination',
-      format: 'esm',
-      plugins: [fixImportExtensionsPlugin, stripNpmPrefixPlugin, excludeNativeModulesPlugin, makeAllPackagesExternalPlugin],
-      banner: {
-        js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);'
-      }
-    });
-    
-    // Swarm modules
-    await build({
-      entryPoints: [
-        'src/swarm/index.ts',
-        'src/swarm/coordinator.ts',
-        'src/swarm/executor.ts',
-        'src/swarm/types.ts',
-        'src/swarm/memory.ts',
-        'src/swarm/prompt-copier.ts',
-        'src/swarm/prompt-utils.ts',
-        'src/swarm/prompt-manager.ts',
-        'src/swarm/prompt-cli.ts',
-        'src/swarm/claude-flow-executor.ts',
-        'src/swarm/flowx-executor.ts',
-        'src/swarm/sparc-executor.ts'
-      ],
-      bundle: false,
-      platform: 'node',
-      outdir: 'dist/swarm',
-      format: 'esm',
-      plugins: [fixImportExtensionsPlugin, stripNpmPrefixPlugin, excludeNativeModulesPlugin, makeAllPackagesExternalPlugin],
-      banner: {
-        js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);'
-      }
-    });
-    
-    // Swarm strategies
-    await build({
-      entryPoints: [
-        'src/swarm/strategies/base.ts',
-        'src/swarm/strategies/auto.ts',
-        'src/swarm/strategies/research.ts'
-      ],
-      bundle: false,
-      platform: 'node',
-      outdir: 'dist/swarm/strategies',
-      format: 'esm',
-      plugins: [fixImportExtensionsPlugin, stripNpmPrefixPlugin, excludeNativeModulesPlugin, makeAllPackagesExternalPlugin],
-      banner: {
-        js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);'
-      }
-    });
-    
-    // Copy static files after build
+    // Copy static files
     await copyStaticFiles();
     
-    console.log('Build finished successfully!');
-  } catch (e) {
-    console.error('Build failed:', e);
+  } catch (error) {
+    console.error('❌ Build failed:', error);
     process.exit(1);
   }
 })(); 

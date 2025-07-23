@@ -1,0 +1,19 @@
+{
+  "taskId": "mdf5h22h_3xq5wz38a",
+  "taskName": "Complete Objective",
+  "taskType": "coding",
+  "assignedAgent": "mdf5h22f_6x45oq4ql",
+  "agentName": "coordinator-SwarmLead",
+  "workspaceDir": "swarm-workspaces/swarm-mdf5h22a_rnyr1y1yj/tasks/coding-mdf5h22h_3xq5wz38a-mdf5h22f_6x45oq4ql",
+  "objective": "Create a package.json with name 'file-detection-test' and version '1.0.0' Create a package.json with name 'file-detection-test' and version '1.0.0'",
+  "requirements": {
+    "capabilities": [
+      "code-generation"
+    ],
+    "tools": [],
+    "permissions": [],
+    "estimatedDuration": 600000
+  },
+  "createdAt": "2025-07-22T23:12:47.034Z",
+  "status": "active"
+}

@@ -1,0 +1,19 @@
+{
+  "taskId": "mdegamtm_rwvgcg3jc",
+  "taskName": "Complete Objective",
+  "taskType": "coding",
+  "assignedAgent": "mdegamtk_wzz8nicpd",
+  "agentName": "coordinator-SwarmLead",
+  "workspaceDir": "swarm-workspaces/swarm-mdegamtf_5twonsc4q/tasks/coding-mdegamtm_rwvgcg3jc-mdegamtk_wzz8nicpd",
+  "objective": "Create a package.json with name 'legacy-approach-app' and version '5.0.0' Create a package.json with name 'legacy-approach-app' and version '5.0.0'",
+  "requirements": {
+    "capabilities": [
+      "code-generation"
+    ],
+    "tools": [],
+    "permissions": [],
+    "estimatedDuration": 600000
+  },
+  "createdAt": "2025-07-22T11:27:56.939Z",
+  "status": "active"
+}

@@ -3,8 +3,8 @@
  * Launch and manage the web console interface
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { formatTable, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { formatTable, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.js';
 import express, { Express, Request, Response } from 'express';
 import * as http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';

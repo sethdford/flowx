@@ -3,9 +3,9 @@
  * Low-level system operations, diagnostics, and maintenance
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { formatTable, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.ts';
-import { getMemoryManager, getPersistenceManager } from '../../core/global-initialization.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { formatTable, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.js';
+import { getMemoryManager, getPersistenceManager } from '../../core/global-initialization.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';

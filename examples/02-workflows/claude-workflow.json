@@ -6,6 +6,7 @@
     {
       "id": "research-task",
       "name": "Research Best Practices",
+      "agentId": "research-agent",
       "type": "research",
       "description": "Research current best practices for authentication systems and security patterns",
       "tools": ["WebFetchTool", "View", "Edit", "GrepTool"],
@@ -15,6 +16,7 @@
     {
       "id": "backend-task",
       "name": "Implement Backend API",
+      "agentId": "backend-agent",
       "type": "implementation",
       "description": "Implement user authentication backend with JWT tokens and secure password hashing",
       "tools": ["View", "Edit", "Replace", "GlobTool", "GrepTool", "LS", "Bash"],
@@ -25,6 +27,7 @@
     {
       "id": "frontend-task", 
       "name": "Build Frontend Components",
+      "agentId": "frontend-agent",
       "type": "implementation",
       "description": "Create React components for login, registration, and password reset flows",
       "tools": ["View", "Edit", "Replace", "GlobTool", "GrepTool", "LS", "Bash"],
@@ -34,6 +37,7 @@
     {
       "id": "testing-task",
       "name": "Write Comprehensive Tests",
+      "agentId": "test-agent",
       "type": "testing",
       "description": "Write unit and integration tests for authentication system with 95% coverage",
       "tools": ["View", "Edit", "Replace", "GlobTool", "GrepTool", "LS", "Bash", "BatchTool"],
@@ -44,27 +48,34 @@
   "agents": [
     {
       "id": "research-agent",
+      "name": "Research Agent",
       "type": "researcher",
       "capabilities": ["web-search", "information-gathering", "analysis"],
       "assignedTasks": ["research-task"]
     },
     {
       "id": "backend-agent",
+      "name": "Backend Agent",
       "type": "implementer",
       "capabilities": ["code-generation", "api-development", "database-design"],
       "assignedTasks": ["backend-task"]
     },
     {
       "id": "frontend-agent",
+      "name": "Frontend Agent",
       "type": "implementer", 
       "capabilities": ["ui-development", "react", "component-design"],
       "assignedTasks": ["frontend-task"]
     },
     {
       "id": "test-agent",
+      "name": "Test Agent",
       "type": "tester",
       "capabilities": ["test-writing", "coverage-analysis", "quality-assurance"],
       "assignedTasks": ["testing-task"]
     }
-  ]
+  ],
+  "execution": {
+    "mode": "parallel"
+  }
 }

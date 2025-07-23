@@ -3,9 +3,9 @@
  * Execute arbitrary commands/scripts within FlowX context
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { printSuccess, printError, printInfo, printWarning } from '../../core/output-formatter.ts';
-import { getLogger, getMemoryManager, getPersistenceManager } from '../../core/global-initialization.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { printSuccess, printError, printInfo, printWarning } from '../../core/output-formatter.js';
+import { getLogger, getMemoryManager, getPersistenceManager } from '../../core/global-initialization.js';
 import { spawn, exec } from 'child_process';
 import { promisify } from 'util';
 import { writeFile, readFile, mkdir, access, constants } from 'fs/promises';

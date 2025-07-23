@@ -3,12 +3,12 @@
  * Integrates the existing start command functionality into the main CLI system
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { ProcessManager } from '../start/process-manager.ts';
-import { SystemMonitor } from '../start/system-monitor.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { ProcessManager } from '../start/process-manager.js';
+import { SystemMonitor } from '../start/system-monitor.js';
 // Lazy import to prevent WebSocket connection during module loading
-// import { launchInkDashboard } from '../../ui/ink-cli.ts';
-import { formatTable, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.ts';
+// import { launchInkDashboard } from '../../ui/ink-cli.js';
+import { formatTable, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.js';
 import * as readline from 'readline';
 import * as fs from 'fs/promises';
 

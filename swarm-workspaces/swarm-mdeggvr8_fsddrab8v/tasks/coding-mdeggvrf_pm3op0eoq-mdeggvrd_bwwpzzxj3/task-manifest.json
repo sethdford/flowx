@@ -1,0 +1,19 @@
+{
+  "taskId": "mdeggvrf_pm3op0eoq",
+  "taskName": "Complete Objective",
+  "taskType": "coding",
+  "assignedAgent": "mdeggvrd_bwwpzzxj3",
+  "agentName": "coordinator-SwarmLead",
+  "workspaceDir": "swarm-workspaces/swarm-mdeggvr8_fsddrab8v/tasks/coding-mdeggvrf_pm3op0eoq-mdeggvrd_bwwpzzxj3",
+  "objective": "Create a package.json with name 'original-approach-app' and version '6.0.0' Create a package.json with name 'original-approach-app' and version '6.0.0'",
+  "requirements": {
+    "capabilities": [
+      "code-generation"
+    ],
+    "tools": [],
+    "permissions": [],
+    "estimatedDuration": 600000
+  },
+  "createdAt": "2025-07-22T11:32:48.460Z",
+  "status": "active"
+}

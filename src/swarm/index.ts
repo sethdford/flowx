@@ -1,27 +1,52 @@
 // Main exports for the swarm system
-export * from './executor.ts';
-export * from './types.ts';
+export * from './executor.js';
+export { FlowXExecutor } from './flowx-executor.js';
+export type { FlowXExecutorConfig, FlowXExecutionOptions, FlowXExecutionResult } from './flowx-executor.js';
+export * from './types.js';
 // Export from coordinator.ts without TaskPattern
 import { 
   SwarmCoordinator
   // Explicitly not exporting TaskPattern to avoid duplicate exports
-} from './coordinator.ts';
+} from './coordinator.js';
 
 // Export types
+export * from './types.js';
 export { SwarmCoordinator };
-export * from './strategies/base.ts';
-export * from './strategies/auto.ts';
-export * from './strategies/research.ts';
-export * from './memory.ts';
 
-// Prompt copying system exports
-export * from './prompt-copier.ts';
-export * from './prompt-utils.ts';
-export * from './prompt-manager.ts';
-export * from './prompt-cli.ts';
+// Export executors
+export * from './executors/index.js';
 
-// Optimizations - commented out due to ExecutionMetrics naming conflict
-// export * from './optimizations/index.ts';
+// Export memory
+export * from './memory.js';
+
+// Export prompt system
+export * from './prompt-copier.js';
+export * from './prompt-utils.js';
+export * from './prompt-manager.js';
+export * from './prompt-cli.js';
+
+// Optimizations - fix naming conflicts with selective exports
+export { 
+  ClaudeConnectionPool, 
+  AsyncFileManager, 
+  CircularBuffer, 
+  TTLMap, 
+  OptimizedExecutor, 
+  AgentCapabilityIndex 
+} from './optimizations/index.js';
+
+export type { 
+  PoolConfig, 
+  PooledConnection, 
+  FileOperationResult, 
+  TTLMapOptions, 
+  ExecutorConfig, 
+  OptimizedExecutionMetrics, 
+  AgentCapability, 
+  AgentPerformanceMetrics, 
+  CapabilityMatch, 
+  IndexConfig 
+} from './optimizations/index.js';
 
 // Utility function to get all exports
 export function getSwarmComponents() {
@@ -47,7 +72,7 @@ export function getSwarmComponents() {
     promptManager: () => import('./prompt-manager.ts'),
     promptCli: () => import('./prompt-cli.ts'),
     
-    // Optimizations - commented out due to ExecutionMetrics naming conflict
-    // optimizations: () => import('./optimizations/index.ts')
+    // Optimizations - now available
+    optimizations: () => import('./optimizations/index.ts')
   };
 }

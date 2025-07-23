@@ -12,15 +12,15 @@ import {
   ComponentHealth,
   TaskStatus,
   OrchestratorMetrics,
-} from "../utils/types.ts";
-import { IEventBus } from "./event-bus.ts";
-import { ILogger } from "./logger.ts";
-import { ITerminalManager } from "../terminal/manager.ts";
-import { IMemoryManager } from "../memory/manager.ts";
-import { ICoordinationManager } from "../coordination/manager.ts";
-import { IMCPServer } from "../mcp/server.ts";
-import { SystemError, InitializationError, ShutdownError } from "../utils/errors.ts";
-import { delay, retry, circuitBreaker, CircuitBreaker } from "../utils/helpers.ts";
+} from "../utils/types.js";
+import { IEventBus } from "./event-bus.js";
+import { ILogger } from "./logger.js";
+import { ITerminalManager } from "../terminal/manager.js";
+import { IMemoryManager } from "../memory/manager.js";
+import { ICoordinationManager } from "../coordination/manager.js";
+import { IMCPServer } from "../mcp/server.js";
+import { SystemError, InitializationError, ShutdownError } from "../utils/errors.js";
+import { delay, retry, circuitBreaker, CircuitBreaker } from "../utils/helpers.js";
 import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 

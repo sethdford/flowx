@@ -3,13 +3,13 @@
  * Orchestrates the initialization of all architectural components
  */
 
-import { Application, ApplicationModule, ApplicationConfig } from './application.ts';
-import { Container } from './container.ts';
-import { PluginManager } from './plugin-system.ts';
-import { createValidator } from './validation.ts';
-import { CLIApplication } from '../cli/core/application.ts';
-import { ILogger } from './logger.ts';
-import { IEventBus, EventBus } from './event-bus.ts';
+import { Application, ApplicationModule, ApplicationConfig } from './application.js';
+import { Container } from './container.js';
+import { PluginManager } from './plugin-system.js';
+import { createValidator } from './validation.js';
+import { CLIApplication } from '../cli/core/application.js';
+import { ILogger } from './logger.js';
+import { IEventBus, EventBus } from './event-bus.js';
 
 export interface BootstrapConfig extends ApplicationConfig {
   modules?: string[];

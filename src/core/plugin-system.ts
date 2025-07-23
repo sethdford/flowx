@@ -4,8 +4,8 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { Container } from './container.ts';
-import { ILogger } from './logger.ts';
+import { Container } from './container.js';
+import { ILogger } from './logger.js';
 
 export interface PluginMetadata {
   name: string;

@@ -7,8 +7,8 @@ import { EventEmitter } from 'node:events';
 import { spawn, ChildProcess } from 'node:child_process';
 import { join } from 'node:path';
 import { writeFile, mkdir } from 'node:fs/promises';
-import { ILogger } from '../core/logger.ts';
-import { ClaudeApiClient, createClaudeClient } from './claude-api-client.ts';
+import { ILogger } from '../core/logger.js';
+import { ClaudeApiClient, createClaudeClient } from './claude-api-client.js';
 
 export interface AgentProcessConfig {
   id: string;

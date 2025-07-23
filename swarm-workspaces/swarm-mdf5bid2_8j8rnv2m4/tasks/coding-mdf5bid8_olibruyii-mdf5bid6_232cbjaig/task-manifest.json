@@ -1,0 +1,19 @@
+{
+  "taskId": "mdf5bid8_olibruyii",
+  "taskName": "Complete Objective",
+  "taskType": "coding",
+  "assignedAgent": "mdf5bid6_232cbjaig",
+  "agentName": "coordinator-SwarmLead",
+  "workspaceDir": "swarm-workspaces/swarm-mdf5bid2_8j8rnv2m4/tasks/coding-mdf5bid8_olibruyii-mdf5bid6_232cbjaig",
+  "objective": "Create a package.json with name 'simple-prompt-test' and version '1.0.0' Create a package.json with name 'simple-prompt-test' and version '1.0.0'",
+  "requirements": {
+    "capabilities": [
+      "code-generation"
+    ],
+    "tools": [],
+    "permissions": [],
+    "estimatedDuration": 600000
+  },
+  "createdAt": "2025-07-22T23:08:28.221Z",
+  "status": "active"
+}

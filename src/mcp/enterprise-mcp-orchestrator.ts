@@ -4,11 +4,11 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { ILogger } from '../core/logger.ts';
-import { MCPServer } from './server.ts';
-import { EnterpriseToolsManager } from './enterprise-tools-manager.ts';
-import { MCPTool, MCPContext, MCPRequest, MCPResponse } from '../utils/types.ts';
-import { generateId } from '../utils/helpers.ts';
+import { ILogger } from '../core/logger.js';
+import { MCPServer } from './server.js';
+import { EnterpriseToolsManager } from './enterprise-tools-manager.js';
+import { MCPTool, MCPContext, MCPRequest, MCPResponse } from '../utils/types.js';
+import { generateId } from '../utils/helpers.js';
 
 export interface MCPOrchestrationConfig {
   enableEnterpriseTools: boolean;

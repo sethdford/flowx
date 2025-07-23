@@ -3,16 +3,16 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { ILogger } from "../core/logger.ts";
-import { IEventBus } from "../core/event-bus.ts";
+import { ILogger } from "../core/logger.js";
+import { IEventBus } from "../core/event-bus.js";
 import { 
   SwarmEvent, 
   EventType, 
   AgentId, 
   CommunicationStrategy 
-} from "../swarm/types.ts";
-import { generateId } from "../utils/helpers.ts";
-import { SystemError } from '../utils/errors.ts';
+} from "../swarm/types.js";
+import { generateId } from "../utils/helpers.js";
+import { SystemError } from '../utils/errors.js';
 
 // Custom error classes for message bus operations
 class MessageBusError extends SystemError {

@@ -1,0 +1,19 @@
+{
+  "taskId": "mdefvico_ucl5lmocq",
+  "taskName": "Complete Objective",
+  "taskType": "coding",
+  "assignedAgent": "mdefvicl_sv6r1liae",
+  "agentName": "coordinator-SwarmLead",
+  "workspaceDir": "swarm-workspaces/swarm-mdefvich_cofm3dlhe/tasks/coding-mdefvico_ucl5lmocq-mdefvicl_sv6r1liae",
+  "objective": "Create a simple package.json with name 'monitored-app' and version '3.0.0' Create a simple package.json with name 'monitored-app' and version '3.0.0'",
+  "requirements": {
+    "capabilities": [
+      "code-generation"
+    ],
+    "tools": [],
+    "permissions": [],
+    "estimatedDuration": 600000
+  },
+  "createdAt": "2025-07-22T11:16:11.305Z",
+  "status": "active"
+}

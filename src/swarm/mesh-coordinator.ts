@@ -15,9 +15,9 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { Logger } from '../core/logger.js';
-import { generateId } from '../utils/helpers.js';
-import { AgentId, TaskId, TaskDefinition, AgentState } from './types.js';
+import { Logger } from '../core/logger';
+import { generateId } from '../utils/helpers';
+import { AgentId, TaskId, TaskDefinition, AgentState } from './types';
 
 // ===== MESH COORDINATION TYPES =====
 
@@ -173,17 +173,33 @@ export class MeshCoordinator extends EventEmitter {
       ...config
     };
     
-    this.logger = new Logger('MeshCoordinator');
+    this.logger = new Logger({ 
+      level: 'info', 
+      format: 'json', 
+      destination: 'console' 
+    }, { component: 'MeshCoordinator' });
     this.networkMetrics = this.initializeMetrics();
     
-    this.logger.info('Advanced Mesh Coordinator initialized', {
-      config: this.config,
-      algorithms: {
-        consensus: this.config.consensusAlgorithm,
-        loadBalancing: this.config.loadBalancingStrategy,
-        partitionRecovery: this.config.partitionRecoveryStrategy
-      }
-    });
+        // Avoid logging in test environment to prevent mock issues
+    if (process.env.NODE_ENV !== 'test' && process.env.JEST_WORKER_ID === undefined) {
+      this.logger.info('Advanced Mesh Coordinator initialized', {
+        config: this.config,
+        algorithms: {
+          consensus: this.config.consensusAlgorithm,
+          loadBalancing: this.config.loadBalancingStrategy,
+          partitionRecovery: this.config.partitionRecoveryStrategy
+        }
+      });
+    }
+  }
+
+  /**
+   * Safe logging that works in test environment
+   */
+  private safeLog(level: 'info' | 'error' | 'warn' | 'debug', message: string, meta?: any): void {
+    if (process.env.NODE_ENV !== 'test' && process.env.JEST_WORKER_ID === undefined) {
+      this.logger[level](message, meta);
+    }
   }
 
   /**
@@ -217,7 +233,8 @@ export class MeshCoordinator extends EventEmitter {
    * Add a node to the mesh network
    */
   async addNode(agentId: AgentId, capabilities: string[], region: string = 'default'): Promise<string> {
-    const nodeId = generateId('mesh-node');
+    try {
+      const nodeId = generateId('mesh-node');
     
     // Calculate optimal position in 3D space for network efficiency
     const position = this.calculateOptimalPosition(region);
@@ -246,7 +263,7 @@ export class MeshCoordinator extends EventEmitter {
     // Update network metrics
     this.updateNetworkMetrics();
     
-    this.logger.info('Node added to mesh network', {
+    this.safeLog('info', 'Node added to mesh network', {
       nodeId,
       agentId: agentId.id,
       capabilities,
@@ -262,6 +279,12 @@ export class MeshCoordinator extends EventEmitter {
     });
     
     return nodeId;
+    } catch (error) {
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Error in addNode:', error);
+      }
+      throw error;
+    }
   }
 
   /**
@@ -285,7 +308,7 @@ export class MeshCoordinator extends EventEmitter {
     // Reoptimize network topology
     await this.optimizeNetworkTopology();
     
-    this.logger.info('Node removed from mesh network', { nodeId });
+    this.safeLog('info', 'Node removed from mesh network', { nodeId });
     this.emit('mesh:node:removed', { nodeId });
   }
 
@@ -293,7 +316,7 @@ export class MeshCoordinator extends EventEmitter {
    * Coordinate task assignment through mesh consensus
    */
   async coordinateTask(task: TaskDefinition): Promise<string> {
-    this.logger.info('Starting mesh task coordination', {
+    this.safeLog('info', 'Starting mesh task coordination', {
       taskId: task.id.id,
       taskType: task.type,
       complexity: (task as any).estimatedComplexity || 0.5

@@ -3,10 +3,15 @@
  * Enterprise-grade implementation with comprehensive features
  */
 
-import {
-  MCPConfig,
-  MCPRequest,
-  MCPResponse,
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { EventEmitter } from 'node:events';
+import { fileURLToPath } from 'node:url';
+
+import { 
+  MCPConfig, 
+  MCPRequest, 
+  MCPResponse, 
   MCPError,
   MCPTool,
   MCPInitializeParams,
@@ -16,24 +21,26 @@ import {
   MCPProtocolVersion,
   MCPCapabilities,
   MCPContext,
-} from "../utils/types.ts";
-import { IEventBus } from "../core/event-bus.ts";
-import { ILogger } from "../core/logger.ts";
-import { MCPError as MCPErrorClass, MCPMethodNotFoundError } from "../utils/errors.ts";
-import { ITransport } from "./transports/base.ts";
-import { StdioTransport } from "./transports/stdio.ts";
-import { HttpTransport } from "./transports/http.ts";
-import { ToolRegistry } from "./tools.ts";
-import { RequestRouter } from "./router.ts";
-import { SessionManager, ISessionManager } from "./session-manager.ts";
-import { AuthManager, IAuthManager } from "./auth.ts";
-import { LoadBalancer, ILoadBalancer, RequestQueue } from "./load-balancer.ts";
-import { createFlowXTools, FlowXToolContext } from "./flowx-tools.ts";
-import { createSwarmTools, SwarmToolContext } from "./swarm-tools.ts";
-import { createNeuralTools } from "./neural-tools.js";
-import { createFilesystemTools } from "./tools/filesystem/index.ts";
-import { createWebTools } from "./tools/web/index.ts";
-import { createDatabaseTools } from "./tools/database/index.ts";
+} from "../utils/types";
+import { IEventBus } from "../core/event-bus";
+import { ILogger } from "../core/logger";
+import { MCPError as MCPErrorClass, MCPMethodNotFoundError } from "../utils/errors";
+import { ITransport } from "./transports/base";
+import { StdioTransport } from "./transports/stdio";
+import { HttpTransport } from "./transports/http";
+import { ToolRegistry } from "./tools";
+import { RequestRouter } from "./router";
+import { SessionManager, ISessionManager } from "./session-manager";
+import { AuthManager, IAuthManager } from "./auth";
+import { LoadBalancer, ILoadBalancer, RequestQueue } from "./load-balancer";
+
+import { createFlowXTools, FlowXToolContext } from "./flowx-tools";
+import { createSwarmTools, SwarmToolContext } from "./swarm-tools";
+import { createNeuralTools } from "./neural-tools";
+import { createEnterpriseSwarmTools } from "./enterprise-swarm-tools";
+import { createFilesystemTools } from "./tools/filesystem/index";
+import { createWebTools } from "./tools/web/index";
+import { createDatabaseTools } from "./tools/database/index";
 import { platform, arch } from 'node:os';
 import { performance } from 'node:perf_hooks';
 
@@ -126,10 +133,10 @@ export class MCPServer implements IMCPServer {
     this.router = new RequestRouter(this.toolRegistry, logger);
   }
 
-  async start(): Promise<void> {
-    if (this.running) {
-      throw new MCPErrorClass('MCP server already running');
-    }
+      async start(): Promise<void> {
+      if (this.running) {
+        throw new MCPErrorClass('MCP server already running');
+      }
 
     this.logger.info('Starting enterprise MCP server', { 
       transport: this.config.transport,
@@ -156,10 +163,10 @@ export class MCPServer implements IMCPServer {
         port: this.config.port,
         host: this.config.host
       });
-    } catch (error) {
-      this.logger.error('Failed to start MCP server', error);
-      throw new MCPErrorClass('Failed to start MCP server', { error });
-    }
+          } catch (error) {
+        this.logger.error('Failed to start MCP server', error);
+        throw new MCPErrorClass('Failed to start MCP server', { error });
+      }
   }
 
   async stop(): Promise<void> {
@@ -448,8 +455,8 @@ export class MCPServer implements IMCPServer {
           this.logger,
         );
       
-      default:
-        throw new MCPErrorClass(`Unknown transport type: ${this.config.transport}`);
+              default:
+          throw new MCPErrorClass(`Unknown transport type: ${this.config.transport}`);
     }
   }
 
@@ -513,6 +520,13 @@ export class MCPServer implements IMCPServer {
       this.registerTool(tool);
     }
     this.logger.info('Registered Neural Network tools', { count: neuralTools.length });
+
+    // Register Enterprise Swarm Tools (87 tools) - Advanced swarm coordination and neural patterns
+    const enterpriseSwarmTools = createEnterpriseSwarmTools(this.logger);
+    for (const tool of enterpriseSwarmTools) {
+      this.registerTool(tool);
+    }
+    this.logger.info('Registered Enterprise Swarm tools', { count: enterpriseSwarmTools.length });
 
     // Register Filesystem Tools
     const filesystemTools = createFilesystemTools(this.logger);
@@ -668,9 +682,9 @@ export class MCPServer implements IMCPServer {
       };
     }
 
-    if (error instanceof MCPErrorClass) {
-      return {
-        code: -32603,
+          if (error instanceof MCPErrorClass) {
+        return {
+          code: -32603,
         message: (error instanceof Error ? error.message : String(error)),
         data: error.details,
       };

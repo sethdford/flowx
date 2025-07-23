@@ -1,0 +1,19 @@
+{
+  "taskId": "mdf5dqd9_xb2hbptbm",
+  "taskName": "Complete Objective",
+  "taskType": "coding",
+  "assignedAgent": "mdf5dqd6_3k5g82p1j",
+  "agentName": "coordinator-SwarmLead",
+  "workspaceDir": "swarm-workspaces/swarm-mdf5dqd1_wm5pxym2r/tasks/coding-mdf5dqd9_xb2hbptbm-mdf5dqd6_3k5g82p1j",
+  "objective": "Create a package.json with name 'realistic-timeout-test' and version '1.0.0' Create a package.json with name 'realistic-timeout-test' and version '1.0.0'",
+  "requirements": {
+    "capabilities": [
+      "code-generation"
+    ],
+    "tools": [],
+    "permissions": [],
+    "estimatedDuration": 600000
+  },
+  "createdAt": "2025-07-22T23:10:11.902Z",
+  "status": "active"
+}

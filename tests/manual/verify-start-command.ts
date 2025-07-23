@@ -3,7 +3,18 @@
  * Verification script for start command consolidation
  */
 
-import { colors } from '@cliffy/ansi/colors';
+// Mock @cliffy/ansi/colors for Node.js environment
+const colors = {
+  green: (text: string) => text,
+  red: (text: string) => text,
+  yellow: (text: string) => text,
+  blue: (text: string) => text,
+  cyan: (text: string) => text,
+  magenta: (text: string) => text,
+  gray: (text: string) => text,
+  bold: (text: string) => text,
+  dim: (text: string) => text
+};
 
 async function runTest(name: string, fn: () => Promise<boolean>): Promise<void> {
   try {

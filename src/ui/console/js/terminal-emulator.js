@@ -11,13 +11,12 @@ export class TerminalEmulator {
     this.historyIndex = -1;
     this.maxHistorySize = 1000;
     this.maxOutputLines = 1000;
-    this.currentPrompt = 'claude-flow>';
+    this.currentPrompt = 'flowx>';
     this.isLocked = false;
     
     // Command suggestions
     this.commands = [
-      'help', 'clear', 'status', 'connect', 'disconnect',
-      'claude-flow', 'swarm', 'init', 'config', 'memory',
+      'flowx', 'swarm', 'init', 'config', 'memory',
       'tools', 'agents', 'benchmark', 'sparc'
     ];
     

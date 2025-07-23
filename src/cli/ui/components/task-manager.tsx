@@ -168,7 +168,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({ onBack }) => {
   if (isLoading) {
     return (
       <Box flexDirection="column" alignItems="center" justifyContent="center" minHeight={10}>
-        <Spinner type="dots" />
+        {(Spinner as any)({ type: "dots" })}
         <Text> Loading task data...</Text>
       </Box>
     );

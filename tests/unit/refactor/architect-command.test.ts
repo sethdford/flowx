@@ -37,7 +37,7 @@ jest.mock('../../../src/cli/core/output-formatter.ts', () => ({
 
 describe('Architect Command', () => {
   let mockContext: CLIContext;
-  let consoleLogSpy: jest.SpyInstance;
+  let consoleLogSpy: any;
 
   beforeEach(() => {
     mockContext = {

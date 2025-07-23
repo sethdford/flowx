@@ -1,52 +1,40 @@
 /**
- * Spawn Command
- * Direct agent spawning interface
+ * FIXED Agent Spawn Command - Using Claude Code + MCP (Superior Strategy)
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { printSuccess, printError, printInfo, printWarning } from '../../core/output-formatter.ts';
-import { getMemoryManager, getPersistenceManager } from '../../core/global-initialization.ts';
-import { SwarmCoordinator } from '../../../swarm/coordinator.ts';
-import { TaskEngine } from '../../../task/engine.ts';
-import { Logger } from '../../../core/logger.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { printSuccess, printError, printInfo } from '../../core/output-formatter.js';
+import { AgentManager, AgentProfile } from '../../../agents/agent-manager.js';
+import { Logger } from '../../../core/logger.js';
+import { generateId } from '../../../utils/helpers.js';
+
+const logger = new Logger('spawn-command');
+const agentManager = new AgentManager(logger);
 
 export const spawnCommand: CLICommand = {
   name: 'spawn',
-  description: 'Direct agent spawning interface',
+  description: 'Spawn a specialized agent using Claude Code + MCP (FIXED)',
   category: 'Agents',
-  usage: 'flowx spawn <agent-type> [name] [OPTIONS]',
+  usage: 'flowx spawn <type> [name] [OPTIONS]',
   examples: [
-    'flowx spawn researcher "Research Bot"',
-    'flowx spawn coder --priority high',
-    'flowx spawn coordinator --timeout 300',
-    'flowx spawn analyst --capabilities "data,patterns"'
+    'flowx spawn researcher "Data Analyst"',
+    'flowx spawn coder "Backend Developer" --capabilities "node.js,database"',
+    'flowx spawn architect "System Designer" --priority 9',
+    'flowx spawn coordinator "Team Lead" --max-tasks 5'
   ],
   options: [
     {
-      name: 'name',
-      short: 'n',
-      description: 'Agent name',
+      name: 'capabilities',
+      short: 'c',
+      description: 'Comma-separated list of agent capabilities',
       type: 'string'
     },
     {
       name: 'priority',
       short: 'p',
-      description: 'Agent priority (1-10)',
+      description: 'Agent priority level (1-10)',
       type: 'number',
       default: 5
-    },
-    {
-      name: 'timeout',
-      short: 't',
-      description: 'Agent timeout in seconds',
-      type: 'number',
-      default: 300
-    },
-    {
-      name: 'capabilities',
-      short: 'c',
-      description: 'Comma-separated agent capabilities',
-      type: 'string'
     },
     {
       name: 'max-tasks',
@@ -56,120 +44,108 @@ export const spawnCommand: CLICommand = {
       default: 3
     },
     {
-      name: 'autonomy',
-      short: 'a',
-      description: 'Autonomy level (0.0-1.0)',
-      type: 'number',
-      default: 0.7
+      name: 'system-prompt',
+      short: 's',
+      description: 'Custom system prompt for the agent',
+      type: 'string'
     },
     {
-      name: 'verbose',
-      short: 'v',
-      description: 'Verbose output',
-      type: 'boolean'
+      name: 'working-dir',
+      short: 'w',
+      description: 'Working directory for the agent',
+      type: 'string'
     }
   ],
   handler: async (context: CLIContext) => {
     const { args, options } = context;
-    
-    console.log('Debug - args:', args, 'options:', options);
-    
+
+    printInfo('🚀 Spawning agent with Claude Code + MCP (FIXED approach)');
+
+    // Validate arguments
     if (args.length === 0) {
       printError('Agent type is required');
-      printInfo('Usage: flowx spawn <agent-type> [name] [OPTIONS]');
-      printInfo('Available types: researcher, coder, analyst, coordinator, tester, reviewer, architect, optimizer, documenter, monitor, specialist, security, devops');
+      printInfo('Usage: flowx spawn <type> [name]');
+      printInfo('Types: coordinator, researcher, coder, architect, tester, analyst, reviewer, optimizer, documenter, monitor');
       return;
     }
 
     const agentType = args[0];
-    const agentName = args[1] || options.name || `${agentType}-${Date.now()}`;
+    const agentName = args[1] || `${agentType}-${Date.now()}`;
+    
+    // Parse capabilities
+    const capabilities = options.capabilities 
+      ? options.capabilities.split(',').map((c: string) => c.trim())
+      : getDefaultCapabilities(agentType);
 
-    // Validate agent type
-    const validTypes = [
-      'researcher', 'coder', 'analyst', 'coordinator', 'tester', 'reviewer',
-      'architect', 'optimizer', 'documenter', 'monitor', 'specialist', 
-      'security', 'devops'
-    ];
+    // Create agent profile
+    const agentId = generateId();
+    const workingDir = options['working-dir'] || `./agents/${agentId}`;
 
-    if (!validTypes.includes(agentType)) {
-      printError(`Invalid agent type: ${agentType}`);
-      printInfo(`Valid types: ${validTypes.join(', ')}`);
-      return;
-    }
+    const profile: AgentProfile = {
+      id: agentId,
+      name: agentName,
+      type: agentType,
+      capabilities,
+      systemPrompt: options['system-prompt'],
+      priority: options.priority || 5,
+      maxConcurrentTasks: options['max-tasks'] || 3,
+      workingDirectory: workingDir,
+      environment: {
+        SPAWNED_BY: 'spawn-command',
+        SPAWN_TIME: new Date().toISOString()
+      }
+    };
 
     try {
-      printInfo(`🚀 Spawning ${agentType} agent: ${agentName}`);
+      printInfo(`Creating ${agentType} agent: ${agentName}`);
+      printInfo(`Working directory: ${workingDir}`);
+      printInfo(`Capabilities: ${capabilities.join(', ')}`);
       
-      // Initialize SwarmCoordinator
-      const logger = Logger.getInstance();
-      const swarmCoordinator = new SwarmCoordinator({
-        name: 'spawn-swarm',
-        description: 'Temporary swarm for agent spawning',
-        version: '1.0.0',
-        mode: 'centralized',
-        strategy: 'auto',
-        maxAgents: 50,
-        maxConcurrentTasks: 10,
-        qualityThreshold: 0.8,
-        resourceLimits: {
-          memory: 512 * 1024 * 1024, // 512MB
-          cpu: 2,
-          disk: 1024 * 1024 * 1024 // 1GB
-        }
-      });
-
-      // Initialize the coordinator
-      await swarmCoordinator.initialize();
-
-      // Parse capabilities
-      const capabilities = options.capabilities ? 
-        options.capabilities.split(',').map((c: string) => c.trim()) : 
-        [];
-
-      if (options.verbose) {
-        printInfo('Agent Configuration:');
-        console.log(JSON.stringify({
-          name: agentName,
-          type: agentType,
-          capabilities,
-          priority: options.priority || 5,
-          timeout: options.timeout || 300,
-          maxTasks: options.maxTasks || 3,
-          autonomy: options.autonomy || 0.7
-        }, null, 2));
-      }
-
-      // Register the agent with SwarmCoordinator
-      const agentId = await swarmCoordinator.registerAgent(
-        agentName,
-        agentType as any,
-        capabilities
-      );
+      // Spawn agent using Claude Code + MCP (SUPERIOR APPROACH)
+      const spawnedAgentId = await agentManager.spawnAgent(profile);
       
-      printSuccess(`✅ Agent spawned successfully!`);
-      printInfo(`🆔 Agent ID: ${agentId}`);
-      printInfo(`🏷️  Name: ${agentName}`);
-      printInfo(`🔧 Type: ${agentType}`);
-      printInfo(`⚡ Priority: ${options.priority || 5}`);
-      printInfo(`🎯 Max Tasks: ${options.maxTasks || 3}`);
-      printInfo(`🤖 Autonomy: ${((options.autonomy || 0.7) * 100).toFixed(0)}%`);
-      
-      if (capabilities.length > 0) {
-        printInfo(`🛠️  Capabilities: ${capabilities.join(', ')}`);
-      }
+      printSuccess('✅ Agent spawned successfully with Claude Code!');
+      console.log(`
+📋 Agent Details:
+   ID: ${spawnedAgentId}
+   Name: ${agentName}
+   Type: ${agentType}
+   Priority: ${profile.priority}
+   Max Tasks: ${profile.maxConcurrentTasks}
+   Working Dir: ${workingDir}
+   Capabilities: ${capabilities.join(', ')}
 
-      // Show swarm status
-      const swarmStatus = swarmCoordinator.getSwarmStatus();
-      printInfo(`📊 Swarm Status: ${swarmStatus.status}`);
-      printInfo(`👥 Total Agents: ${swarmStatus.agents.total}`);
-      printInfo(`🟢 Idle Agents: ${swarmStatus.agents.idle}`);
+🎯 The agent is now running as a Claude Code process with MCP tools for coordination.
+   It can spawn other agents, manage tasks, and coordinate with the swarm.
 
-      // Stop coordinator
-      await swarmCoordinator.stop();
+💡 Monitor agent status with: flowx agent list
+   Communicate with agents through the swarm coordination system.
+`);
 
     } catch (error) {
       printError(`Failed to spawn agent: ${error instanceof Error ? error.message : String(error)}`);
+      logger.error('Agent spawn failed', { error, profile });
       throw error;
     }
   }
-}; 
+};
+
+/**
+ * Get default capabilities for agent type
+ */
+function getDefaultCapabilities(type: string): string[] {
+  const defaultCapabilities = {
+    coordinator: ['task-management', 'agent-coordination', 'planning', 'communication'],
+    researcher: ['web-search', 'analysis', 'documentation', 'data-gathering'],
+    coder: ['code-generation', 'debugging', 'testing', 'file-system'],
+    architect: ['system-design', 'documentation', 'code-review', 'planning'],
+    tester: ['testing', 'quality-assurance', 'automation', 'code-review'],
+    analyst: ['data-analysis', 'research', 'documentation', 'insights'],
+    reviewer: ['code-review', 'quality-assurance', 'documentation', 'analysis'],
+    optimizer: ['performance-analysis', 'code-optimization', 'monitoring', 'metrics'],
+    documenter: ['documentation', 'writing', 'research', 'knowledge-management'],
+    monitor: ['monitoring', 'alerting', 'metrics', 'system-analysis']
+  };
+
+  return defaultCapabilities[type as keyof typeof defaultCapabilities] || ['general'];
+} 

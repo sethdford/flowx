@@ -2,10 +2,10 @@
  * SQL.ts-based memory backend for cross-platform compatibility
  */
 
-import { MemoryEntry, MemoryQuery } from "../../utils/types.ts";
-import { IMemoryBackend } from "./base.ts";
-import { ILogger } from "../../core/logger.ts";
-import { MemoryError } from "../../utils/errors.ts";
+import { MemoryEntry, MemoryQuery } from "../../utils/types.js";
+import { IMemoryBackend } from "./base.js";
+import { ILogger } from "../../core/logger.js";
+import { MemoryError } from "../../utils/errors.js";
 import * as fs from 'fs';
 import * as path from 'path';
 

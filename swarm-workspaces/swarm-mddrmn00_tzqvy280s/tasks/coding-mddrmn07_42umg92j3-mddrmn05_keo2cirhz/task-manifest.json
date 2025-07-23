@@ -1,0 +1,19 @@
+{
+  "taskId": "mddrmn07_42umg92j3",
+  "taskName": "Complete Objective",
+  "taskType": "coding",
+  "assignedAgent": "mddrmn05_keo2cirhz",
+  "agentName": "coordinator-SwarmLead",
+  "workspaceDir": "swarm-workspaces/swarm-mddrmn00_tzqvy280s/tasks/coding-mddrmn07_42umg92j3-mddrmn05_keo2cirhz",
+  "objective": "Create a package.json file with name 'my-app', version '1.0.0', and React dependencies Create a package.json file with name 'my-app', version '1.0.0', and React dependencies",
+  "requirements": {
+    "capabilities": [
+      "code-generation"
+    ],
+    "tools": [],
+    "permissions": [],
+    "estimatedDuration": 600000
+  },
+  "createdAt": "2025-07-21T23:57:26.648Z",
+  "status": "active"
+}

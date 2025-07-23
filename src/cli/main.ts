@@ -5,11 +5,11 @@
  * Optimized for fast startup with lazy service initialization
  */
 
-import { CLIApplication } from './core/application.ts';
-import { getAllCommands } from './core/command-registry.ts';
-import { initializeGlobalServices, shutdownGlobalServices, isServicesInitialized } from './core/global-initialization.ts';
-import { EventBus } from '../core/event-bus.ts';
-import { Logger } from '../core/logger.ts';
+import { CLIApplication } from './core/application.js';
+import { getAllCommands } from './core/command-registry.js';
+import { initializeGlobalServices, shutdownGlobalServices, isServicesInitialized } from './core/global-initialization.js';
+import { EventBus } from '../core/event-bus.js';
+import { Logger } from '../core/logger.js';
 
 async function main() {
   try {
@@ -50,6 +50,8 @@ async function main() {
       process.exit(0);
     }
 
+    // VS Code support removed - no environment manipulation needed
+    
     // For actual commands, initialize services with timeout and progress
     console.log('🚀 Initializing FlowX CLI...');
     const startTime = Date.now();
@@ -111,6 +113,11 @@ async function main() {
 
   } catch (error) {
     console.error('❌ Failed to start CLI:', error);
+    
+    // Show stack trace for debugging
+    if (error instanceof Error) {
+      console.error('Stack trace:', error.stack);
+    }
     
     // Only shutdown if services were initialized
     if (isServicesInitialized()) {

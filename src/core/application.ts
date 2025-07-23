@@ -3,9 +3,9 @@
  * Provides lifecycle management, service orchestration, and clean shutdown
  */
 
-import { Container } from './container.ts';
-import { ILogger } from './logger.ts';
-import { IEventBus } from './event-bus.ts';
+import { Container } from './container.js';
+import { ILogger } from './logger.js';
+import { IEventBus } from './event-bus.js';
 import { EventEmitter } from 'node:events';
 
 export interface ApplicationConfig {

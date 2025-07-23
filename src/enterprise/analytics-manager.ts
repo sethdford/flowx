@@ -1,8 +1,8 @@
 import { EventEmitter } from 'events';
 import { readFile, writeFile, mkdir, readdir } from 'fs/promises';
 import { join } from 'path';
-import { Logger } from '../core/logger.ts';
-import { ConfigManager } from '../core/config.ts';
+import { Logger } from '../core/logger.js';
+import { ConfigManager } from '../core/config.js';
 
 export interface AnalyticsMetric {
   id: string;

@@ -7,6 +7,7 @@
 import { EventEmitter } from 'node:events';
 import { ILogger } from '../core/logger.js';
 import { AgentProcessConfig } from './agent-process-manager.js';
+import { ModelSelector, DEFAULT_MODEL_ID } from '../config/models.js';
 
 export interface SecureCoderConfig {
   // Security Standards
@@ -137,7 +138,7 @@ export class SecureCoderAgent extends EventEmitter {
         ...baseConfig.claudeConfig,
         temperature: 0.1, // Lower temperature for more deterministic secure code
         maxTokens: 8192,
-        model: 'claude-3-5-sonnet-20241022' // Latest model for best security understanding
+        model: ModelSelector.getBestForCoding().id // Latest model for best security understanding
       }
     };
   }
@@ -625,12 +626,16 @@ Remember: Security is not optional. Every line of code must meet enterprise secu
     
     return [
       combinedPrompt,
-      '--model', 'claude-3-5-sonnet-20241022',
-      '--temperature', '0.1',
-      '--max-tokens', '8192',
-      '--add-dir', workingDirectory,
-      '--add-dir', 'src/templates/security-enhanced',
-      '--add-dir', 'src/templates/claude-optimized/.claude',
+      // Note: --model not supported in Claude CLI v1.0.56
+      // '--model', ModelSelector.getBestForCoding().id,
+      // Note: --temperature not supported by Claude CLI, only API
+      // '--temperature', '0.1',
+      // Note: --max-tokens not supported by Claude CLI, only API
+      // '--max-tokens', '8192',
+      // Note: --add-dir not supported in Claude CLI v1.0.56
+      // '--add-dir', workingDirectory,
+      // '--add-dir', 'src/templates/security-enhanced',
+      // '--add-dir', 'src/templates/claude-optimized/.claude',
       '--dangerously-skip-permissions' // For automation in enterprise environments
     ];
   }

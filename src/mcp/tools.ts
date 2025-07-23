@@ -2,9 +2,9 @@
  * Enhanced Tool registry for MCP with capability negotiation and discovery
  */
 
-import { MCPTool, MCPCapabilities, MCPProtocolVersion } from "../utils/types.ts";
-import { ILogger } from "../core/logger.ts";
-import { MCPError } from "../utils/errors.ts";
+import { MCPTool, MCPCapabilities, MCPProtocolVersion } from "../utils/types.js";
+import { ILogger } from "../core/logger.js";
+import { MCPError } from "../utils/errors.js";
 import { EventEmitter } from 'node:events';
 
 export interface ToolCapability {

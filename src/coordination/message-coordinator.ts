@@ -3,11 +3,11 @@
  * Coordinates message flow between system components using MessageBroker
  */
 
-import { Message, CoordinationConfig, SystemEvents } from "../utils/types.ts";
-import { IEventBus } from "../core/event-bus.ts";
-import { ILogger } from "../core/logger.ts";
-import { generateId } from "../utils/helpers.ts";
-import { MessageBroker, createMessageBroker, BrokerMessage, MessageHandler } from "../communication/message-broker.ts";
+import { Message, CoordinationConfig, SystemEvents } from "../utils/types.js";
+import { IEventBus } from "../core/event-bus.js";
+import { ILogger } from "../core/logger.js";
+import { generateId } from "../utils/helpers.js";
+import { MessageBroker, createMessageBroker, BrokerMessage, MessageHandler } from "../communication/message-broker.js";
 
 interface PendingResponse {
   resolve: (response: unknown) => void;

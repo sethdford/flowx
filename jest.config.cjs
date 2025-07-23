@@ -18,7 +18,9 @@ module.exports = {
         strict: false, // Relax strict mode for tests
         allowImportingTsExtensions: false, // Disable .ts extension imports
         downlevelIteration: true, // Enable downlevel iteration for Maps/Sets
-        forceConsistentCasingInFileNames: false
+        forceConsistentCasingInFileNames: false,
+        experimentalDecorators: true, // Enable experimental decorators
+        emitDecoratorMetadata: true // Enable decorator metadata
       }
     }],
     '^.+\\.(js|jsx)$': 'babel-jest'

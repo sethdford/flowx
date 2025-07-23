@@ -48,21 +48,21 @@ jest.mock('../../../../tests/helpers/deno-fs-utils.ts');
 
 // Mock exists function
 jest.mock('./tests/helpers/deno-fs-utils.ts', () => ({
-  safeChdir: jest.fn().mockResolvedValue(true),
-  safeCwd: jest.fn().mockReturnValue('/mock/cwd'),
-  createTempTestDir: jest.fn().mockResolvedValue('/mock/temp-dir'),
-  safeRemoveDir: jest.fn().mockResolvedValue(true),
+  safeChdir: jest.fn().mockResolvedValue(true as boolean),
+  safeCwd: jest.fn().mockReturnValue('/mock/cwd' as string),
+  createTempTestDir: jest.fn().mockResolvedValue('/mock/temp-dir' as string),
+  safeRemoveDir: jest.fn().mockResolvedValue(true as boolean),
   setupTestDirEnvironment: jest.fn().mockResolvedValue({
     originalCwd: '/mock/original-cwd',
     testDir: '/mock/test-dir'
-  }),
-  cleanupTestDirEnvironment: jest.fn().mockResolvedValue(undefined),
-  exists: jest.fn().mockResolvedValue(true)
+  } as {originalCwd: string; testDir: string}),
+  cleanupTestDirEnvironment: jest.fn().mockResolvedValue(undefined as void),
+  exists: jest.fn().mockResolvedValue(true as boolean)
 }));
 
 // Mock Deno.stat for compatibility
-global.Deno = {
-  stat: jest.fn().mockResolvedValue({ isFile: true })
+(global as any).Deno = {
+  stat: jest.fn().mockResolvedValue({ isFile: true } as {isFile: boolean})
 };
 import { safeChdir, safeCwd, createTempTestDir, safeRemoveDir, setupTestDirEnvironment, cleanupTestDirEnvironment } from "../../../helpers/deno-fs-utils.ts";
 import { safeFn, tryCatch, withRetry } from "../../../helpers/error-capture.ts";

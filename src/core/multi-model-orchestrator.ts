@@ -3,8 +3,8 @@
  * Intelligent model selection and task routing between Claude and Gemini
  */
 
-import { EventBus } from './event-bus.ts';
-import { Logger } from './logger.ts';
+import { EventBus } from './event-bus.js';
+import { Logger } from './logger.js';
 
 // Supported AI model providers
 export type ModelProvider = 'claude' | 'gemini' | 'auto';

@@ -4,13 +4,13 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { ILogger } from "../core/logger.ts";
-import { MCPConfig, MCPSession, MCPTool, SystemEvents } from "../utils/types.ts";
-import { MCPError } from "../utils/errors.ts";
-import { MCPServer, IMCPServer } from "./server.ts";
-import { MCPLifecycleManager, LifecycleState } from "./lifecycle-manager.ts";
-import { MCPPerformanceMonitor } from "./performance-monitor.ts";
-import { MCPProtocolManager } from "./protocol-manager.ts";
+import { ILogger } from "../core/logger.js";
+import { MCPConfig, MCPSession, MCPTool, SystemEvents } from "../utils/types.js";
+import { MCPError } from "../utils/errors.js";
+import { MCPServer, IMCPServer } from "./server.js";
+import { MCPLifecycleManager, LifecycleState } from "./lifecycle-manager.js";
+import { MCPPerformanceMonitor } from "./performance-monitor.js";
+import { MCPProtocolManager } from "./protocol-manager.js";
 
 export interface OrchestrationComponents {
   orchestrator?: any;

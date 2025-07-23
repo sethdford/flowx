@@ -3,12 +3,12 @@
  * Dynamic agent scaling and resource management with real backend integration
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { formatTable, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.ts';
-import { getMemoryManager } from '../../core/global-initialization.ts';
-import { SwarmCoordinator } from '../../../swarm/coordinator.ts';
-import { AgentProcessManager } from '../../../agents/agent-process-manager.ts';
-import { Logger } from '../../../core/logger.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { formatTable, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.js';
+import { getMemoryManager } from '../../core/global-initialization.js';
+import { SwarmCoordinator } from '../../../swarm/coordinator.js';
+import { AgentProcessManager } from '../../../agents/agent-process-manager.js';
+import { Logger } from '../../../core/logger.js';
 import { nanoid } from 'nanoid';
 
 interface ScalingPolicy {

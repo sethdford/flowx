@@ -8,10 +8,10 @@ import { WebSocketServer, WebSocket } from 'ws';
 import cors from 'cors';
 import helmet from 'helmet';
 import { join, dirname } from 'node:path';
-import { ITransport, RequestHandler, NotificationHandler } from "./base.ts";
-import { MCPRequest, MCPResponse, MCPNotification, MCPConfig } from "../../utils/types.ts";
-import { ILogger } from "../../core/logger.ts";
-import { MCPTransportError } from "../../utils/errors.ts";
+import { ITransport, RequestHandler, NotificationHandler } from "./base.js";
+import { MCPRequest, MCPResponse, MCPNotification, MCPConfig } from "../../utils/types.js";
+import { ILogger } from "../../core/logger.js";
+import { MCPTransportError } from "../../utils/errors.js";
 
 /**
  * HTTP transport implementation

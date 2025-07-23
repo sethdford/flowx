@@ -3,13 +3,13 @@
  * CLI interface for managing 87 enterprise MCP tools with full monitoring and administration
  */
 
-import { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { printInfo, printSuccess, printError, printWarning, formatTable, TableColumn } from '../../core/output-formatter.ts';
-import { getLogger } from '../../core/global-initialization.ts';
-import { ILogger } from '../../../core/logger.ts';
-import { EnterpriseMCPOrchestrator } from '../../../mcp/enterprise-mcp-orchestrator.ts';
-import { EnterpriseToolsManager } from '../../../mcp/enterprise-tools-manager.ts';
-import { MCPServer } from '../../../mcp/server.ts';
+import { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { printInfo, printSuccess, printError, printWarning, formatTable, TableColumn } from '../../core/output-formatter.js';
+import { getLogger } from '../../core/global-initialization.js';
+import { ILogger } from '../../../core/logger.js';
+import { EnterpriseMCPOrchestrator } from '../../../mcp/enterprise-mcp-orchestrator.js';
+import { EnterpriseToolsManager } from '../../../mcp/enterprise-tools-manager.js';
+import { MCPServer } from '../../../mcp/server.js';
 
 export default {
   name: 'mcp-tools',

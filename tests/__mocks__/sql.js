@@ -2,33 +2,28 @@
  * Mock for sql.js module
  */
 
-module.exports = {
-  Database: jest.fn(() => ({
+const mockDatabase = {
+  run: jest.fn(),
+  get: jest.fn(),
+  all: jest.fn(),
+  exec: jest.fn(),
+  prepare: jest.fn(() => ({
     run: jest.fn(),
     get: jest.fn(),
     all: jest.fn(),
-    exec: jest.fn(),
-    prepare: jest.fn(() => ({
-      run: jest.fn(),
-      get: jest.fn(),
-      all: jest.fn(),
-      finalize: jest.fn()
-    })),
-    close: jest.fn()
+    getAsObject: jest.fn().mockReturnValue({ count: 0 }),
+    step: jest.fn(),
+    bind: jest.fn(),
+    reset: jest.fn(),
+    free: jest.fn(),
+    finalize: jest.fn()
   })),
-  default: {
-    Database: jest.fn(() => ({
-      run: jest.fn(),
-      get: jest.fn(),
-      all: jest.fn(),
-      exec: jest.fn(),
-      prepare: jest.fn(() => ({
-        run: jest.fn(),
-        get: jest.fn(),
-        all: jest.fn(),
-        finalize: jest.fn()
-      })),
-      close: jest.fn()
-    }))
-  }
-}; 
+  close: jest.fn(),
+  export: jest.fn().mockReturnValue(new Uint8Array())
+};
+
+const mockSqlJs = jest.fn().mockResolvedValue({
+  Database: jest.fn(() => mockDatabase)
+});
+
+module.exports = mockSqlJs; 

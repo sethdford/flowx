@@ -3,10 +3,10 @@
  * Implements the full SPARC methodology with TDD
  */
 
-import { TaskDefinition, AgentState, TaskResult } from "./types.ts";
+import { TaskDefinition, AgentState, TaskResult } from "./types.js";
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import { Logger } from "../core/logger.ts";
+import { Logger } from "../core/logger.js";
 
 export interface SparcPhase {
   name: string;
@@ -583,7 +583,7 @@ export class SparcTaskExecutor {
   }
 
   private getTestDirectory(language: string): string {
-    return language === 'python' ? 'tests' : '__tests__';
+    return 'tests'; // Always use 'tests' directory for consistency
   }
 
   private getSourceDirectory(language: string): string {

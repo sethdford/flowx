@@ -3,9 +3,9 @@
  * Real-time system monitoring and alerts
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo, formatTable } from '../../core/output-formatter.ts';
-import { getPersistenceManager, getMemoryManager } from '../../core/global-initialization.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo, formatTable } from '../../core/output-formatter.js';
+import { getPersistenceManager, getMemoryManager } from '../../core/global-initialization.js';
 import { execSync } from 'child_process';
 import { readFileSync, existsSync } from 'fs';
 import * as os from 'os';

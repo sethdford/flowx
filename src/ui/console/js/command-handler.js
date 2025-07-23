@@ -26,7 +26,7 @@ export class CommandHandler {
     
     // Claude Flow commands
     this.claudeFlowCommands = {
-      'claude-flow': this.executeClaudeFlow.bind(this),
+      'flowx': this.executeFlowX.bind(this),
       'swarm': this.executeSwarm.bind(this),
       'init': this.initializeProject.bind(this),
       'config': this.manageConfig.bind(this),
@@ -129,7 +129,7 @@ export class CommandHandler {
     this.terminal.writeLine('  swarm/orchestrate    - Swarm operations (status, create, start, stop)');
     this.terminal.writeLine('  sparc/execute        - Execute SPARC modes (coder, architect, etc.)');
     this.terminal.writeLine('  benchmark/run        - Run benchmarks (default, memory, cpu, network)');
-    this.terminal.writeLine('  claude-flow/execute  - Execute Claude Flow commands');
+    this.terminal.writeLine('  flowx/execute  - Execute FlowX commands');
     
     this.terminal.writeLine('');
     this.terminal.writeInfo('Use "help <command>" for detailed information about a specific command.');
@@ -152,7 +152,7 @@ export class CommandHandler {
       'export': 'Export session data',
       'theme': 'Change console theme',
       'version': 'Show version information',
-      'claude-flow': 'Execute Claude Flow commands',
+      'flowx': 'Execute FlowX commands',
       'swarm': 'Manage and execute swarms',
       'init': 'Initialize new project',
       'config': 'Manage configuration',
@@ -176,7 +176,7 @@ Show help information for all commands or a specific command.
 
 Examples:
   help              - Show all commands
-  help claude-flow  - Show help for claude-flow command`,
+  help flowx  - Show help for flowx command`,
       
       'clear': `
 Usage: clear
@@ -195,20 +195,20 @@ Examples:
           connect ws://localhost:3001/ws
         connect ws://localhost:3001/ws my-auth-token`,
       
-      'claude-flow': `
-Usage: claude-flow <subcommand> [options]
-Execute Claude Flow commands.
+      'flowx': `
+Usage: flowx <subcommand> [options]
+Execute FlowX commands.
 
 Subcommands:
-  start [mode]     - Start Claude Flow in specified mode
-  stop             - Stop Claude Flow
-  status           - Show Claude Flow status
+  start [mode]     - Start FlowX in specified mode
+  stop             - Stop FlowX
+  status           - Show FlowX status
   modes            - List available SPARC modes
   
 Examples:
-  claude-flow start coder
-  claude-flow status
-  claude-flow modes`,
+  flowx start coder
+  flowx status
+  flowx modes`,
       
       'swarm': `
 Usage: swarm <action> [options]
@@ -300,7 +300,7 @@ Examples:
       await this.wsClient.initializeSession();
       
       this.terminal.writeSuccess('Connected successfully');
-      this.terminal.setPrompt('claude-flow>');
+      this.terminal.setPrompt('flowx>');
     } catch (error) {
       this.terminal.writeError(`Connection failed: ${error.message}`);
     }
@@ -445,14 +445,14 @@ Examples:
   /**
    * Execute Claude Flow command
    */
-  async executeClaudeFlow(args) {
+  async executeFlowX(args) {
     if (!this.wsClient.isConnected) {
       this.terminal.writeError('Not connected to server');
       return;
     }
     
     if (args.length === 0) {
-      this.terminal.writeError('Usage: claude-flow <subcommand> [options]');
+      this.terminal.writeError('Usage: flowx <subcommand> [options]');
       return;
     }
     
@@ -460,17 +460,17 @@ Examples:
     const subArgs = args.slice(1);
     
     try {
-      const result = await this.wsClient.executeCommand('claude-flow', {
+      const result = await this.wsClient.executeCommand('flowx', {
         subcommand,
         args: subArgs
       });
       
-      this.terminal.writeSuccess(`Claude Flow ${subcommand} executed successfully`);
+      this.terminal.writeSuccess(`FlowX ${subcommand} executed successfully`);
       if (result && result.output) {
         this.terminal.writeLine(result.output);
       }
     } catch (error) {
-      this.terminal.writeError(`Claude Flow command failed: ${error.message}`);
+      this.terminal.writeError(`FlowX command failed: ${error.message}`);
     }
   }
   
@@ -766,7 +766,7 @@ Examples:
           };
           break;
           
-        case 'claude-flow/execute':
+        case 'flowx/execute':
           toolArgs = {
             command: args[0] || 'status',
             args: args.slice(1)

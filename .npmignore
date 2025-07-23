@@ -9,7 +9,7 @@
 *.swo
 
 # Test files
-__tests__/
+# Tests are handled by tests/ directory exclusion
 test/
 tests/
 *.test.js

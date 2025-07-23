@@ -35,7 +35,7 @@ export default {
   ignorePatterns: [
     'node_modules',
     'dist',
-    '**/__tests__/**',
+    '**/tests/**',
     '**/*.test.js',
     '**/*.test.ts',
     '**/*.spec.js',

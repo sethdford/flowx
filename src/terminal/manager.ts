@@ -2,15 +2,15 @@
  * Terminal manager interface and implementation
  */
 
-import { AgentProfile, AgentSession, TerminalConfig } from "../utils/types.ts";
-import { IEventBus } from "../core/event-bus.ts";
-import { ILogger } from "../core/logger.ts";
-import { TerminalError, TerminalSpawnError } from "../utils/errors.ts";
-import { ITerminalAdapter } from "./adapters/base.ts";
-import { VSCodeAdapter } from "./adapters/vscode.ts";
-import { NativeAdapter } from "./adapters/native.ts";
-import { TerminalPool } from "./pool.ts";
-import { TerminalSession } from "./session.ts";
+import { AgentProfile, AgentSession, TerminalConfig } from "../utils/types.js";
+import { IEventBus } from "../core/event-bus.js";
+import { ILogger } from "../core/logger.js";
+import { TerminalError, TerminalSpawnError } from "../utils/errors.js";
+import { ITerminalAdapter } from "./adapters/base.js";
+// VS Code adapter removed - using native terminals only
+import { NativeAdapter } from "./adapters/native.js";
+import { TerminalPool } from "./pool.js";
+import { TerminalSession } from "./session.js";
 
 export interface ITerminalManager {
   initialize(): Promise<void>;
@@ -282,27 +282,18 @@ export class TerminalManager implements ITerminalManager {
   private createAdapter(): ITerminalAdapter {
     switch (this.config.type) {
       case 'vscode':
-        return new VSCodeAdapter(this.logger);
+        this.logger.warn('VS Code adapter removed - falling back to native terminal');
+        return new NativeAdapter(this.logger);
       case 'native':
         return new NativeAdapter(this.logger);
       case 'auto':
-        // Detect environment and choose appropriate adapter
-        if (this.isVSCodeEnvironment()) {
-          this.logger.info('Detected VSCode environment, using VSCode adapter');
-          return new VSCodeAdapter(this.logger);
-        } else {
-          this.logger.info('Using native terminal adapter');
-          return new NativeAdapter(this.logger);
-        }
+        // Always use native adapter - VS Code support removed
+        this.logger.info('Using native terminal adapter');
+        return new NativeAdapter(this.logger);
       default:
         throw new TerminalError(`Unknown terminal type: ${this.config.type}`);
     }
   }
 
-  private isVSCodeEnvironment(): boolean {
-    // Check for VSCode-specific environment variables
-    return process.env.TERM_PROGRAM === 'vscode' ||
-           process.env.VSCODE_PID !== undefined ||
-           process.env.VSCODE_IPC_HOOK !== undefined;
-  }
+  // VS Code environment detection removed - using native terminals only
 }

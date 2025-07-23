@@ -4,10 +4,10 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { ILogger } from '../core/logger.ts';
-import { MCPTool, MCPContext } from '../utils/types.ts';
-import { generateId } from '../utils/helpers.ts';
-import { MCPError } from '../utils/errors.ts';
+import { ILogger } from '../core/logger.js';
+import { MCPTool, MCPContext } from '../utils/types.js';
+import { generateId } from '../utils/helpers.js';
+import { MCPError } from '../utils/errors.js';
 
 export interface EnterpriseToolMetrics {
   totalInvocations: number;

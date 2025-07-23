@@ -3,11 +3,11 @@
  * Advanced data querying interface for FlowX
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { printSuccess, printError, printInfo, printWarning, formatTable } from '../../core/output-formatter.ts';
-import { getLogger, getMemoryManager, getPersistenceManager } from '../../core/global-initialization.ts';
-import { SwarmCoordinator } from '../../../swarm/coordinator.ts';
-import { TaskEngine } from '../../../task/engine.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { printSuccess, printError, printInfo, printWarning, formatTable } from '../../core/output-formatter.js';
+import { getLogger, getMemoryManager, getPersistenceManager } from '../../core/global-initialization.js';
+import { SwarmCoordinator } from '../../../swarm/coordinator.js';
+import { TaskEngine } from '../../../task/engine.js';
 import { writeFile, readFile, mkdir } from 'fs/promises';
 import { join, dirname } from 'path';
 

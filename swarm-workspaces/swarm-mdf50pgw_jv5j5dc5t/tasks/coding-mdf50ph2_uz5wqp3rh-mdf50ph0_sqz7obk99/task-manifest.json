@@ -1,0 +1,19 @@
+{
+  "taskId": "mdf50ph2_uz5wqp3rh",
+  "taskName": "Complete Objective",
+  "taskType": "coding",
+  "assignedAgent": "mdf50ph0_sqz7obk99",
+  "agentName": "coordinator-SwarmLead",
+  "workspaceDir": "swarm-workspaces/swarm-mdf50pgw_jv5j5dc5t/tasks/coding-mdf50ph2_uz5wqp3rh-mdf50ph0_sqz7obk99",
+  "objective": "Create a package.json with name 'exact-tools-test' and version '1.0.0' Create a package.json with name 'exact-tools-test' and version '1.0.0'",
+  "requirements": {
+    "capabilities": [
+      "code-generation"
+    ],
+    "tools": [],
+    "permissions": [],
+    "estimatedDuration": 600000
+  },
+  "createdAt": "2025-07-22T23:00:04.215Z",
+  "status": "active"
+}

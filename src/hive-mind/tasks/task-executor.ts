@@ -6,8 +6,8 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { Logger } from '../../core/logger.ts';
-import { EventBus } from '../../core/event-bus.ts';
+import { Logger } from '../../core/logger.js';
+import { EventBus } from '../../core/event-bus.js';
 import {
   Task,
   TaskPriority,
@@ -20,7 +20,7 @@ import {
   TaskSubmitOptions
 } from '../types.js';
 import { HiveMind } from '../core/hive-mind.js';
-import { generateId } from '../../utils/helpers.ts';
+import { generateId } from '../../utils/helpers.js';
 
 // Task execution configuration
 export interface TaskExecutorConfig {

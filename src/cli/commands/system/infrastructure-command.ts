@@ -3,9 +3,9 @@
  * Enterprise infrastructure management with Docker orchestration and performance optimization
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { formatTable, TableColumn, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.ts';
-import { InfrastructureManager, InfrastructureConfig } from '../../../enterprise/infrastructure-manager.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { formatTable, TableColumn, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.js';
+import { InfrastructureManager, InfrastructureConfig } from '../../../enterprise/infrastructure-manager.js';
 
 export const infrastructureCommand: CLICommand = {
   name: 'infrastructure',

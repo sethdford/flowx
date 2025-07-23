@@ -7,7 +7,7 @@ import * as path from 'path';
 import { Buffer } from 'node:buffer';
 import * as process from 'node:process';
 // Remove interface import that gets stripped in Node.js strip-only mode
-// import { LoggingConfig } from "../utils/types.ts";
+// import { LoggingConfig } from "../utils/types.js";
 import { formatBytes } from "../utils/helpers.js";
 import { EventEmitter } from 'node:events';
 

@@ -8,7 +8,9 @@ import { EventEmitter } from 'node:events';
 import { spawn, ChildProcess } from 'node:child_process';
 import { writeFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import { ILogger } from '../core/logger.ts';
+import { ILogger } from '../core/logger.js';
+import { ModelSelector, DEFAULT_MODEL_ID } from '../config/models.js';
+import { getClaudeTimeout } from '../config/timeout-config.js';
 
 export interface ClaudeCliConfig {
   claudePath?: string; // Path to claude executable
@@ -81,10 +83,10 @@ export class ClaudeCliClient extends EventEmitter {
     this.config = {
       claudePath: config.claudePath || 'claude',
       workingDirectory: config.workingDirectory || process.cwd(),
-      model: config.model || 'claude-3-5-sonnet-20241022',
+      model: config.model || DEFAULT_MODEL_ID,
       temperature: config.temperature || 0.7,
       maxTokens: config.maxTokens || 8192,
-      timeout: config.timeout || 300000, // 5 minutes
+      timeout: config.timeout || getClaudeTimeout(), // Use centralized timeout
       retryAttempts: config.retryAttempts || 2,
       verbose: config.verbose || false,
       allowedTools: config.allowedTools || ['file_editor', 'bash', 'computer'],
@@ -344,20 +346,20 @@ Please implement this requirement completely.
     // Add the prompt
     args.push(request.prompt);
 
-    // Add model if specified
-    if (this.config.model) {
-      args.push('--model', this.config.model);
-    }
+    // Note: --model not supported in Claude CLI v1.0.56
+    // Model selection is handled by Claude CLI configuration
 
-    // Add temperature
-    if (this.config.temperature !== undefined) {
-      args.push('--temperature', this.config.temperature.toString());
-    }
+    // Add temperature - Skip for Claude CLI (not supported)
+    // Claude CLI doesn't support --temperature option, only the API does
+    // if (this.config.temperature !== undefined) {
+    //   args.push('--temperature', this.config.temperature.toString());
+    // }
 
-    // Add max tokens
-    if (this.config.maxTokens) {
-      args.push('--max-tokens', this.config.maxTokens.toString());
-    }
+    // Add max tokens - Skip for Claude CLI (not supported)
+    // Claude CLI doesn't support --max-tokens option, only the API does
+    // if (this.config.maxTokens) {
+    //   args.push('--max-tokens', this.config.maxTokens.toString());
+    // }
 
     // Add tools
     if (request.tools || this.config.allowedTools.length > 0) {
@@ -380,10 +382,8 @@ Please implement this requirement completely.
       args.push('--verbose');
     }
 
-    // Add working directory context if different from current
-    if (workDir && workDir !== process.cwd()) {
-      args.push('--add-dir', workDir);
-    }
+    // Note: --add-dir not supported in Claude CLI v1.0.56
+    // Claude CLI automatically has access to the working directory via cwd option
 
     return args;
   }
@@ -487,7 +487,7 @@ Please implement this requirement completely.
 export function createClaudeCliClient(logger: ILogger, config?: ClaudeCliConfig): ClaudeCliClient {
   const defaultConfig: ClaudeCliConfig = {
     claudePath: process.env.CLAUDE_CLI_PATH || 'claude',
-    model: process.env.CLAUDE_MODEL || 'claude-3-5-sonnet-20241022',
+          model: process.env.CLAUDE_MODEL || DEFAULT_MODEL_ID,
     temperature: process.env.CLAUDE_TEMPERATURE ? parseFloat(process.env.CLAUDE_TEMPERATURE) : 0.7,
     maxTokens: process.env.CLAUDE_MAX_TOKENS ? parseInt(process.env.CLAUDE_MAX_TOKENS) : 8192,
     verbose: process.env.CLAUDE_VERBOSE === 'true',

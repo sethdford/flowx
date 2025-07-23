@@ -1,0 +1,19 @@
+{
+  "taskId": "mdegswn6_fes254sp0",
+  "taskName": "Complete Objective",
+  "taskType": "coding",
+  "assignedAgent": "mdegswn4_d9wbt0mw1",
+  "agentName": "coordinator-SwarmLead",
+  "workspaceDir": "swarm-workspaces/swarm-mdegswn0_n3zrtpvop/tasks/coding-mdegswn6_fes254sp0-mdegswn4_d9wbt0mw1",
+  "objective": "Create a package.json with name 'tools-fix-test' and version '2.0.0' Create a package.json with name 'tools-fix-test' and version '2.0.0'",
+  "requirements": {
+    "capabilities": [
+      "code-generation"
+    ],
+    "tools": [],
+    "permissions": [],
+    "estimatedDuration": 600000
+  },
+  "createdAt": "2025-07-22T11:42:09.475Z",
+  "status": "active"
+}

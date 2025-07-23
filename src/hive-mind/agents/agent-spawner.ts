@@ -5,8 +5,8 @@
  * Integrates with the agent factory to create agents with specialized capabilities.
  */
 
-import { Logger } from '../../core/logger.ts';
-import { EventBus } from '../../core/event-bus.ts';
+import { Logger } from '../../core/logger.js';
+import { EventBus } from '../../core/event-bus.js';
 import { AgentFactory, EnhancedAgentSpawnOptions } from './agent-factory.js';
 import { HiveMind } from '../core/hive-mind.js';
 import { 

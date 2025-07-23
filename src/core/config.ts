@@ -7,9 +7,9 @@ import { promises as fs } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 import { createHash, randomBytes, createCipheriv, createDecipheriv } from 'crypto';
-import { Config } from '../utils/types.ts';
-import { deepMerge, safeParseJSON } from '../utils/helpers.ts';
-import { ConfigError, ValidationError } from '../utils/errors.ts';
+import { Config } from '../utils/types.js';
+import { deepMerge, safeParseJSON } from '../utils/helpers.js';
+import { ConfigError, ValidationError } from '../utils/errors.js';
 import { EventEmitter } from 'node:events';
 import { Buffer } from 'node:buffer';
 

@@ -4,10 +4,10 @@
  * Feature parity with original claude-flow GitHub automation capabilities
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { printSuccess, printError, printInfo, printWarning, formatTable } from '../../core/output-formatter.ts';
-import { getLogger, getMemoryManager } from '../../core/global-initialization.ts';
-import { generateId } from '../../../utils/helpers.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { printSuccess, printError, printInfo, printWarning, formatTable } from '../../core/output-formatter.js';
+import { getLogger, getMemoryManager } from '../../core/global-initialization.js';
+import { generateId } from '../../../utils/helpers.js';
 
 // ===== GITHUB AUTOMATION TYPES =====
 

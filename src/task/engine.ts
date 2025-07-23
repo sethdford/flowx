@@ -693,7 +693,8 @@ export class TaskEngine extends EventEmitter {
       this.log('info', `Task ${task.id} started execution`);
       
       // In a real implementation, this would actually execute the task via an agent
-      // or external system. For now, we'll simulate execution.
+      // or external system. This is an abstract base implementation.
+      // Subclasses should override simulateTaskExecution() for actual execution.
       
       let result;
       try {

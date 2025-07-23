@@ -3,8 +3,8 @@
  * Provides tools for interacting with the file system
  */
 
-import { MCPTool, MCPContext } from "../../../utils/types.ts";
-import { ILogger } from "../../../core/logger.ts";
+import { MCPTool, MCPContext } from "../../../utils/types.js";
+import { ILogger } from "../../../core/logger.js";
 import { promises as fs, statSync, constants } from 'node:fs';
 import { join, dirname, basename } from 'node:path';
 import { createReadStream, createWriteStream } from 'node:fs';

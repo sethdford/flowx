@@ -4,10 +4,10 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { ILogger } from "../core/logger.ts";
-import { IEventBus } from "../core/event-bus.ts";
-import { MessageBus, MessageBusConfig } from "./message-bus.ts";
-import { generateId } from "../utils/helpers.ts";
+import { ILogger } from "../core/logger.js";
+import { IEventBus } from "../core/event-bus.js";
+import { MessageBus, MessageBusConfig } from "./message-bus.js";
+import { generateId } from "../utils/helpers.js";
 
 export interface BrokerMessage {
   id: string;

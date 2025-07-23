@@ -507,7 +507,7 @@ interface ExportProgressPanelProps {
 function ExportProgressPanel({ progress, format }: ExportProgressPanelProps) {
   return (
     <Box flexDirection="column" alignItems="center" justifyContent="center" minHeight={8}>
-      <Spinner type="dots" />
+      {(Spinner as any)({ type: "dots" })}
       <Text color="cyan" bold>Exporting to {format.toUpperCase()}...</Text>
       <Text color="gray">Progress: {progress.toFixed(1)}%</Text>
       <Text color="gray" dimColor>Press Esc to cancel</Text>

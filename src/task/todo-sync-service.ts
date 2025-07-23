@@ -659,7 +659,7 @@ export class TodoSyncService extends EventEmitter {
   private findMappingsByTodoId(todoId: string): TodoTaskMapping[] {
     const allMappings: TodoTaskMapping[] = [];
     
-    for (const mappings of this.mappings.values()) {
+    for (const mappings of Array.from(this.mappings.values())) {
       allMappings.push(...mappings.filter(m => m.todoId === todoId));
     }
     

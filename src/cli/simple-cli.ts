@@ -5,7 +5,7 @@
  * Used primarily for tests and local development
  */
 
-import { initCommand } from './commands/system/initialization-command.ts';
+import { initCommand } from './commands/system/initialization-command.js';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 

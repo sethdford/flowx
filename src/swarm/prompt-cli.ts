@@ -3,8 +3,8 @@
 import { Command } from 'commander';
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
-import { PromptManager } from './prompt-manager.ts';
-import { CopyOptions, copyPrompts } from './prompt-copier.ts';
+import { PromptManager } from './prompt-manager.js';
+import { CopyOptions, copyPrompts } from './prompt-copier.js';
 import { 
   PromptConfigManager, 
   PromptPathResolver, 
@@ -12,7 +12,7 @@ import {
   createProgressBar,
   formatFileSize,
   formatDuration
-} from './prompt-utils.ts';
+} from './prompt-utils.js';
 
 // Enterprise logger for this module
 const logger = {

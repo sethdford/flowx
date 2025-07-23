@@ -8,7 +8,7 @@
  * Feature Complete Implementation matching original FlowX capabilities
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
 import { 
   formatTable as _formatTable, 
   successBold as _successBold, 
@@ -20,7 +20,7 @@ import {
   printWarning as _printWarning, 
   printInfo as _printInfo,
   type TableColumn
-} from '../../core/output-formatter.ts';
+} from '../../core/output-formatter.js';
 
 // Type-safe output formatter variables
 let formatTable: typeof _formatTable;
@@ -78,13 +78,13 @@ try {
   printWarning = _printWarning;
   printInfo = _printInfo;
 }
-import { TaskEngine } from '../../../task/engine.ts';
-import { AgentProcessManager } from '../../../agents/agent-process-manager.ts';
-import { SwarmCoordinator } from '../../../swarm/coordinator.ts';
-import { getMemoryManager, getPersistenceManager, getLogger, getSwarmCoordinator, type FastPersistenceManager } from '../../core/global-initialization.ts';
-import { generateId } from '../../../utils/helpers.ts';
-import { Logger } from '../../../core/logger.ts';
-import type { PersistedTask } from '../../../core/persistence.ts';
+import { TaskEngine } from '../../../task/engine.js';
+import { AgentProcessManager } from '../../../agents/agent-process-manager.js';
+import { SwarmCoordinator } from '../../../swarm/coordinator.js';
+import { getMemoryManager, getPersistenceManager, getLogger, getSwarmCoordinator, type FastPersistenceManager } from '../../core/global-initialization.js';
+import { generateId } from '../../../utils/helpers.js';
+import { Logger } from '../../../core/logger.js';
+import type { PersistedTask } from '../../../core/persistence.js';
 
 // Global instances - shared across all task operations
 let globalTaskEngine: TaskEngine | null = null;

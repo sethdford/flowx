@@ -4,10 +4,10 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { ILogger } from "../core/logger.ts";
-import { MCPConfig, MCPSession, MCPMetrics, HealthStatus } from "../utils/types.ts";
-import { MCPError } from "../utils/errors.ts";
-import { IMCPServer } from "./server.ts";
+import { ILogger } from "../core/logger.js";
+import { MCPConfig, MCPSession, MCPMetrics, HealthStatus } from "../utils/types.js";
+import { MCPError } from "../utils/errors.js";
+import { IMCPServer } from "./server.js";
 
 export const LifecycleState = {
   STOPPED: 'stopped',

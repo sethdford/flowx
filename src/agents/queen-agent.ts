@@ -4,11 +4,11 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { ILogger } from '../core/logger.ts';
-import { IEventBus } from '../core/event-bus.ts';
-import { AgentState, TaskDefinition, TaskResult, AgentId } from '../swarm/types.ts';
-import { NeuralPatternEngine } from '../coordination/neural-pattern-engine.ts';
-import { generateId } from '../utils/helpers.ts';
+import { ILogger } from '../core/logger.js';
+import { IEventBus } from '../core/event-bus.js';
+import { AgentState, TaskDefinition, TaskResult, AgentId } from '../swarm/types.js';
+import { NeuralPatternEngine } from '../coordination/neural-pattern-engine.js';
+import { generateId } from '../utils/helpers.js';
 
 export interface QueenDecision {
   id: string;

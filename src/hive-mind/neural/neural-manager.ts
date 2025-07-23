@@ -1,8 +1,8 @@
-import { PatternRecognizer, PatternRecognitionConfig } from './pattern-recognizer.ts';
-import { DatabaseManager } from '../database/database-manager.ts';
-import { EventBus } from '../../core/event-bus.ts';
-import { Logger } from '../../core/logger.ts';
-import { PatternType, NeuralPattern, PatternMatch, CognitiveModel } from '../types.ts';
+import { PatternRecognizer, PatternRecognitionConfig } from './pattern-recognizer.js';
+import { DatabaseManager } from '../database/database-manager.js';
+import { EventBus } from '../../core/event-bus.js';
+import { Logger } from '../../core/logger.js';
+import { PatternType, NeuralPattern, PatternMatch, CognitiveModel } from '../types.js';
 
 export interface NeuralManagerConfig {
   enableWASM: boolean;

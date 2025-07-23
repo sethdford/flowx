@@ -4,13 +4,13 @@
  * Integrates with TodoWrite/TodoRead for coordination and Memory for persistence
  */
 
-export { TaskEngine } from "./engine.ts";
-export type { WorkflowTask } from "./engine.ts";
+export { TaskEngine } from "./engine.js";
+export type { WorkflowTask } from "./engine.js";
 
-export type { TaskCommandContext } from "./commands.ts";
+export type { TaskCommandContext } from "./commands.js";
 
-export { TaskCoordinator } from "./coordination.ts";
-export type { CoordinationContext, TodoItem } from "./coordination.ts";
+export { TaskCoordinator } from "./coordination.js";
+export type { CoordinationContext, TodoItem } from "./coordination.js";
 
 export { TodoSyncService, type TodoTaskMapping, type SyncConfiguration } from "./todo-sync-service.js";
 export { TodoSyncIntegration, createTodoSyncIntegration, enableTodoTaskSync } from "./todo-sync-integration.js";
@@ -18,16 +18,16 @@ export { VisualProgressFormatter, type ProgressOverview, type VisualTaskGroup, t
 
 
 // Import the types we need for the functions below
-import { TaskEngine } from "./engine.ts";
-import { TaskCoordinator, TodoItem, CoordinationContext } from "./coordination.ts";
-import { TaskCommandContext } from "./commands.ts";
+import { TaskEngine } from "./engine.js";
+import { TaskCoordinator, TodoItem, CoordinationContext } from "./coordination.js";
+import { TaskCommandContext } from "./commands.js";
 import { 
   createTaskCreateCommand,
   createTaskListCommand,
   createTaskStatusCommand,
   createTaskCancelCommand,
   createTaskWorkflowCommand
-} from "./commands.ts";
+} from "./commands.js";
 
 /**
  * Initialize the complete task management system
@@ -175,7 +175,7 @@ export async function retrieveCoordinationData(
 export const USAGE_EXAMPLES = {
   todoWrite: `
 // Example: Using TodoWrite for task coordination
-import { createTaskTodos } from './task.ts';
+import { createTaskTodos } from './task.js';
 
 const todos = await createTaskTodos(
   "Build e-commerce platform",
@@ -197,7 +197,7 @@ const todos = await createTaskTodos(
 
   taskTool: `
 // Example: Using Task tool pattern for parallel agents
-import { launchParallelAgents } from './task.ts';
+import { launchParallelAgents } from './task.js';
 
 const agentIds = await launchParallelAgents([
   {
@@ -226,7 +226,7 @@ const agentIds = await launchParallelAgents([
 
   memoryCoordination: `
 // Example: Using Memory for cross-agent coordination
-import { storeCoordinationData, retrieveCoordinationData } from './task.ts';
+import { storeCoordinationData, retrieveCoordinationData } from './task.js';
 
 // Store research findings for other agents
 await storeCoordinationData(
@@ -253,7 +253,7 @@ const findings = await retrieveCoordinationData(
 
   batchOperations: `
 // Example: Coordinated batch operations
-import { TaskCoordinator } from './task.ts';
+import { TaskCoordinator } from './task.js';
 
 const results = await coordinator.coordinateBatchOperations([
   {
@@ -276,7 +276,7 @@ const results = await coordinator.coordinateBatchOperations([
 
   swarmCoordination: `
 // Example: Swarm coordination patterns
-import { TaskCoordinator } from './task.ts';
+import { TaskCoordinator } from './task.js';
 
 await coordinator.coordinateSwarm(
   "Comprehensive system development",

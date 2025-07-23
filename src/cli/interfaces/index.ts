@@ -15,19 +15,19 @@ export type {
   CLIMiddleware,
   CLICommand,
   CLIError
-} from '../core/application.ts';
+} from '../core/application.js';
 
 export type {
   ParsedArgs,
   ParserOptions
-} from '../core/command-parser.ts';
+} from '../core/command-parser.js';
 
 export type {
   TableColumn
-} from '../core/output-formatter.ts';
+} from '../core/output-formatter.js';
 
 // Import for use in interfaces below
-import type { CLILogger, CLICommand, CLIMiddleware, CLIContext, ValidationRule } from '../core/application.ts';
+import type { CLILogger, CLICommand, CLIMiddleware, CLIContext, ValidationRule } from '../core/application.js';
 
 // Command execution context
 export interface CommandExecutionContext {
@@ -331,6 +331,6 @@ export interface TemplateHook {
 }
 
 // Export all interfaces for convenience
-export * from '../core/application.ts';
-export * from '../core/command-parser.ts';
-export * from '../core/output-formatter.ts'; 
+export * from '../core/application.js';
+export * from '../core/command-parser.js';
+export * from '../core/output-formatter.js'; 

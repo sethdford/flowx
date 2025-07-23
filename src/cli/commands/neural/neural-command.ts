@@ -3,7 +3,7 @@
  * Provides access to WASM-accelerated neural network tools
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
 import { createNeuralTools } from '../../../mcp/neural-tools.js';
 import { Logger } from '../../../core/logger.js';
 
@@ -39,13 +39,19 @@ export const neuralCommand: CLICommand = {
           if (result.success) {
             console.log('✅ Neural Network System Status');
             console.log('================================');
-            console.log(`Backend: ${result.backend}`);
-            console.log(`TensorFlow.js Version: ${result.tensorflow_version}`);
-            console.log(`WASM Enabled: ${result.wasm_enabled ? '✅' : '❌'}`);
-            console.log(`SIMD Optimized: ${result.simd_optimized ? '✅' : '❌'}`);
-            console.log(`Models Available: ${result.models}`);
-            console.log(`Active Patterns: ${result.active_patterns}`);
-            console.log(`Memory Usage: ${result.memory_usage.numTensors} tensors, ${result.memory_usage.numBytes} bytes`);
+            console.log(`Backend: ${result.neural_system?.backend || 'unknown'}`);
+            console.log(`TensorFlow.js Version: ${result.neural_system?.tensorflow_version || 'unknown'}`);
+            console.log(`WASM Enabled: ${result.neural_system?.wasm_enabled ? '✅' : '❌'}`);
+            console.log(`SIMD Optimized: ${result.neural_system?.simd_optimized ? '✅' : '❌'}`);
+            console.log(`Models Available: ${result.neural_system?.models_loaded || 0}`);
+            console.log(`Active Patterns: ${result.neural_system?.active_patterns || 0}`);
+            
+            const memUsage = result.neural_system?.memory_usage;
+            if (memUsage) {
+              console.log(`Memory Usage: ${memUsage.numTensors || 0} tensors, ${memUsage.numBytes || 0} bytes`);
+            } else {
+              console.log('Memory Usage: N/A');
+            }
             
             if (result.patterns && includeModels) {
               console.log('\n📋 Available Patterns:');

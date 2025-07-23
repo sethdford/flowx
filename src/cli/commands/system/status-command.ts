@@ -3,9 +3,9 @@
  * Provides comprehensive system status information
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { formatTable, formatDuration, formatRelativeTime, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.ts';
-import { getPersistenceManager, getMemoryManager } from '../../core/global-initialization.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { formatTable, formatDuration, formatRelativeTime, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.js';
+import { getPersistenceManager, getMemoryManager } from '../../core/global-initialization.js';
 import { execSync } from 'child_process';
 import { readFileSync, existsSync } from 'fs';
 import * as os from 'os';

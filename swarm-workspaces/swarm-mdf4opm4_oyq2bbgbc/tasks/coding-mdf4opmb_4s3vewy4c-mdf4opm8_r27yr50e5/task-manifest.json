@@ -1,0 +1,19 @@
+{
+  "taskId": "mdf4opmb_4s3vewy4c",
+  "taskName": "Complete Objective",
+  "taskType": "coding",
+  "assignedAgent": "mdf4opm8_r27yr50e5",
+  "agentName": "coordinator-SwarmLead",
+  "workspaceDir": "swarm-workspaces/swarm-mdf4opm4_oyq2bbgbc/tasks/coding-mdf4opmb_4s3vewy4c-mdf4opm8_r27yr50e5",
+  "objective": "Create a package.json with name 'solution-1-test' and version '1.0.0' Create a package.json with name 'solution-1-test' and version '1.0.0'",
+  "requirements": {
+    "capabilities": [
+      "code-generation"
+    ],
+    "tools": [],
+    "permissions": [],
+    "estimatedDuration": 600000
+  },
+  "createdAt": "2025-07-22T22:50:44.532Z",
+  "status": "active"
+}

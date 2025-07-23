@@ -6,8 +6,8 @@
 import { spawn } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs/promises';
-import type { ILogger } from '../core/logger.ts';
-import { EventBus } from '../core/event-bus.ts';
+import type { ILogger } from '../core/logger.js';
+import { EventBus } from '../core/event-bus.js';
 
 /**
  * Context for Gemini tool execution

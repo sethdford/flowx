@@ -5,10 +5,10 @@
 import { createReadStream, createWriteStream } from 'node:fs';
 import { stdin, stdout } from 'node:process';
 import { createInterface, Interface } from 'node:readline';
-import { ITransport, RequestHandler, NotificationHandler } from "./base.ts";
-import { MCPRequest, MCPResponse, MCPNotification } from "../../utils/types.ts";
-import { ILogger } from "../../core/logger.ts";
-import { MCPTransportError } from "../../utils/errors.ts";
+import { ITransport, RequestHandler, NotificationHandler } from "./base.js";
+import { MCPRequest, MCPResponse, MCPNotification } from "../../utils/types.js";
+import { ILogger } from "../../core/logger.js";
+import { MCPTransportError } from "../../utils/errors.js";
 import { EventEmitter } from 'node:events';
 
 /**

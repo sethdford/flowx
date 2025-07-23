@@ -168,7 +168,7 @@ export const MemoryBrowser: React.FC<MemoryBrowserProps> = ({ onBack }) => {
   if (isLoading) {
     return (
       <Box flexDirection="column" alignItems="center" justifyContent="center" minHeight={10}>
-        <Spinner type="dots" />
+        {(Spinner as any)({ type: "dots" })}
         <Text> Loading memory bank...</Text>
       </Box>
     );

@@ -19,7 +19,13 @@ export function getTestEnvironmentInfo() {
 /**
  * Determine if a test should be skipped based on environment
  */
-export function shouldSkipTest(testInfo = {}) {
+export function shouldSkipTest(testInfo: {
+  skipCI?: boolean;
+  skipWindows?: boolean;
+  skipMacOS?: boolean;
+  skipLinux?: boolean;
+  skipPR?: boolean;
+} = {}) {
   const env = getTestEnvironmentInfo();
   
   if (testInfo.skipCI && env.isCI) return true;

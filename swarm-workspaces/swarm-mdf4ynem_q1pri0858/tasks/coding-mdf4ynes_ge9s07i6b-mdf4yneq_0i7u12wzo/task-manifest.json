@@ -1,0 +1,19 @@
+{
+  "taskId": "mdf4ynes_ge9s07i6b",
+  "taskName": "Complete Objective",
+  "taskType": "coding",
+  "assignedAgent": "mdf4yneq_0i7u12wzo",
+  "agentName": "coordinator-SwarmLead",
+  "workspaceDir": "swarm-workspaces/swarm-mdf4ynem_q1pri0858/tasks/coding-mdf4ynes_ge9s07i6b-mdf4yneq_0i7u12wzo",
+  "objective": "Create a package.json with name 'debug-output-test' and version '1.0.0' Create a package.json with name 'debug-output-test' and version '1.0.0'",
+  "requirements": {
+    "capabilities": [
+      "code-generation"
+    ],
+    "tools": [],
+    "permissions": [],
+    "estimatedDuration": 600000
+  },
+  "createdAt": "2025-07-22T22:58:28.230Z",
+  "status": "active"
+}

@@ -43,6 +43,7 @@
       "type": "research",
       "description": "Conduct initial research on ${research_topic}",
       "assignTo": "researcher",
+      "agentId": "researcher",
       "priority": 10,
       "input": {
         "topic": "${research_topic}",
@@ -57,6 +58,7 @@
       "type": "research",
       "description": "Detailed research based on initial findings",
       "assignTo": "researcher",
+      "agentId": "researcher",
       "depends": ["initial-research"],
       "priority": 8,
       "input": {
@@ -72,6 +74,7 @@
       "type": "analysis",
       "description": "Analyze research data for trends and patterns",
       "assignTo": "analyzer",
+      "agentId": "analyzer",
       "depends": ["deep-dive-research"],
       "priority": 7,
       "input": {
@@ -87,6 +90,7 @@
       "type": "coordination",
       "description": "Synthesize all findings into comprehensive report",
       "assignTo": "coordinator",
+      "agentId": "coordinator",
       "depends": ["data-analysis"],
       "priority": 9,
       "input": {
@@ -109,6 +113,7 @@
       "type": "analysis",
       "description": "Review final report for accuracy and completeness",
       "assignTo": "analyzer",
+      "agentId": "analyzer",
       "depends": ["synthesis"],
       "priority": 6,
       "input": {
@@ -124,6 +129,7 @@
       "type": "coordination",
       "description": "Generate final polished report with all revisions",
       "assignTo": "coordinator",
+      "agentId": "coordinator",
       "depends": ["quality-review"],
       "priority": 10,
       "input": {
@@ -151,5 +157,8 @@
     "created": "2024-01-15T10:00:00Z",
     "tags": ["research", "AI", "automation", "analysis"],
     "category": "research-pipeline"
+  },
+  "execution": {
+    "mode": "sequential"
   }
 }

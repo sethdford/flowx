@@ -3,9 +3,9 @@
  * Real-time performance analytics, SLA tracking, and advanced enterprise reporting
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { createConsoleLogger } from '../../../utils/logger.ts';
-import { EnterpriseMonitoringEngine } from '../../../monitoring/enterprise-monitoring-engine.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { createConsoleLogger } from '../../../utils/logger.js';
+import { EnterpriseMonitoringEngine } from '../../../monitoring/enterprise-monitoring-engine.js';
 
 const logger = createConsoleLogger('EnterpriseMonitoringCommand');
 

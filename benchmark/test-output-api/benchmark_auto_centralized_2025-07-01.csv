@@ -1,2 +1,0 @@
-task_id,agent_id,status,execution_time,success_rate,peak_memory_mb,cpu_percent
-820add44-927d-493a-b3b3-227af7b79bd3,auto-agent-5ea58330,success,0.5,1,150,10

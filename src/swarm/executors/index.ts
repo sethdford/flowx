@@ -4,25 +4,25 @@
  */
 
 // Direct Executor - Immediate execution without queuing
-export { DirectExecutor } from "./direct-executor.ts";
+export { DirectExecutor } from "./direct-executor.js";
 export type { 
   DirectExecutorConfig, 
   DirectExecutionMetrics 
-} from "./direct-executor.ts";
+} from "./direct-executor.js";
 
 // SPARC Executor - Systematic methodology execution
-export { SparcExecutor } from "./sparc-executor.ts";
+export { SparcExecutor } from "./sparc-executor.js";
 export type { 
   SparcExecutorConfig, 
   SparcPhase,
   SparcPhaseResult,
   SparcExecutionResult,
   SparcExecutionMetrics 
-} from "./sparc-executor.ts";
+} from "./sparc-executor.js";
 
 // Import for internal use
-import { DirectExecutor } from "./direct-executor.ts";
-import { SparcExecutor } from "./sparc-executor.ts";
+import { DirectExecutor } from "./direct-executor.js";
+import { SparcExecutor } from "./sparc-executor.js";
 
 // Unified executor types
 export type ExecutorType = 

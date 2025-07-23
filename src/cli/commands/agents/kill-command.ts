@@ -3,11 +3,11 @@
  * Force terminate agents and processes
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { printSuccess, printError, printInfo, printWarning } from '../../core/output-formatter.ts';
-import { getPersistenceManager, getMemoryManager } from '../../core/global-initialization.ts';
-import { SwarmCoordinator } from '../../../swarm/coordinator.ts';
-import { Logger } from '../../../core/logger.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { printSuccess, printError, printInfo, printWarning } from '../../core/output-formatter.js';
+import { getPersistenceManager, getMemoryManager } from '../../core/global-initialization.js';
+import { SwarmCoordinator } from '../../../swarm/coordinator.js';
+import { Logger } from '../../../core/logger.js';
 
 export const killCommand: CLICommand = {
   name: 'kill',

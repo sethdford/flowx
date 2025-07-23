@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { Logger } from '../core/logger.js';
 import { SecureAgentIntegration, SecureAgentSpawnOptions } from './secure-agent-integration.js';
 import { SecureCoderAgent, SecureCodeGenerationContext } from './secure-coder-agent.js';
+import { ModelSelector, DEFAULT_MODEL_ID } from '../config/models.js';
 
 // Type definitions for security integration
 export type SecurityLevel = 'basic' | 'standard' | 'high' | 'critical';
@@ -81,29 +82,30 @@ export class ClaudeProcessIntegration {
       // Build enhanced arguments
       const enhancedArgs = [...baseArgs];
       
-      // Add security-specific Claude CLI arguments
-      enhancedArgs.push('--model', 'claude-3-5-sonnet-20241022'); // Latest model for best security
-      enhancedArgs.push('--temperature', '0.1'); // Lower temperature for deterministic secure code
+      // Add security-specific Claude CLI arguments (only valid ones for v1.0.56)
+      // Note: --model not supported in Claude CLI v1.0.56
+      // enhancedArgs.push('--model', ModelSelector.getBestForCoding().id);
       
       // Always skip permissions for automation but maintain security
       if (!enhancedArgs.includes('--dangerously-skip-permissions')) {
         enhancedArgs.push('--dangerously-skip-permissions');
       }
       
-      // Add template directories for security context
+      // Note: --add-dir not supported in Claude CLI v1.0.56
+      // Claude CLI automatically has access to the working directory
       const templatePaths = await this.getTemplatePaths(fullSecurityConfig);
-      for (const templatePath of templatePaths) {
-        enhancedArgs.push('--add-dir', templatePath);
-      }
       
       // Build enhanced environment variables
       const enhancedEnv = await this.buildSecurityEnvironment(context, fullSecurityConfig);
+      
+      // Find the actual prompt in baseArgs (it's the last non-flag argument)
+      const originalPrompt = baseArgs.find(arg => !arg.startsWith('--') && arg !== 'text') || context.task;
       
       // Generate comprehensive system prompt with security context
       const systemPrompt = await this.generateSecurityEnhancedPrompt(
         context,
         fullSecurityConfig,
-        baseArgs[0] // Original task/prompt
+        originalPrompt // Original task/prompt
       );
       
       this.logger.info('Enhanced Claude arguments with security context', {
@@ -495,8 +497,9 @@ Remember: Security is not optional - it's the foundation of everything you build
     return {
       args: [
         ...baseArgs,
-        '--model', 'claude-3-5-sonnet-20241022',
-        '--temperature', '0.1',
+        '--model', DEFAULT_MODEL_ID,
+        // Note: --temperature not supported by Claude CLI, only API
+        // '--temperature', '0.1',
         '--dangerously-skip-permissions'
       ],
       env: {

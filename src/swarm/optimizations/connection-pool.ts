@@ -4,7 +4,7 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { Logger } from "../../core/logger.ts";
+import { Logger } from "../../core/logger.js";
 
 // Claude API interface (simplified)
 interface ClaudeAPI {
@@ -110,7 +110,7 @@ export class ClaudeConnectionPool extends EventEmitter {
           const { spawn } = await import('node:child_process');
           
           return new Promise((resolve, reject) => {
-            const process = spawn('claude', ['--message', message], {
+            const process = spawn('claude', ['--print', message], {
               stdio: ['pipe', 'pipe', 'pipe']
             });
             

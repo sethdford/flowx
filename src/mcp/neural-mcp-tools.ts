@@ -10,8 +10,8 @@
  * - AI explainability and interpretability
  */
 
-import { Logger } from "../core/logger.ts";
-import { generateId } from "../utils/helpers.ts";
+import { Logger } from "../core/logger.js";
+import { generateId } from "../utils/helpers.js";
 
 // Neural network interfaces
 interface NeuralModel {

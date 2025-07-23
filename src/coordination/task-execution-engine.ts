@@ -5,11 +5,12 @@
 
 import { EventEmitter } from 'node:events';
 import { spawn, ChildProcess } from 'node:child_process';
-import { TaskDefinition, TaskResult, AgentState, TaskError } from "../swarm/types.ts";
-import { ILogger } from "../core/logger.ts";
-import { IEventBus } from "../core/event-bus.ts";
-import { CircuitBreaker, CircuitBreakerManager } from "./circuit-breaker.ts";
-import { generateId } from "../utils/helpers.ts";
+import { TaskDefinition, TaskResult, AgentState, TaskError } from "../swarm/types.js";
+import { ILogger } from "../core/logger.js";
+import { IEventBus } from "../core/event-bus.js";
+import { CircuitBreaker, CircuitBreakerManager } from "./circuit-breaker.js";
+import { generateId } from "../utils/helpers.js";
+import { getTaskTimeout } from '../config/timeout-config.js';
 
 export interface TaskExecutorConfig {
   maxConcurrentTasks: number;
@@ -150,7 +151,7 @@ export class TaskExecutionEngine extends EventEmitter {
     
     this.config = {
       maxConcurrentTasks: 10,
-      defaultTimeout: 300000, // 5 minutes
+      defaultTimeout: getTaskTimeout(), // Use centralized timeout
       retryAttempts: 3,
       retryBackoffBase: 1000,
       retryBackoffMax: 30000,
@@ -498,9 +499,10 @@ export class TaskExecutionEngine extends EventEmitter {
       args.push('--model', options.model);
     }
 
-    if (options.maxTokens) {
-      args.push('--max-tokens', options.maxTokens.toString());
-    }
+    // Claude CLI doesn't support --max-tokens option, only the API does
+    // if (options.maxTokens) {
+    //   args.push('--max-tokens', options.maxTokens.toString());
+    // }
 
     args.push('--dangerously-skip-permissions');
 

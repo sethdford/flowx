@@ -3,83 +3,83 @@
  * Central registry for all CLI commands
  */
 
-import type { CLICommand, CLIContext } from '../interfaces/index.ts';
+import type { CLICommand, CLIContext } from '../interfaces/index.js';
 
 // System Commands
-import { statusCommand } from '../commands/system/status-command.ts';
-import { configCommand } from '../commands/system/config-command.ts';
-import { monitorCommand } from '../commands/system/monitor-command.ts';
-import { monitorDashboardCommand } from '../commands/system/monitor-dashboard-command.ts';
-import { webUICommand } from '../commands/system/web-ui-command.ts';
-import { workflowDesignerCommand } from '../commands/system/workflow-designer-command.ts';
-import { logsCommand } from '../commands/system/logs-command.ts';
-import { initCommand } from '../commands/system/initialization-command.ts';
-import { startCommand } from '../commands/system/start-command-integration.ts';
-import { stopCommand } from '../commands/system/stop-command.ts';
-import { restartCommand } from '../commands/system/restart-command.ts';
-import { sparcCommand } from '../commands/system/sparc-command.ts';
-import { batchCommand } from '../commands/system/batch-command.ts';
-import { taskCommand } from '../commands/tasks/task-command.ts';
-import { todoCommand } from '../commands/todo/todo-command-simple.ts';
-import { workflowCommand } from '../commands/system/workflow-command.ts';
-import { migrationCommand } from '../commands/system/migration-command.ts';
-import { uiCommand } from '../commands/system/ui-command.ts';
-import { terminalCommand } from '../commands/system/terminal-command.ts';
-import { benchmarkCommand } from '../commands/system/benchmark-command.ts';
-import { healthCommand } from '../commands/system/health-command.ts';
-import { validateCommand } from '../commands/system/validate-command.ts';
-import { scaleCommand } from '../commands/system/scale-command.ts';
-import { backupCommand } from '../commands/system/backup-command.ts';
-import { restoreCommand } from '../commands/system/restore-command.ts';
-import { daemonCommand } from '../commands/system/daemon-command.ts';
-import { servicesCommand } from '../commands/system/services-command.ts';
-import { systemCommand } from '../commands/system/system-command.ts';
-import { runCommand } from '../commands/system/run-command.ts';
-import { claudeCommand } from '../commands/system/claude-command.ts';
-import { sessionCommand } from '../commands/system/session-command.ts';
-import { infrastructureCommand } from '../commands/system/infrastructure-command.ts';
+import { statusCommand } from '../commands/system/status-command.js';
+import { configCommand } from '../commands/system/config-command.js';
+import { monitorCommand } from '../commands/system/monitor-command.js';
+import { monitorDashboardCommand } from '../commands/system/monitor-dashboard-command.js';
+import { webUICommand } from '../commands/system/web-ui-command.js';
+import { workflowDesignerCommand } from '../commands/system/workflow-designer-command.js';
+import { logsCommand } from '../commands/system/logs-command.js';
+import { initCommand } from '../commands/system/initialization-command.js';
+import { startCommand } from '../commands/system/start-command-integration.js';
+import { stopCommand } from '../commands/system/stop-command.js';
+import { restartCommand } from '../commands/system/restart-command.js';
+import { sparcCommand } from '../commands/system/sparc-command.js';
+import { batchCommand } from '../commands/system/batch-command.js';
+import { taskCommand } from '../commands/tasks/task-command.js';
+import { todoCommand } from '../commands/todo/todo-command-simple.js';
+import { workflowCommand } from '../commands/system/workflow-command.js';
+import { migrationCommand } from '../commands/system/migration-command.js';
+import { uiCommand } from '../commands/system/ui-command.js';
+import { terminalCommand } from '../commands/system/terminal-command.js';
+import { benchmarkCommand } from '../commands/system/benchmark-command.js';
+import { healthCommand } from '../commands/system/health-command.js';
+import { validateCommand } from '../commands/system/validate-command.js';
+import { scaleCommand } from '../commands/system/scale-command.js';
+import { backupCommand } from '../commands/system/backup-command.js';
+import { restoreCommand } from '../commands/system/restore-command.js';
+import { daemonCommand } from '../commands/system/daemon-command.js';
+import { servicesCommand } from '../commands/system/services-command.js';
+import { systemCommand } from '../commands/system/system-command.js';
+import { runCommand } from '../commands/system/run-command.js';
+import { claudeCommand } from '../commands/system/claude-command.js';
+import { sessionCommand } from '../commands/system/session-command.js';
+import { infrastructureCommand } from '../commands/system/infrastructure-command.js';
 
 // MCP Commands
-import { mcpCommand } from '../commands/system/mcp-command.ts';
-import mcpToolsCommand from '../commands/system/mcp-tools-command.ts';
+import { mcpCommand } from '../commands/system/mcp-command.js';
+import mcpToolsCommand from '../commands/system/mcp-tools-command.js';
 
 // Neural Commands
-import { neuralCommand } from '../commands/neural/neural-command.ts';
+import { neuralCommand } from '../commands/neural/neural-command.js';
 
 // Claude API Commands
-import { claudeApiCommand } from '../commands/claude/claude-api-command.ts';
+import { claudeApiCommand } from '../commands/claude/claude-api-command.js';
 
 // Agent Commands
-import { agentCommand } from '../commands/agents/agent-management-command.ts';
-import { spawnCommand } from '../commands/agents/spawn-command.ts';
-import { killCommand } from '../commands/agents/kill-command.ts';
-import { execCommand } from '../commands/agents/exec-command.ts';
+import { agentCommand } from '../commands/agents/agent-management-command.js';
+import { spawnCommand } from '../commands/agents/spawn-command.js';
+import { killCommand } from '../commands/agents/kill-command.js';
+import { execCommand } from '../commands/agents/exec-command.js';
 
 // Swarm Commands
-import { swarmCommand } from '../commands/swarm/swarm-claude-launcher.ts';
+import { swarmCommand } from '../commands/swarm.js';
 
 // Memory Commands
-import { memoryCommand } from '../commands/memory/memory-management-command.ts';
+import { memoryCommand } from '../commands/memory/memory-management-command.js';
 
 // Data Commands
-import { queryCommand } from '../commands/data/query-command.ts';
-import { analyzeCommand } from '../commands/system/analyze-command.ts';
-import { debugCommand } from '../commands/system/debug-command.ts';
+import { queryCommand } from '../commands/data/query-command.js';
+import { analyzeCommand } from '../commands/system/analyze-command.js';
+import { debugCommand } from '../commands/system/debug-command.js';
 
 // Refactor Commands
-import { refactorCommand } from '../commands/refactor/refactor-command.ts';
-import { architectCommand } from '../commands/refactor/architect-command.ts';
-import { qualityCommand } from '../commands/refactor/quality-command.ts';
+import { refactorCommand } from '../commands/refactor/refactor-command.js';
+import { architectCommand } from '../commands/refactor/architect-command.js';
+import { qualityCommand } from '../commands/refactor/quality-command.js';
 
   // GitHub Commands
-  import githubAutomationCommand from '../commands/github/github-automation.ts';
-  import visualWorkflowDesignerCommand from '../commands/system/visual-workflow-designer.ts';
+  import githubAutomationCommand from '../commands/github/github-automation.js';
+  import visualWorkflowDesignerCommand from '../commands/system/visual-workflow-designer.js';
 
 // Hive-Mind Commands
-import { hiveMindCommand } from '../commands/hive-mind/hive-mind-command.ts';
+import { hiveMindCommand } from '../commands/hive-mind/hive-mind-command.js';
 
 // Hooks Commands (simplified interface compatible with strip-only mode)
-import { hooksCommand as hooksCommandSimple } from '../commands/system/hooks-command.ts';
+import { hooksCommand as hooksCommandSimple } from '../commands/system/hooks-command.js';
 
 // Create a compatibility wrapper for the hooks command
 const hooksCommand: CLICommand = {
@@ -98,10 +98,10 @@ const hooksCommand: CLICommand = {
 };
 
 // Import fix-hook-variables command
-import { fixHookVariablesCommand } from '../commands/system/fix-hook-variables-command.ts';
+import { fixHookVariablesCommand } from '../commands/system/fix-hook-variables-command.js';
 
 // Import REPL command
-import { replCommand } from '../commands/system/repl-command.ts';
+import { replCommand } from '../commands/system/repl-command.js';
 
 /**
  * Command Registry
@@ -187,6 +187,12 @@ commandRegistry.set('hive-mind', hiveMindCommand);
 commandRegistry.set('hooks', hooksCommand);
 commandRegistry.set('fix-hook-variables', fixHookVariablesCommand);
 
+// Add compatibility commands for backward compatibility with original flowx
+const compatibilityCommands = createCompatibilityCommands();
+compatibilityCommands.forEach(cmd => {
+  commandRegistry.set(cmd.name, cmd);
+});
+
 // Command aliases
 const aliases = new Map<string, string>([
   ['ps', 'agent'],
@@ -212,8 +218,60 @@ const aliases = new Map<string, string>([
   ['arch', 'architect'],
   ['ref', 'refactor'],
   ['qa', 'quality'],
-  ['check', 'quality']
+  ['check', 'quality'],
+  // Backward compatibility aliases for original flowx
+  ['terminal', 'terminal'],  // Original terminal command  
+  ['monitor', 'monitor'],    // Original monitor command
+  ['workflow', 'workflow'],  // Original workflow command
+  ['repl', 'repl'],         // Original REPL command
 ]);
+
+/**
+ * Create compatibility wrapper commands for original flowx commands
+ */
+function createCompatibilityCommands(): CLICommand[] {
+  // Create a compatibility wrapper for the direct 'project' command
+  const projectCompatCommand: CLICommand = {
+    name: 'project',
+    description: 'Project management (compatibility wrapper)',
+    usage: 'project <subcommand> [options]',
+    examples: [
+      'flowx project create myproject',
+      'flowx project list',
+      'flowx project switch myproject'
+    ],
+    handler: async (context: CLIContext) => {
+      const subcommand = context.args[0];
+      
+      switch (subcommand) {
+        case 'create':
+          // Map to init command
+          const initContext = {
+            ...context,
+            args: context.args.slice(1),
+            command: 'init'
+          };
+          return initCommand.handler(initContext);
+          
+        case 'list':
+          console.log('📋 Available projects managed by FlowX');
+          console.log('Use "flowx init --help" to create new projects');
+          break;
+          
+        case 'switch':
+          console.log('🔄 Project switching in FlowX');
+          console.log('Use "flowx start" in the target project directory');
+          break;
+          
+        default:
+          console.log('Available project commands: create, list, switch');
+          console.log('Use "flowx project <command> --help" for details');
+      }
+    }
+  };
+
+  return [projectCompatCommand];
+}
 
 /**
  * Get all registered commands

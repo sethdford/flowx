@@ -6,8 +6,8 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { Logger } from '../../core/logger.ts';
-import { EventBus } from '../../core/event-bus.ts';
+import { Logger } from '../../core/logger.js';
+import { EventBus } from '../../core/event-bus.js';
 import { HiveCoordinator } from '../hive-coordinator.js';
 
 // Resource limits configuration

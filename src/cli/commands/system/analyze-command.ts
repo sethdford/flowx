@@ -12,7 +12,7 @@
  * - Comprehensive reporting with actionable recommendations
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
 import { 
   printSuccess, 
   printError, 
@@ -23,8 +23,8 @@ import {
   infoBold,
   warningBold,
   errorBold
-} from '../../core/output-formatter.ts';
-import { getLogger } from '../../core/global-initialization.ts';
+} from '../../core/output-formatter.js';
+import { getLogger } from '../../core/global-initialization.js';
 import { writeFile, readFile, mkdir, readdir, stat } from 'fs/promises';
 import { join, dirname, relative, resolve, extname } from 'path';
 import { existsSync, statSync } from 'fs';

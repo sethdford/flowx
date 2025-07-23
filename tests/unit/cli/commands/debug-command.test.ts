@@ -7,6 +7,26 @@ import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals
 import { debugCommand } from '@/cli/commands/system/debug-command.ts';
 import type { CLIContext } from '@/cli/interfaces/index.ts';
 
+// Declare global print functions
+declare global {
+  var printInfo: jest.Mock;
+  var printError: jest.Mock;
+  var printSuccess: jest.Mock;
+  var printWarning: jest.Mock;
+}
+
+// Mock print functions
+const printInfo = jest.fn();
+const printError = jest.fn();
+const printSuccess = jest.fn();
+const printWarning = jest.fn();
+
+// Make them available globally for the debug command
+global.printInfo = printInfo;
+global.printError = printError;
+global.printSuccess = printSuccess;
+global.printWarning = printWarning;
+
 // Mock dependencies
 jest.mock('@/cli/core/global-initialization.ts', () => ({
   getLogger: jest.fn(() => Promise.resolve({

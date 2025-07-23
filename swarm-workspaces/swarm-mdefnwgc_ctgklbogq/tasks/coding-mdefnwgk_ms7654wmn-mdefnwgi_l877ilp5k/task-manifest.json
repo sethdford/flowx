@@ -1,0 +1,19 @@
+{
+  "taskId": "mdefnwgk_ms7654wmn",
+  "taskName": "Complete Objective",
+  "taskType": "coding",
+  "assignedAgent": "mdefnwgi_l877ilp5k",
+  "agentName": "coordinator-SwarmLead",
+  "workspaceDir": "swarm-workspaces/swarm-mdefnwgc_ctgklbogq/tasks/coding-mdefnwgk_ms7654wmn-mdefnwgi_l877ilp5k",
+  "objective": "Create a simple package.json with name 'test-app' and version '1.0.0' Create a simple package.json with name 'test-app' and version '1.0.0'",
+  "requirements": {
+    "capabilities": [
+      "code-generation"
+    ],
+    "tools": [],
+    "permissions": [],
+    "estimatedDuration": 600000
+  },
+  "createdAt": "2025-07-22T11:10:16.341Z",
+  "status": "active"
+}

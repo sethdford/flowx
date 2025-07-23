@@ -5,12 +5,12 @@
 /**
  * Wrap a function to safely execute it and catch any errors
  */
-export function safeFn(fn) {
-  return async (...args) => {
+export function safeFn(fn: any) {
+  return async (...args: any[]) => {
     try {
       return await fn(...args);
     } catch (error) {
-      console.error(`Error in function: ${error?.message}`);
+      console.error(`Error in function: ${error instanceof Error ? error.message : String(error)}`);
       return null;
     }
   };
@@ -19,11 +19,11 @@ export function safeFn(fn) {
 /**
  * Try executing a function and catch any errors
  */
-export async function tryCatch(fn, fallback = null) {
+export async function tryCatch(fn: () => Promise<any>, fallback: any = null) {
   try {
     return await fn();
   } catch (error) {
-    console.error(`Error: ${error?.message}`);
+    console.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
     return fallback;
   }
 }
@@ -31,7 +31,7 @@ export async function tryCatch(fn, fallback = null) {
 /**
  * Execute a function with retry logic
  */
-export async function withRetry(fn, options = {}) {
+export async function withRetry(fn: any, options: any = {}) {
   const { maxRetries = 3, delay = 500, onRetry = null } = options;
   
   let lastError = null;

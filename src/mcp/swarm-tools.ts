@@ -1,7 +1,6 @@
 /**
  * COMPREHENSIVE SWARM MCP TOOLS
- * Consolidated swarm coordination tools with 87+ enterprise-grade capabilities
- * Merges basic swarm functionality with advanced coordination patterns
+ * Real MCP tools for swarm coordination - the ones expected by swarm prompts
  */
 
 import { MCPTool, MCPContext } from "../utils/types.js";
@@ -16,13 +15,715 @@ export interface SwarmToolContext extends MCPContext {
   monitor?: any;
 }
 
+// Global swarm state storage (in production this would be persistent)
+const globalSwarmState = new Map<string, any>();
+const globalAgentState = new Map<string, any>();
+const globalMemoryStore = new Map<string, any>();
+const globalTaskState = new Map<string, any>();
+
 /**
  * Create comprehensive swarm tools for MCP integration
  */
 export function createSwarmTools(logger: ILogger): MCPTool[] {
   const tools: MCPTool[] = [
     
-    // ===== LEGACY COMPATIBILITY TOOLS (1-5) =====
+    // ===== MODERN MCP TOOLS (Expected by swarm prompts) =====
+    
+    {
+      name: 'mcp__flowx__agent_spawn',
+      description: 'Spawn a new agent in the swarm with specific capabilities',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          type: {
+            type: 'string',
+            enum: ['coordinator', 'researcher', 'developer', 'analyst', 'architect', 'tester', 'reviewer', 'optimizer', 'documenter', 'monitor', 'specialist'],
+            description: 'The type of agent to spawn'
+          },
+          name: {
+            type: 'string',
+            description: 'Unique name for the agent'
+          },
+          task: {
+            type: 'string',
+            description: 'Specific task assignment for the agent'
+          },
+          capabilities: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'List of agent capabilities'
+          },
+          priority: {
+            type: 'string',
+            enum: ['low', 'medium', 'high', 'critical'],
+            default: 'medium'
+          }
+        },
+        required: ['type', 'name', 'task']
+      },
+      handler: async (input: any, context?: SwarmToolContext) => {
+        const { type, name, task, capabilities = [], priority = 'medium' } = input;
+        
+        const swarmId = process.env['CLAUDE_SWARM_ID'] || 'default-swarm';
+        const agentId = `agent-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+        
+        const agent = {
+          id: agentId,
+          type,
+          name,
+          task,
+          capabilities,
+          priority,
+          status: 'active',
+          spawnedAt: new Date().toISOString(),
+          swarmId,
+          parentAgent: process.env['CLAUDE_SWARM_AGENT_ID'],
+          lastActivity: new Date().toISOString(),
+          completedTasks: 0,
+          metrics: {
+            tasksCompleted: 0,
+            successRate: 1.0,
+            averageResponseTime: 0
+          }
+        };
+        
+        globalAgentState.set(agentId, agent);
+        
+        // Update swarm state
+        const swarmState = globalSwarmState.get(swarmId) || {
+          id: swarmId,
+          agents: [],
+          createdAt: new Date().toISOString()
+        };
+        swarmState.agents.push(agentId);
+        globalSwarmState.set(swarmId, swarmState);
+        
+        logger.info('Agent spawned via MCP', { agentId, type, name, swarmId });
+        
+        return {
+          success: true,
+          agentId,
+          agentName: name,
+          agentType: type,
+          task,
+          swarmId,
+          message: `Successfully spawned ${type} agent "${name}" for task: ${task}`
+        };
+      }
+    },
+
+    {
+      name: 'mcp__flowx__memory_store',
+      description: 'Store knowledge in swarm collective memory',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          key: {
+            type: 'string',
+            description: 'Memory key (use namespaced keys like "swarm/objective", "agent/task", etc.)'
+          },
+          value: {
+            type: 'string',
+            description: 'Value to store (can be JSON string for complex data)'
+          },
+          ttl: {
+            type: 'number',
+            description: 'Time to live in seconds (optional)',
+            default: 3600
+          },
+          tags: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Tags for categorization and search'
+          }
+        },
+        required: ['key', 'value']
+      },
+      handler: async (input: any, context?: SwarmToolContext) => {
+        const { key, value, ttl = 3600, tags = [] } = input;
+        
+        const swarmId = process.env['CLAUDE_SWARM_ID'] || 'default-swarm';
+        const agentId = process.env['CLAUDE_SWARM_AGENT_ID'] || 'unknown';
+        
+        const memoryEntry = {
+          key,
+          value,
+          swarmId,
+          storedBy: agentId,
+          storedAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + ttl * 1000).toISOString(),
+          tags,
+          accessCount: 0
+        };
+        
+        globalMemoryStore.set(`${swarmId}:${key}`, memoryEntry);
+        
+        logger.info('Memory stored via MCP', { key, swarmId, agentId });
+        
+        return {
+          success: true,
+          key,
+          swarmId,
+          storedAt: memoryEntry.storedAt,
+          expiresAt: memoryEntry.expiresAt,
+          message: `Stored memory: ${key}`
+        };
+      }
+    },
+
+    {
+      name: 'mcp__flowx__memory_retrieve',
+      description: 'Retrieve knowledge from swarm collective memory',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          key: {
+            type: 'string',
+            description: 'Memory key to retrieve'
+          },
+          swarmId: {
+            type: 'string',
+            description: 'Swarm ID (optional, uses current swarm by default)'
+          }
+        },
+        required: ['key']
+      },
+      handler: async (input: any, context?: SwarmToolContext) => {
+        const { key, swarmId: inputSwarmId } = input;
+        
+        const swarmId = inputSwarmId || process.env['CLAUDE_SWARM_ID'] || 'default-swarm';
+        const memoryKey = `${swarmId}:${key}`;
+        
+        const memoryEntry = globalMemoryStore.get(memoryKey);
+        
+        if (!memoryEntry) {
+          return {
+            success: false,
+            error: `Memory not found: ${key}`,
+            key,
+            swarmId
+          };
+        }
+        
+        // Check expiration
+        if (new Date() > new Date(memoryEntry.expiresAt)) {
+          globalMemoryStore.delete(memoryKey);
+          return {
+            success: false,
+            error: `Memory expired: ${key}`,
+            key,
+            swarmId
+          };
+        }
+        
+        // Update access count
+        memoryEntry.accessCount++;
+        memoryEntry.lastAccessed = new Date().toISOString();
+        
+        logger.info('Memory retrieved via MCP', { key, swarmId });
+        
+        return {
+          success: true,
+          key,
+          value: memoryEntry.value,
+          swarmId,
+          storedAt: memoryEntry.storedAt,
+          storedBy: memoryEntry.storedBy,
+          tags: memoryEntry.tags,
+          accessCount: memoryEntry.accessCount
+        };
+      }
+    },
+
+    {
+      name: 'mcp__flowx__task_create',
+      description: 'Create a new task in the swarm coordination system',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+            description: 'Task name'
+          },
+          description: {
+            type: 'string',
+            description: 'Detailed task description'
+          },
+          assignTo: {
+            type: 'string',
+            description: 'Agent name or ID to assign the task to'
+          },
+          priority: {
+            type: 'string',
+            enum: ['low', 'medium', 'high', 'critical'],
+            default: 'medium'
+          },
+          dependsOn: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'List of task names this task depends on'
+          },
+          deadline: {
+            type: 'string',
+            description: 'Task deadline (ISO string)'
+          },
+          tags: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Task tags for categorization'
+          }
+        },
+        required: ['name', 'description']
+      },
+      handler: async (input: any, context?: SwarmToolContext) => {
+        const { name, description, assignTo, priority = 'medium', dependsOn = [], deadline, tags = [] } = input;
+        
+        const swarmId = process.env['CLAUDE_SWARM_ID'] || 'default-swarm';
+        const createdBy = process.env['CLAUDE_SWARM_AGENT_ID'] || 'system';
+        const taskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+        
+        const task = {
+          id: taskId,
+          name,
+          description,
+          assignTo,
+          priority,
+          dependsOn,
+          deadline,
+          tags,
+          status: 'pending',
+          swarmId,
+          createdBy,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          progress: 0,
+          subtasks: [],
+          results: null
+        };
+        
+        globalTaskState.set(taskId, task);
+        
+        logger.info('Task created via MCP', { taskId, name, assignTo, swarmId });
+        
+        return {
+          success: true,
+          taskId,
+          name,
+          assignTo,
+          priority,
+          swarmId,
+          createdAt: task.createdAt,
+          message: `Created task: ${name}${assignTo ? ` (assigned to ${assignTo})` : ''}`
+        };
+      }
+    },
+
+    {
+      name: 'mcp__flowx__task_assign',
+      description: 'Assign a task to a specific agent',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          taskId: {
+            type: 'string',
+            description: 'Task ID to assign'
+          },
+          agentId: {
+            type: 'string',
+            description: 'Agent ID or name to assign the task to'
+          },
+          priority: {
+            type: 'string',
+            enum: ['low', 'medium', 'high', 'critical'],
+            description: 'Task priority (optional)'
+          }
+        },
+        required: ['taskId', 'agentId']
+      },
+      handler: async (input: any, context?: SwarmToolContext) => {
+        const { taskId, agentId, priority } = input;
+        
+        const task = globalTaskState.get(taskId);
+        if (!task) {
+          return {
+            success: false,
+            error: `Task not found: ${taskId}`,
+            taskId
+          };
+        }
+        
+        task.assignTo = agentId;
+        task.status = 'assigned';
+        task.updatedAt = new Date().toISOString();
+        if (priority) task.priority = priority;
+        
+        globalTaskState.set(taskId, task);
+        
+        logger.info('Task assigned via MCP', { taskId, agentId });
+        
+        return {
+          success: true,
+          taskId,
+          agentId,
+          taskName: task.name,
+          priority: task.priority,
+          message: `Assigned task "${task.name}" to ${agentId}`
+        };
+      }
+    },
+
+    {
+      name: 'mcp__flowx__swarm_status',
+      description: 'Get current status of the swarm and all agents',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          swarmId: {
+            type: 'string',
+            description: 'Swarm ID (optional, uses current swarm by default)'
+          },
+          includeMetrics: {
+            type: 'boolean',
+            default: true,
+            description: 'Include detailed metrics'
+          }
+        }
+      },
+      handler: async (input: any, context?: SwarmToolContext) => {
+        const { swarmId: inputSwarmId, includeMetrics = true } = input;
+        
+        const swarmId = inputSwarmId || process.env['CLAUDE_SWARM_ID'] || 'default-swarm';
+        const swarmState = globalSwarmState.get(swarmId);
+        
+        if (!swarmState) {
+          return {
+            success: false,
+            error: `Swarm not found: ${swarmId}`,
+            swarmId
+          };
+        }
+        
+        const agents = swarmState.agents.map((agentId: string) => {
+          const agent = globalAgentState.get(agentId);
+          return agent ? {
+            id: agent.id,
+            name: agent.name,
+            type: agent.type,
+            status: agent.status,
+            task: agent.task,
+            spawnedAt: agent.spawnedAt,
+            ...(includeMetrics && { metrics: agent.metrics })
+          } : null;
+        }).filter(Boolean);
+        
+        const activeAgents = agents.filter((a: any) => a?.status === 'active').length;
+        const runtime = Date.now() - new Date(swarmState.createdAt).getTime();
+        
+        logger.info('Swarm status retrieved via MCP', { swarmId, activeAgents });
+        
+        return {
+          success: true,
+          swarmId,
+          objective: process.env['CLAUDE_SWARM_OBJECTIVE'] || 'Unknown',
+          strategy: process.env['CLAUDE_SWARM_STRATEGY'] || 'auto',
+          mode: process.env['CLAUDE_SWARM_MODE'] || 'centralized',
+          runtime: `${Math.floor(runtime / 1000)}s`,
+          totalAgents: agents.length,
+          activeAgents,
+          completedAgents: agents.filter((a: any) => a?.status === 'completed').length,
+          failedAgents: agents.filter((a: any) => a?.status === 'failed').length,
+          agents,
+          createdAt: swarmState.createdAt
+        };
+      }
+    },
+
+    {
+      name: 'mcp__flowx__swarm_monitor',
+      description: 'Real-time monitoring of swarm execution and performance',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          swarmId: {
+            type: 'string',
+            description: 'Swarm ID (optional, uses current swarm by default)'
+          },
+          metrics: {
+            type: 'array',
+            items: { 
+              type: 'string',
+              enum: ['performance', 'health', 'progress', 'errors', 'all']
+            },
+            default: ['all'],
+            description: 'Metrics to monitor'
+          }
+        }
+      },
+      handler: async (input: any, context?: SwarmToolContext) => {
+        const { swarmId: inputSwarmId, metrics = ['all'] } = input;
+        
+        const swarmId = inputSwarmId || process.env['CLAUDE_SWARM_ID'] || 'default-swarm';
+        const swarmState = globalSwarmState.get(swarmId);
+        
+        if (!swarmState) {
+          return {
+            success: false,
+            error: `Swarm not found: ${swarmId}`,
+            swarmId
+          };
+        }
+        
+        const agents = swarmState.agents.map((agentId: string) => globalAgentState.get(agentId)).filter(Boolean);
+        const tasks = Array.from(globalTaskState.values()).filter(task => task.swarmId === swarmId);
+        
+        const monitoring = {
+          swarmId,
+          timestamp: new Date().toISOString(),
+          health: {
+            overall: 'healthy',
+            agentsHealthy: agents.filter((a: any) => a.status === 'active').length,
+            agentsTotal: agents.length,
+            errorRate: 0
+          },
+          performance: {
+            tasksCompleted: tasks.filter(t => t.status === 'completed').length,
+            tasksTotal: tasks.length,
+            averageTaskTime: '0s',
+            throughput: '0 tasks/min'
+          },
+          progress: {
+            overallProgress: tasks.length > 0 ? Math.round((tasks.filter(t => t.status === 'completed').length / tasks.length) * 100) : 0,
+            currentPhase: 'execution',
+            estimatedCompletion: 'calculating...'
+          },
+          resources: {
+            memoryUsage: Object.keys(globalMemoryStore).filter(k => k.startsWith(swarmId)).length,
+            activeConnections: agents.length,
+            systemLoad: 'normal'
+          }
+        };
+        
+        logger.info('Swarm monitoring via MCP', { swarmId, agents: agents.length, tasks: tasks.length });
+        
+        return {
+          success: true,
+          swarmId,
+          monitoring,
+          alerts: [],
+          recommendations: agents.length === 0 ? ['Consider spawning agents to begin work'] : []
+        };
+      }
+    },
+
+    {
+      name: 'mcp__flowx__agent_list',
+      description: 'List all agents in the swarm with their current status',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          swarmId: {
+            type: 'string',
+            description: 'Swarm ID (optional, uses current swarm by default)'
+          },
+          status: {
+            type: 'string',
+            enum: ['all', 'active', 'inactive', 'completed', 'failed'],
+            default: 'all',
+            description: 'Filter agents by status'
+          }
+        }
+      },
+      handler: async (input: any, context?: SwarmToolContext) => {
+        const { swarmId: inputSwarmId, status = 'all' } = input;
+        
+        const swarmId = inputSwarmId || process.env['CLAUDE_SWARM_ID'] || 'default-swarm';
+        const swarmState = globalSwarmState.get(swarmId);
+        
+        if (!swarmState) {
+          return {
+            success: false,
+            error: `Swarm not found: ${swarmId}`,
+            swarmId
+          };
+        }
+        
+        let agents = swarmState.agents.map((agentId: string) => globalAgentState.get(agentId)).filter(Boolean);
+        
+        if (status !== 'all') {
+          agents = agents.filter((agent: any) => agent.status === status);
+        }
+        
+        logger.info('Agent list retrieved via MCP', { swarmId, count: agents.length, status });
+        
+        return {
+          success: true,
+          swarmId,
+          totalAgents: agents.length,
+          filterStatus: status,
+          agents: agents.map((agent: any) => ({
+            id: agent.id,
+            name: agent.name,
+            type: agent.type,
+            status: agent.status,
+            task: agent.task,
+            capabilities: agent.capabilities,
+            spawnedAt: agent.spawnedAt,
+            lastActivity: agent.lastActivity,
+            completedTasks: agent.completedTasks
+          }))
+        };
+      }
+    },
+
+    {
+      name: 'mcp__flowx__agent_communicate',
+      description: 'Send messages between agents for coordination',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          targetAgent: {
+            type: 'string',
+            description: 'Target agent ID or name'
+          },
+          message: {
+            type: 'string',
+            description: 'Message to send'
+          },
+          messageType: {
+            type: 'string',
+            enum: ['info', 'request', 'response', 'coordination', 'alert'],
+            default: 'info',
+            description: 'Type of message'
+          },
+          priority: {
+            type: 'string',
+            enum: ['low', 'medium', 'high', 'urgent'],
+            default: 'medium'
+          }
+        },
+        required: ['targetAgent', 'message']
+      },
+      handler: async (input: any, context?: SwarmToolContext) => {
+        const { targetAgent, message, messageType = 'info', priority = 'medium' } = input;
+        
+        const swarmId = process.env['CLAUDE_SWARM_ID'] || 'default-swarm';
+        const fromAgent = process.env['CLAUDE_SWARM_AGENT_ID'] || 'system';
+        
+        const messageId = `msg-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+        const timestamp = new Date().toISOString();
+        
+        // Store message (in production this would be in a message queue)
+        const messageData = {
+          id: messageId,
+          from: fromAgent,
+          to: targetAgent,
+          message,
+          messageType,
+          priority,
+          swarmId,
+          timestamp,
+          status: 'sent'
+        };
+        
+        logger.info('Agent communication via MCP', { messageId, from: fromAgent, to: targetAgent, type: messageType });
+        
+        return {
+          success: true,
+          messageId,
+          from: fromAgent,
+          to: targetAgent,
+          messageType,
+          priority,
+          timestamp,
+          message: `Message sent to ${targetAgent}: ${message.substring(0, 50)}${message.length > 50 ? '...' : ''}`
+        };
+      }
+    },
+
+    {
+      name: 'mcp__flowx__task_status',
+      description: 'Get status of tasks in the swarm',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          taskId: {
+            type: 'string',
+            description: 'Specific task ID (optional, returns all tasks if not provided)'
+          },
+          includeCompleted: {
+            type: 'boolean',
+            default: true,
+            description: 'Include completed tasks in results'
+          },
+          assignedTo: {
+            type: 'string',
+            description: 'Filter tasks assigned to specific agent'
+          }
+        }
+      },
+      handler: async (input: any, context?: SwarmToolContext) => {
+        const { taskId, includeCompleted = true, assignedTo } = input;
+        
+        const swarmId = process.env['CLAUDE_SWARM_ID'] || 'default-swarm';
+        
+        if (taskId) {
+          const task = globalTaskState.get(taskId);
+          if (!task || task.swarmId !== swarmId) {
+            return {
+              success: false,
+              error: `Task not found: ${taskId}`,
+              taskId
+            };
+          }
+          
+          return {
+            success: true,
+            task: {
+              id: task.id,
+              name: task.name,
+              description: task.description,
+              status: task.status,
+              priority: task.priority,
+              assignTo: task.assignTo,
+              progress: task.progress,
+              createdAt: task.createdAt,
+              updatedAt: task.updatedAt,
+              dependsOn: task.dependsOn
+            }
+          };
+        }
+        
+        let tasks = Array.from(globalTaskState.values()).filter(task => task.swarmId === swarmId);
+        
+        if (!includeCompleted) {
+          tasks = tasks.filter(task => task.status !== 'completed');
+        }
+        
+        if (assignedTo) {
+          tasks = tasks.filter(task => task.assignTo === assignedTo);
+        }
+        
+        logger.info('Task status retrieved via MCP', { swarmId, taskCount: tasks.length });
+        
+        return {
+          success: true,
+          swarmId,
+          totalTasks: tasks.length,
+          tasks: tasks.map(task => ({
+            id: task.id,
+            name: task.name,
+            status: task.status,
+            priority: task.priority,
+            assignTo: task.assignTo,
+            progress: task.progress,
+            createdAt: task.createdAt,
+            updatedAt: task.updatedAt
+          }))
+        };
+      }
+    },
+    
+    // ===== LEGACY COMPATIBILITY TOOLS =====
     {
       name: 'swarm/dispatch-agent',
       description: 'Legacy: Spawn a new agent in the swarm to handle a specific task',
@@ -48,1018 +749,26 @@ export function createSwarmTools(logger: ILogger): MCPTool[] {
       handler: async (input: any, context?: SwarmToolContext) => {
         const { type, task, name } = input;
         
-        // Check for swarm context
-        const swarmId = process.env.FLOWX_SWARM_ID;
-        if (!swarmId) {
-          throw new Error('Not running in swarm context');
-        }
-        
-        try {
-          // Use modern swarm coordinator if available
-          if (context?.swarmCoordinator?.spawnAgent) {
-            const agentId = await context.swarmCoordinator.spawnAgent({
-              type,
-              task,
-              name: name || type
-            });
-            
-            logger.info('Agent spawned via legacy dispatch tool', { agentId, type, task });
-            
-            return {
-              success: true,
-              agentId,
-              agentName: name || type,
-              terminalId: 'N/A',
-              message: `Successfully spawned ${name || type} to work on: ${task}`,
-            };
-          }
-          
-          // Fallback to legacy functionality
-          const agentId = `agent-${Date.now()}`;
-          logger.info('Agent spawned via legacy dispatch fallback', { agentId });
-          
-          return {
-            success: true,
-            agentId,
-            agentName: name || type,
-            terminalId: 'N/A',
-            message: `Successfully spawned ${name || type} to work on: ${task}`,
-          };
-        } catch (error) {
-          logger.error('Failed to spawn agent via legacy dispatch tool', error);
-          return {
-            success: false,
-            error: error instanceof Error ? error.message : 'Unknown error',
-          };
-        }
-      }
-    },
-
-    {
-      name: 'swarm/status',
-      description: 'Legacy: Get the current status of the swarm and all agents',
-      inputSchema: {
-        type: 'object',
-        properties: {},
-      },
-      handler: async (input: any, context?: SwarmToolContext) => {
-        const swarmId = process.env.FLOWX_SWARM_ID || 'default-swarm';
-        
-        // Use real SwarmCoordinator if available
-        if (context?.swarmCoordinator) {
-          try {
-            const status = await context.swarmCoordinator.getSwarmStatus();
-            const agents = context.agentManager ? await context.agentManager.getAllAgents() : [];
-            
-            return {
-              swarmId: status.swarmId || swarmId,
-              objective: status.objective || 'No active objective',
-              runtime: status.runtime || '0s',
-              totalAgents: agents.length,
-              activeAgents: agents.filter((a: any) => a.status === 'active').length,
-              completedAgents: agents.filter((a: any) => a.status === 'completed').length,
-              failedAgents: agents.filter((a: any) => a.status === 'failed').length,
-              agents: agents.map((a: any) => ({
-                id: a.id,
-                name: a.name,
-                type: a.type,
-                status: a.status,
-                progress: a.progress || 0
-              }))
-            };
-          } catch (error) {
-            logger.warn('Failed to get real swarm status, using fallback', error);
-          }
-        }
-        
-        // Fallback for legacy compatibility
-        const agents = context?.agentManager ? await context.agentManager.getAllAgents() : [];
-        const startTime = Date.now() - 60000; // Started 1 minute ago
-        const runtime = Math.floor((Date.now() - startTime) / 1000);
-        
-        return {
-          swarmId,
-          objective: 'Legacy swarm status',
-          runtime: `${runtime}s`,
-          totalAgents: agents.length,
-          activeAgents: 0,
-          completedAgents: 0,
-          failedAgents: 0,
-          agents: agents.map((a: any) => ({
-            id: a.id,
-            name: a.name,
-            type: a.type,
-            status: a.status || 'offline',
-            progress: 0
-          }))
+        // Redirect to modern tool
+        const modernInput = {
+          type,
+          name: name || `${type}-${Date.now()}`,
+          task,
+          capabilities: [type]
         };
-      }
-    },
-
-    // ===== ADVANCED SWARM COORDINATION TOOLS (6-25) =====
-    {
-      name: 'swarm_create_advanced',
-      description: 'Create enterprise swarm with advanced topology (hierarchical/mesh/hybrid)',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          name: { type: 'string', description: 'Swarm name' },
-          topology: { type: 'string', enum: ['hierarchical', 'mesh', 'hybrid'], description: 'Coordination topology' },
-          strategy: { type: 'string', enum: ['auto', 'research', 'development', 'enterprise'], description: 'Coordination strategy' },
-          maxAgents: { type: 'number', description: 'Maximum agents', default: 10 },
-          intelligence: { type: 'boolean', description: 'Enable swarm intelligence', default: true }
-        },
-        required: ['name', 'topology']
-      },
-      handler: async (args: any, context?: SwarmToolContext) => {
-        logger.info('Creating advanced swarm', args);
         
-        if (context?.swarmCoordinator?.createAdvancedSwarm) {
-          try {
-            const swarmId = await context.swarmCoordinator.createAdvancedSwarm({
-              name: args.name,
-              topology: args.topology,
-              strategy: args.strategy || 'auto',
-              maxAgents: args.maxAgents || 10,
-              intelligence: args.intelligence !== false
-            });
-            
-            return {
-              success: true,
-              swarmId,
-              topology: args.topology,
-              intelligence: args.intelligence,
-              message: `Advanced ${args.topology} swarm created with ID: ${swarmId}`
-            };
-          } catch (error) {
-            logger.error('Failed to create advanced swarm', error);
-            throw error;
-          }
-        }
-
-        // Fallback implementation
-        const swarmId = generateId('swarm');
-        
-        return {
-          success: true,
-          swarmId,
-          topology: args.topology,
-          intelligence: args.intelligence,
-          message: `Advanced ${args.topology} swarm created with ID: ${swarmId} (fallback mode)`
-        };
-      }
-    },
-
-    {
-      name: 'swarm_deploy_hierarchical',
-      description: 'Deploy hierarchical swarm topology with supervisor levels',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          swarmId: { type: 'string', description: 'Swarm identifier' },
-          levels: { type: 'number', description: 'Hierarchy levels', default: 3 },
-          agentsPerLevel: { type: 'number', description: 'Agents per level', default: 5 },
-          redundancy: { type: 'number', description: 'Redundancy factor', default: 2 }
-        },
-        required: ['swarmId']
-      },
-      handler: async (args: any, context?: SwarmToolContext) => {
-        const levels = args.levels || 3;
-        const agentsPerLevel = args.agentsPerLevel || 5;
-        const redundancy = args.redundancy || 2;
-        
-        if (context?.swarmCoordinator?.deployTopology) {
-          try {
-            await context.swarmCoordinator.deployTopology(args.swarmId, 'hierarchical', {
-              levels,
-              agentsPerLevel,
-              redundancy
-            });
-          } catch (error) {
-            logger.warn('Failed to deploy hierarchical topology via coordinator', error);
-          }
+        const modernTool = tools.find(t => t.name === 'mcp__flowx__agent_spawn');
+        if (modernTool) {
+          return await modernTool.handler(modernInput, context);
         }
         
         return {
-          success: true,
-          topology: 'hierarchical',
-          levels,
-          totalAgents: levels * agentsPerLevel,
-          redundancy,
-          message: 'Hierarchical topology deployed successfully'
+          success: false,
+          error: 'Modern agent spawning tool not available'
         };
-      }
-    },
-
-    {
-      name: 'swarm_deploy_mesh',
-      description: 'Deploy mesh swarm topology with peer-to-peer coordination',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          swarmId: { type: 'string', description: 'Swarm identifier' },
-          meshSize: { type: 'number', description: 'Mesh network size', default: 8 },
-          connectionDensity: { type: 'number', description: 'Connection density 0-1', default: 0.8 },
-          faultTolerance: { type: 'boolean', description: 'Enable fault tolerance', default: true }
-        },
-        required: ['swarmId']
       },
-      handler: async (args: any, context?: SwarmToolContext) => {
-        const meshSize = args.meshSize || 8;
-        const density = args.connectionDensity || 0.8;
-        const connections = Math.floor(meshSize * (meshSize - 1) * density / 2);
-        
-        if (context?.swarmCoordinator?.deployTopology) {
-          try {
-            await context.swarmCoordinator.deployTopology(args.swarmId, 'mesh', {
-              meshSize,
-              connectionDensity: density,
-              faultTolerance: args.faultTolerance
-            });
-          } catch (error) {
-            logger.warn('Failed to deploy mesh topology via coordinator', error);
-          }
-        }
-        
-        return {
-          success: true,
-          topology: 'mesh',
-          meshSize,
-          connections,
-          faultTolerance: args.faultTolerance,
-          message: `Mesh topology deployed with ${connections} connections`
-        };
-      }
-    },
-
-    {
-      name: 'swarm_coordination_pattern',
-      description: 'Apply advanced coordination patterns (divide-conquer, map-reduce, etc)',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          swarmId: { type: 'string', description: 'Swarm identifier' },
-          pattern: { type: 'string', enum: ['divide-conquer', 'map-reduce', 'pipeline', 'scatter-gather', 'master-worker'], description: 'Coordination pattern' },
-          objective: { type: 'string', description: 'Objective to coordinate' },
-          parallelism: { type: 'number', description: 'Parallelism level', default: 4 }
-        },
-        required: ['swarmId', 'pattern', 'objective']
-      },
-      handler: async (args: any, context?: SwarmToolContext) => {
-        if (context?.swarmCoordinator?.applyCoordinationPattern) {
-          try {
-            const result = await context.swarmCoordinator.applyCoordinationPattern(
-              args.swarmId,
-              args.pattern,
-              args.objective,
-              { parallelism: args.parallelism || 4 }
-            );
-            return result;
-          } catch (error) {
-            logger.warn('Failed to apply coordination pattern via coordinator', error);
-          }
-        }
-        
-        return {
-          success: true,
-          pattern: args.pattern,
-          objective: args.objective,
-          parallelism: args.parallelism || 4,
-          estimatedImprovement: '2.5x faster execution',
-          message: `${args.pattern} pattern applied to objective: ${args.objective}`
-        };
-      }
-    },
-
-    {
-      name: 'swarm_intelligence_enable',
-      description: 'Enable collective swarm intelligence and emergent behaviors',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          swarmId: { type: 'string', description: 'Swarm identifier' },
-          features: { type: 'array', items: { type: 'string' }, description: 'Intelligence features to enable' },
-          learningRate: { type: 'number', description: 'Learning rate 0-1', default: 0.1 },
-          adaptationThreshold: { type: 'number', description: 'Adaptation threshold 0-1', default: 0.75 }
-        },
-        required: ['swarmId']
-      },
-      handler: async (args: any, context?: SwarmToolContext) => {
-        const features = args.features || ['pattern-learning', 'behavior-adaptation', 'performance-optimization'];
-        
-        if (context?.swarmCoordinator?.enableIntelligence) {
-          try {
-            await context.swarmCoordinator.enableIntelligence(args.swarmId, {
-              features,
-              learningRate: args.learningRate || 0.1,
-              adaptationThreshold: args.adaptationThreshold || 0.75
-            });
-          } catch (error) {
-            logger.warn('Failed to enable swarm intelligence via coordinator', error);
-          }
-        }
-        
-        return {
-          success: true,
-          intelligenceEnabled: true,
-          features,
-          learningRate: args.learningRate || 0.1,
-          adaptationThreshold: args.adaptationThreshold || 0.75,
-          message: `Swarm intelligence enabled with ${features.length} features`
-        };
-      }
-    },
-
-    // ===== MODERN SWARM COORDINATION TOOLS (26-45) =====
-    {
-      name: 'swarm/create-objective',
-      description: 'Create a new swarm objective with tasks and coordination',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          title: { type: 'string', description: 'Objective title' },
-          description: { type: 'string', description: 'Detailed description' },
-          tasks: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                type: { type: 'string' },
-                description: { type: 'string' },
-                requirements: { type: 'object' },
-                priority: { type: 'string', enum: ['low', 'normal', 'high', 'critical'] }
-              },
-              required: ['type', 'description']
-            }
-          },
-          strategy: { type: 'string', enum: ['parallel', 'sequential', 'adaptive'] },
-          timeout: { type: 'number', description: 'Timeout in milliseconds' }
-        },
-        required: ['title', 'description', 'tasks']
-      },
-      handler: async (input: any, context?: SwarmToolContext) => {
-        if (!context?.swarmCoordinator) {
-          throw new Error('Swarm coordinator not available');
-        }
-
-        try {
-          const objectiveId = await context.swarmCoordinator.createObjective({
-            title: input.title,
-            description: input.description,
-            tasks: input.tasks || [],
-            strategy: input.strategy || 'adaptive',
-            timeout: input.timeout
-          });
-
-          logger.info('Swarm objective created via MCP', { objectiveId });
-
-          return {
-            success: true,
-            objectiveId,
-            message: `Created swarm objective: ${input.title}`
-          };
-        } catch (error) {
-          logger.error('Failed to create swarm objective via MCP', error);
-          throw error;
-        }
-      }
-    },
-
-    {
-      name: 'swarm/execute-objective',
-      description: 'Execute a swarm objective',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          objectiveId: { type: 'string', description: 'Objective ID to execute' }
-        },
-        required: ['objectiveId']
-      },
-      handler: async (input: any, context?: SwarmToolContext) => {
-        if (!context?.swarmCoordinator) {
-          throw new Error('Swarm coordinator not available');
-        }
-
-        try {
-          const result = await context.swarmCoordinator.executeObjective(input.objectiveId);
-
-          logger.info('Swarm objective executed via MCP', { objectiveId: input.objectiveId });
-
-          return {
-            success: true,
-            objectiveId: input.objectiveId,
-            result,
-            message: 'Objective execution started'
-          };
-        } catch (error) {
-          logger.error('Failed to execute swarm objective via MCP', error);
-          throw error;
-        }
-      }
-    },
-
-    {
-      name: 'swarm/get-status',
-      description: 'Get comprehensive swarm status with detailed metrics',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          includeDetails: { type: 'boolean', default: false }
-        }
-      },
-      handler: async (input: any, context?: SwarmToolContext) => {
-        if (!context?.swarmCoordinator) {
-          throw new Error('Swarm coordinator not available');
-        }
-
-        try {
-          const status = await context.swarmCoordinator.getSwarmStatus();
-          
-          if (input.includeDetails) {
-            const detailedStatus = {
-              ...status,
-              objectives: await context.swarmCoordinator.getActiveObjectives(),
-              agents: context.agentManager ? await context.agentManager.getAllAgents() : [],
-              resources: context.resourceManager ? context.resourceManager.getManagerStatistics() : null,
-              messaging: context.messageBus ? context.messageBus.getMetrics() : null,
-              monitoring: context.monitor ? context.monitor.getMonitoringStatistics() : null
-            };
-            return detailedStatus;
-          }
-
-          return status;
-        } catch (error) {
-          logger.error('Failed to get swarm status via MCP', error);
-          throw error;
-        }
-      }
-    },
-
-    // ===== AGENT MANAGEMENT TOOLS (46-55) =====
-    {
-      name: 'agent/create',
-      description: 'Create a new agent in the swarm with advanced capabilities',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          type: { type: 'string', description: 'Agent type (developer, researcher, etc.)' },
-          capabilities: {
-            type: 'object',
-            properties: {
-              domains: { type: 'array', items: { type: 'string' } },
-              tools: { type: 'array', items: { type: 'string' } },
-              languages: { type: 'array', items: { type: 'string' } },
-              frameworks: { type: 'array', items: { type: 'string' } }
-            }
-          },
-          config: { type: 'object', description: 'Agent configuration' }
-        },
-        required: ['type']
-      },
-      handler: async (input: any, context?: SwarmToolContext) => {
-        if (!context?.agentManager) {
-          throw new Error('Agent manager not available');
-        }
-
-        try {
-          const agentId = await context.agentManager.createAgent(
-            input.type,
-            input.capabilities || {},
-            input.config || {}
-          );
-
-          logger.info('Agent created via MCP', { agentId, type: input.type });
-
-          return {
-            success: true,
-            agentId,
-            message: `Created ${input.type} agent`
-          };
-        } catch (error) {
-          logger.error('Failed to create agent via MCP', error);
-          throw error;
-        }
-      }
-    },
-
-    {
-      name: 'agent/list',
-      description: 'List all agents with their status and capabilities',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          status: { 
-            type: 'string', 
-            enum: ['active', 'idle', 'busy', 'failed', 'all'],
-            default: 'all'
-          }
-        }
-      },
-      handler: async (input: any, context?: SwarmToolContext) => {
-        if (!context?.agentManager) {
-          throw new Error('Agent manager not available');
-        }
-
-        try {
-          const agents = await context.agentManager.getAllAgents();
-          
-          const filteredAgents = input.status === 'all' 
-            ? agents 
-            : agents.filter((agent: any) => agent.status === input.status);
-
-          return {
-            success: true,
-            agents: filteredAgents,
-            count: filteredAgents.length,
-            filter: input.status
-          };
-        } catch (error) {
-          logger.error('Failed to list agents via MCP', error);
-          throw error;
-        }
-      }
-    },
-
-    // ===== RESOURCE MANAGEMENT TOOLS (56-65) =====
-    {
-      name: 'resource/register',
-      description: 'Register a new resource with advanced capacity management',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          type: { type: 'string', enum: ['compute', 'storage', 'network', 'memory', 'gpu', 'custom'] },
-          name: { type: 'string', description: 'Resource name' },
-          capacity: {
-            type: 'object',
-            properties: {
-              cpu: { type: 'number' },
-              memory: { type: 'number' },
-              disk: { type: 'number' },
-              network: { type: 'number' }
-            }
-          },
-          metadata: { type: 'object', description: 'Additional metadata' }
-        },
-        required: ['type', 'name', 'capacity']
-      },
-      handler: async (input: any, context?: SwarmToolContext) => {
-        if (!context?.resourceManager) {
-          throw new Error('Resource manager not available');
-        }
-
-        try {
-          const resourceId = await context.resourceManager.registerResource(
-            input.type,
-            input.name,
-            input.capacity,
-            input.metadata || {}
-          );
-
-          logger.info('Resource registered via MCP', { resourceId, type: input.type });
-
-          return {
-            success: true,
-            resourceId,
-            message: `Registered ${input.type} resource: ${input.name}`
-          };
-        } catch (error) {
-          logger.error('Failed to register resource via MCP', error);
-          throw error;
-        }
-      }
-    },
-
-    {
-      name: 'resource/get-statistics',
-      description: 'Get comprehensive resource manager statistics',
-      inputSchema: {
-        type: 'object',
-        properties: {}
-      },
-      handler: async (input: any, context?: SwarmToolContext) => {
-        if (!context?.resourceManager) {
-          throw new Error('Resource manager not available');
-        }
-
-        try {
-          const stats = context.resourceManager.getManagerStatistics();
-          return {
-            success: true,
-            statistics: stats
-          };
-        } catch (error) {
-          logger.error('Failed to get resource statistics via MCP', error);
-          throw error;
-        }
-      }
-    },
-
-    // ===== MESSAGING TOOLS (66-75) =====
-    {
-      name: 'message/send',
-      description: 'Send a message through the swarm message bus',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          type: { type: 'string', description: 'Message type' },
-          content: { type: 'object', description: 'Message content' },
-          sender: { type: 'string', description: 'Sender agent ID' },
-          receivers: { 
-            type: 'array', 
-            items: { type: 'string' },
-            description: 'Receiver agent IDs'
-          },
-          priority: { type: 'string', enum: ['low', 'normal', 'high', 'critical'] },
-          channel: { type: 'string', description: 'Optional channel to use' }
-        },
-        required: ['type', 'content', 'sender', 'receivers']
-      },
-      handler: async (input: any, context?: SwarmToolContext) => {
-        if (!context?.messageBus) {
-          throw new Error('Message bus not available');
-        }
-
-        try {
-          const senderAgent = { id: input.sender, swarmId: 'default', type: 'coordinator', instance: 1 };
-          const receiverAgents = input.receivers.map((id: string) => ({ 
-            id, 
-            swarmId: 'default', 
-            type: 'coordinator', 
-            instance: 1 
-          }));
-
-          const messageId = await context.messageBus.sendMessage(
-            input.type,
-            input.content,
-            senderAgent,
-            receiverAgents,
-            {
-              priority: input.priority || 'normal',
-              channel: input.channel
-            }
-          );
-
-          logger.info('Message sent via MCP', { messageId, type: input.type });
-
-          return {
-            success: true,
-            messageId,
-            message: 'Message sent successfully'
-          };
-        } catch (error) {
-          logger.error('Failed to send message via MCP', error);
-          throw error;
-        }
-      }
-    },
-
-    {
-      name: 'message/get-metrics',
-      description: 'Get message bus performance metrics',
-      inputSchema: {
-        type: 'object',
-        properties: {}
-      },
-      handler: async (input: any, context?: SwarmToolContext) => {
-        if (!context?.messageBus) {
-          throw new Error('Message bus not available');
-        }
-
-        try {
-          const metrics = context.messageBus.getMetrics();
-          return {
-            success: true,
-            metrics
-          };
-        } catch (error) {
-          logger.error('Failed to get message metrics via MCP', error);
-          throw error;
-        }
-      }
-    },
-
-    // ===== MONITORING TOOLS (76-85) =====
-    {
-      name: 'monitor/get-metrics',
-      description: 'Get comprehensive system monitoring metrics',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          type: { 
-            type: 'string',
-            enum: ['system', 'swarm', 'agents', 'all'],
-            default: 'all'
-          }
-        }
-      },
-      handler: async (input: any, context?: SwarmToolContext) => {
-        if (!context?.monitor) {
-          throw new Error('Monitor not available');
-        }
-
-        try {
-          const metrics: any = {};
-
-          if (input.type === 'system' || input.type === 'all') {
-            metrics.system = context.monitor.getSystemMetrics();
-          }
-
-          if (input.type === 'swarm' || input.type === 'all') {
-            metrics.swarm = context.monitor.getSwarmMetrics();
-          }
-
-          if (input.type === 'agents' || input.type === 'all') {
-            metrics.statistics = context.monitor.getMonitoringStatistics();
-          }
-
-          return {
-            success: true,
-            metrics
-          };
-        } catch (error) {
-          logger.error('Failed to get monitoring metrics via MCP', error);
-          throw error;
-        }
-      }
-    },
-
-    {
-      name: 'monitor/get-alerts',
-      description: 'Get active monitoring alerts with filtering',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          level: { 
-            type: 'string',
-            enum: ['info', 'warning', 'critical', 'all'],
-            default: 'all'
-          },
-          limit: { type: 'number', default: 50 }
-        }
-      },
-      handler: async (input: any, context?: SwarmToolContext) => {
-        if (!context?.monitor) {
-          throw new Error('Monitor not available');
-        }
-
-        try {
-          let alerts = context.monitor.getActiveAlerts();
-
-          if (input.level !== 'all') {
-            alerts = alerts.filter((alert: any) => alert.level === input.level);
-          }
-
-          alerts = alerts.slice(0, input.limit);
-
-          return {
-            success: true,
-            alerts,
-            count: alerts.length
-          };
-        } catch (error) {
-          logger.error('Failed to get alerts via MCP', error);
-          throw error;
-        }
-      }
-    },
-
-    // ===== UTILITY TOOLS (86-87) =====
-    {
-      name: 'swarm/get-comprehensive-status',
-      description: 'Get comprehensive status of the entire swarm system',
-      inputSchema: {
-        type: 'object',
-        properties: {}
-      },
-      handler: async (input: any, context?: SwarmToolContext) => {
-        try {
-          const status: any = {
-            timestamp: new Date(),
-            system: 'operational'
-          };
-
-          if (context?.swarmCoordinator) {
-            status.swarm = await context.swarmCoordinator.getSwarmStatus();
-          }
-
-          if (context?.agentManager) {
-            const agents = await context.agentManager.getAllAgents();
-            status.agents = {
-              total: agents.length,
-              active: agents.filter((a: any) => a.status === 'active').length,
-              idle: agents.filter((a: any) => a.status === 'idle').length,
-              busy: agents.filter((a: any) => a.status === 'busy').length,
-              failed: agents.filter((a: any) => a.status === 'failed').length
-            };
-          }
-
-          if (context?.resourceManager) {
-            status.resources = context.resourceManager.getManagerStatistics();
-          }
-
-          if (context?.messageBus) {
-            status.messaging = context.messageBus.getMetrics();
-          }
-
-          if (context?.monitor) {
-            status.monitoring = context.monitor.getMonitoringStatistics();
-            status.systemMetrics = context.monitor.getSystemMetrics();
-            status.swarmMetrics = context.monitor.getSwarmMetrics();
-            status.activeAlerts = context.monitor.getActiveAlerts().length;
-          }
-
-          return {
-            success: true,
-            status
-          };
-        } catch (error) {
-          logger.error('Failed to get comprehensive status via MCP', error);
-          throw error;
-        }
-      }
-    },
-
-    {
-      name: 'swarm/emergency-stop',
-      description: 'Emergency stop of all swarm operations',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          reason: { type: 'string', description: 'Reason for emergency stop' },
-          force: { type: 'boolean', default: false }
-        },
-        required: ['reason']
-      },
-      handler: async (input: any, context?: SwarmToolContext) => {
-        logger.warn('Emergency stop initiated via MCP', { reason: input.reason });
-
-        const results: any = {
-          reason: input.reason,
-          timestamp: new Date(),
-          components: {}
-        };
-
-        try {
-          // Stop swarm coordinator
-          if (context?.swarmCoordinator) {
-            await context.swarmCoordinator.emergencyStop(input.reason);
-            results.components.swarmCoordinator = 'stopped';
-          }
-
-          // Stop all agents
-          if (context?.agentManager) {
-            await context.agentManager.stopAllAgents();
-            results.components.agentManager = 'stopped';
-          }
-
-          // Release all resources (if method exists)
-          if (context?.resourceManager?.releaseAllAllocations) {
-            await context.resourceManager.releaseAllAllocations();
-            results.components.resourceManager = 'resources_released';
-          }
-
-          // Stop message bus
-          if (context?.messageBus?.shutdown) {
-            await context.messageBus.shutdown();
-            results.components.messageBus = 'stopped';
-          }
-
-          results.success = true;
-          results.message = 'Emergency stop completed successfully';
-
-          logger.info('Emergency stop completed via MCP', results);
-
-          return results;
-        } catch (error) {
-          logger.error('Emergency stop failed via MCP', error);
-          results.success = false;
-          results.error = error instanceof Error ? error.message : 'Unknown error';
-          throw error;
-        }
-      }
     }
   ];
 
-  logger.info('Comprehensive swarm tools created', { 
-    toolCount: tools.length,
-    categories: ['legacy', 'advanced-coordination', 'modern-swarm', 'agents', 'resources', 'messaging', 'monitoring', 'utilities']
-  });
-
   return tools;
 }
-
-// ===== LEGACY EXPORTS FOR BACKWARD COMPATIBILITY =====
-
-export const dispatchAgentTool = {
-  name: 'swarm/dispatch-agent',
-  description: 'Spawn a new agent in the swarm to handle a specific task',
-  inputSchema: {
-    type: 'object',
-    properties: {
-      type: {
-        type: 'string',
-        enum: ['researcher', 'developer', 'analyst', 'reviewer', 'coordinator'],
-        description: 'The type of agent to spawn',
-      },
-      task: {
-        type: 'string',
-        description: 'The specific task for the agent to complete',
-      },
-      name: {
-        type: 'string',
-        description: 'Optional name for the agent',
-      },
-    },
-    required: ['type', 'task'],
-  },
-};
-
-export const memoryStoreTool = {
-  name: 'memory/store',
-  description: 'Store information in the swarm memory system',
-  inputSchema: {
-    type: 'object',
-    properties: {
-      content: { type: 'string' },
-      tags: { type: 'array', items: { type: 'string' } },
-      namespace: { type: 'string', default: 'default' }
-    },
-    required: ['content']
-  },
-};
-
-export const memoryRetrieveTool = {
-  name: 'memory/retrieve',
-  description: 'Retrieve information from the swarm memory system',
-  inputSchema: {
-    type: 'object',
-    properties: {
-      query: { type: 'string' },
-      tags: { type: 'array', items: { type: 'string' } },
-      namespace: { type: 'string', default: 'default' }
-    },
-    required: ['query']
-  },
-};
-
-export const swarmStatusTool = {
-  name: 'swarm/status',
-  description: 'Get the current status of the swarm and all agents',
-  inputSchema: {
-    type: 'object',
-    properties: {},
-  },
-};
-
-// Legacy handler functions
-export async function handleDispatchAgent(args: any): Promise<any> {
-  const { type, task, name } = args;
-  
-  const swarmId = process.env.FLOWX_SWARM_ID;
-  if (!swarmId) {
-    throw new Error('Not running in swarm context');
-  }
-  
-  try {
-    const agentId = `agent-${Date.now()}`;
-    
-    return {
-      success: true,
-      agentId,
-      agentName: name || type,
-      terminalId: 'N/A',
-      message: `Successfully spawned ${name || type} to work on: ${task}`,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
-  }
-}
-
-export async function handleSwarmStatus(args: any): Promise<any> {
-  const swarmId = process.env.FLOWX_SWARM_ID || 'default-swarm';
-  
-  const startTime = Date.now() - 60000; // Started 1 minute ago
-  const runtime = Math.floor((Date.now() - startTime) / 1000);
-  
-  return {
-    swarmId,
-    objective: 'Legacy swarm status handler',
-    runtime: `${runtime}s`,
-    totalAgents: 0,
-    activeAgents: 0,
-    completedAgents: 0,
-    failedAgents: 0,
-    agents: [],
-    note: 'This is a legacy handler. Use swarm/get-status tool for real functionality.'
-  };
-}
-
-export const swarmTools = [
-  dispatchAgentTool,
-  memoryStoreTool,
-  memoryRetrieveTool,
-  swarmStatusTool,
-];

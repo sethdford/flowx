@@ -3,9 +3,9 @@
  * Comprehensive memory bank operations with actual backend integration
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { successBold, infoBold, warningBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.ts';
-import { getMemoryManager } from '../../core/global-initialization.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { successBold, infoBold, warningBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.js';
+import { getMemoryManager } from '../../core/global-initialization.js';
 
 export const memoryCommand: CLICommand = {
   name: 'memory',

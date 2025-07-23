@@ -4,8 +4,8 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { ILogger } from '../../core/logger.ts';
-import { AgentType } from '../../hive-mind/types.ts';
+import { ILogger } from '../../core/logger.js';
+import { AgentType } from '../../hive-mind/types.js';
 
 export interface AgentBehavior {
   type: AgentType;

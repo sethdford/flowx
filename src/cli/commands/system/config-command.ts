@@ -3,8 +3,8 @@
  * Comprehensive configuration management for flowx
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { formatTable, TableColumn, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index';
+import { formatTable, TableColumn, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { homedir } from 'os';
@@ -777,11 +777,11 @@ async function saveConfig(config: ConfigSchema, options: any): Promise<void> {
 
 function getConfigPath(options: any): string {
   if (options.global) {
-    return path.join(homedir(), '.flowx', 'config.tson');
+    return path.join(homedir(), '.flowx', 'config.json');
   }
   
   const profile = options.profile || 'default';
-  return path.join(process.cwd(), '.flowx', `config-${profile}.tson`);
+  return path.join(process.cwd(), '.flowx', `config-${profile}.json`);
 }
 
 function getNestedValue(obj: any, key: string): any {
@@ -1198,7 +1198,7 @@ async function promptBoolean(message: string, defaultValue: boolean): Promise<bo
 async function reloadConfig(context: CLIContext): Promise<void> {
   try {
     // Import global initialization module to call reloadConfig
-    const globalInit = await import('../../core/global-initialization.ts');
+    const globalInit = await import('../../core/global-initialization');
     
     // Call reloadConfig if it exists (it's mocked in tests)
     if ('reloadConfig' in globalInit && typeof (globalInit as any).reloadConfig === 'function') {

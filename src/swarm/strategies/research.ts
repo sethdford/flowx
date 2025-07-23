@@ -4,14 +4,14 @@
  * semantic clustering, caching, and progressive refinement
  */
 
-import { BaseStrategy, DecompositionResult, StrategyMetrics, TaskBatch, AgentAllocation } from "./base.ts";
-import { Logger } from "../../core/logger.ts";
-import { generateId } from "../../utils/helpers.ts";
+import { BaseStrategy, DecompositionResult, StrategyMetrics, TaskBatch, AgentAllocation } from "./base.js";
+import { Logger } from "../../core/logger.js";
+import { generateId } from "../../utils/helpers.js";
 import {
   SwarmObjective, TaskDefinition, TaskId, TaskType, TaskPriority,
   SwarmConfig, SWARM_CONSTANTS,
   AgentState, AgentId
-} from "../types.ts";
+} from "../types.js";
 
 // Research-specific interfaces
 interface ResearchQuery {

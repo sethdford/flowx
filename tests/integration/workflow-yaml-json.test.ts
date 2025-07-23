@@ -5,24 +5,26 @@
 import { assertEquals, assertExists, assertThrows, describe, it, beforeEach, afterEach, createTestFile } from '../utils/node-test-utils';
 // Import the mock WorkflowEngine instead of the real one
 import { WorkflowEngine, WorkflowDefinition, ExecutionOptions } from '../__mocks__/workflow-engine';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 
 describe('Workflow Format Integration Tests', () => {
   let engine: WorkflowEngine;
   let testDir: string;
 
   beforeEach(async () => {
-    engine = new WorkflowEngine({ debug: false, monitoring: false });
     // Use Node.js temp directory instead of Deno's
-    const fs = require('fs');
-    const os = require('os');
-    const path = require('path');
-    testDir = fs.mkdtempSync(path.join('src/tests/.tmp', 'workflow-format-test-'));
+    const tmpDir = os.tmpdir() || '/tmp';
+    testDir = fs.mkdtempSync(path.join(tmpDir, 'workflow-format-test-'));
+    
+    // Initialize workflow engine
+    engine = new WorkflowEngine();
   });
 
   afterEach(async () => {
     try {
       // Use Node.js fs instead of Deno's
-      const fs = require('fs');
       fs.rmSync(testDir, { recursive: true, force: true });
     } catch {
       // Ignore cleanup errors
@@ -506,9 +508,9 @@ It should cause an error when trying to parse
         await engine.loadWorkflow(workflowPath);
         // If we get here, the test should fail
         expect(true).toBe(false); // Force failure if no error thrown
-      } catch (error) {
+      } catch (error: unknown) {
         // Test passes if we get an error
-        expect(error.message).toContain('Failed to load workflow');
+        expect((error as Error).message).toContain('Failed to load workflow');
       }
     });
   });
@@ -603,7 +605,7 @@ settings:
   describe('Real-world Workflow Examples', () => {
     it('should validate the research workflow example', async () => {
       // This test uses a minimal research workflow example
-      if (engine.validateWorkflow) { // Check if method exists
+      if (typeof engine.validateWorkflow === 'function') { // Check if method exists
         const testWorkflowPath = `${testDir}/research-workflow.yaml`;
         const minimalResearchWorkflow = `
 name: "Research Workflow"

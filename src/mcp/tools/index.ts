@@ -4,14 +4,14 @@
  */
 
 // Export main classes
-export { AdvancedToolRegistry } from './advanced-tool-registry.ts';
-export type { AdvancedTool } from './advanced-tool-registry.ts';
-export { AdvancedToolServer } from './advanced-tool-server.ts';
-export type { ToolServerStatistics } from './advanced-tool-server.ts';
+export { AdvancedToolRegistry } from './advanced-tool-registry.js';
+export type { AdvancedTool } from './advanced-tool-registry.js';
+export { AdvancedToolServer } from './advanced-tool-server.js';
+export type { ToolServerStatistics } from './advanced-tool-server.js';
 
 // Create and export default instances for convenience
-import { AdvancedToolRegistry } from './advanced-tool-registry.ts';
-import { AdvancedToolServer } from './advanced-tool-server.ts';
+import { AdvancedToolRegistry } from './advanced-tool-registry.js';
+import { AdvancedToolServer } from './advanced-tool-server.js';
 
 export const toolRegistry = new AdvancedToolRegistry();
 export const toolServer = new AdvancedToolServer();

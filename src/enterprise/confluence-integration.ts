@@ -4,9 +4,9 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { ILogger } from '../core/logger.ts';
-import { createConsoleLogger } from '../utils/logger.ts';
-import { Project, ProjectManager } from './project-manager.ts';
+import { ILogger } from '../core/logger.js';
+import { createConsoleLogger } from '../utils/logger.js';
+import { Project, ProjectManager } from './project-manager.js';
 
 export interface ConfluenceConfig {
   baseUrl: string;

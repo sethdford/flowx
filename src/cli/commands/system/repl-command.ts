@@ -6,8 +6,8 @@
  * Compatible with enterprise features and all FlowX capabilities
  */
 
-import { Logger } from '../../../core/logger.ts';
-import { getAllCommands } from '../../core/command-registry.ts';
+import { Logger } from '../../../core/logger.js';
+import { getAllCommands } from '../../core/command-registry.js';
 import * as readline from 'readline';
 import * as fs from 'fs/promises';
 import * as path from 'path';

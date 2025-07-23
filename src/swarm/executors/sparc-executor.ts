@@ -5,9 +5,9 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { Logger } from "../../core/logger.ts";
-import { ClaudeConnectionPool } from "../optimizations/connection-pool.ts";
-import { AsyncFileManager } from "../optimizations/async-file-manager.ts";
+import { Logger } from "../../core/logger.js";
+import { ClaudeConnectionPool } from "../optimizations/connection-pool.js";
+import { AsyncFileManager } from "../optimizations/async-file-manager.js";
 import { 
   TaskDefinition, 
   TaskResult, 
@@ -15,7 +15,7 @@ import {
   TaskStatus,
   TaskType,
   TaskPriority
-} from "../types.ts";
+} from "../types.js";
 
 export interface SparcExecutorConfig {
   connectionPool?: {

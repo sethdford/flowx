@@ -934,6 +934,8 @@ export interface SwarmConfig {
   name: string;
   description: string;
   version: string;
+  objective?: string;
+  nonInteractive?: boolean;
   
   // Operational settings
   mode: SwarmMode;

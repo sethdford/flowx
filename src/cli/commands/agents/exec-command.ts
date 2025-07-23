@@ -3,13 +3,13 @@
  * Execute commands within agent context
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { printSuccess, printError, printInfo, printWarning } from '../../core/output-formatter.ts';
-import { getLogger, getMemoryManager, getPersistenceManager } from '../../core/global-initialization.ts';
-import { SwarmCoordinator } from '../../../swarm/coordinator.ts';
-import { AgentProcessManager } from '../../../agents/agent-process-manager.ts';
-import { TaskEngine } from '../../../task/engine.ts';
-import { generateId } from '../../../utils/helpers.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { printSuccess, printError, printInfo, printWarning } from '../../core/output-formatter.js';
+import { getLogger, getMemoryManager, getPersistenceManager } from '../../core/global-initialization.js';
+import { SwarmCoordinator } from '../../../swarm/coordinator.js';
+import { AgentProcessManager } from '../../../agents/agent-process-manager.js';
+import { TaskEngine } from '../../../task/engine.js';
+import { generateId } from '../../../utils/helpers.js';
 import { spawn, exec } from 'child_process';
 import { promisify } from 'util';
 import { writeFile, readFile, mkdir, access, constants } from 'fs/promises';

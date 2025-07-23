@@ -3,16 +3,16 @@
  * Streamlined service initialization with lazy loading and error recovery
  */
 
-import { ILogger } from '../../utils/types.ts';
-import { EventBus, IEventBus } from '../../core/event-bus.ts';
-import { Logger } from '../../core/logger.ts';
-import { PersistenceManager } from '../../core/persistence.ts';
-import { SwarmCoordinator } from '../../swarm/coordinator.ts';
-import { TaskExecutionEngine } from '../../coordination/task-execution-engine.ts';
-import { AgentProcessManager } from '../../agents/agent-process-manager.ts';
+import { ILogger } from '../../utils/types.js';
+import { EventBus, IEventBus } from '../../core/event-bus.js';
+import { Logger } from '../../core/logger.js';
+import { PersistenceManager } from '../../core/persistence.js';
+import { SwarmCoordinator } from '../../swarm/coordinator.js';
+import { TaskExecutionEngine } from '../../coordination/task-execution-engine.js';
+import { AgentProcessManager } from '../../agents/agent-process-manager.js';
 // Remove interface import that gets stripped in Node.js strip-only mode
-// import { MemoryConfig } from '../../utils/types.ts';
-import { printInfo, printError, printSuccess } from './output-formatter.ts';
+// import { MemoryConfig } from '../../utils/types.js';
+import { printInfo, printError, printSuccess } from './output-formatter.js';
 
 // Simplified service interfaces
 export interface FastPersistenceManager {

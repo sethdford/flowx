@@ -45,11 +45,11 @@ jest.mock('../../../../tests/helpers/deno-fs-utils.ts');
 
 // Mock exists function
 jest.mock('./tests/helpers/deno-fs-utils.ts', () => ({
-  safeChdir: jest.fn().mockResolvedValue(true),
-  safeCwd: jest.fn().mockReturnValue('/mock/cwd'),
-  createTempTestDir: jest.fn().mockResolvedValue('/mock/temp-dir'),
-  safeRemoveDir: jest.fn().mockResolvedValue(true),
-  setupTestDirEnvironment: jest.fn().mockResolvedValue({
+  safeChdir: jest.fn<() => Promise<boolean>>().mockResolvedValue(true),
+  safeCwd: jest.fn<() => string>().mockReturnValue('/mock/cwd'),
+  createTempTestDir: jest.fn<() => Promise<string>>().mockResolvedValue('/mock/temp-dir'),
+  safeRemoveDir: jest.fn<() => Promise<boolean>>().mockResolvedValue(true),
+  setupTestDirEnvironment: jest.fn<() => Promise<{originalCwd: string; testDir: string}>>().mockResolvedValue({
     originalCwd: '/mock/original-cwd',
     testDir: '/mock/test-dir'
   }),
@@ -309,7 +309,7 @@ describe("End-to-End Init Workflow Tests", () => {
         stderr: "piped"
       });
 
-      const result = await initCommand.output();
+      const result = await initCommand.output() as { success: boolean };
       assertEquals(result.success, true);
 
       // Should not interfere with existing project files

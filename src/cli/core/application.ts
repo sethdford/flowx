@@ -4,9 +4,9 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { CommandParser } from './command-parser.ts';
-import { printError, printInfo } from './output-formatter.ts';
-import { getCommand, getCommandByNameOrAlias } from './command-registry.ts';
+import { CommandParser } from './command-parser.js';
+import { printError, printInfo } from './output-formatter.js';
+import { getCommand, getCommandByNameOrAlias } from './command-registry.js';
 
 export const VERSION = "8.1.0";
 
@@ -288,80 +288,41 @@ export class CLIApplication extends EventEmitter {
    * Execute a command
    */
   async execute(args: string[]): Promise<void> {
-    try {
-      // Parse command line arguments
-      const parsed = this.commandParser.parse(args);
-      const { command: commandName, args: commandArgs, options: rawOptions } = parsed;
+    const parseResult = this.commandParser.parse(args);
+    const { command: commandName, subcommand: subcommandName, args: parsedArgs, options } = parseResult;
+    
+    let command = this.findCommand(commandName);
 
-      // Handle no command (show help)
-      if (!commandName) {
-        const helpCommand = getCommand('help');
-        if (helpCommand) {
-          await helpCommand.handler({ 
-            args: [], 
-            options: {}, 
-            config: this.config,
-            command: 'help',
-            workingDirectory: process.cwd(),
-            environment: process.env as Record<string, string>,
-            user: { id: 'default', name: 'user' }
-          });
-        }
-        return;
-      }
+    if (!command) {
+      this.outputFormatter.printError(`Error: Command "${commandName}" not found.`);
+      this.showHelp();
+      return;
+    }
+    
+    let finalCommand = command;
+    let finalArgs = parsedArgs || [];
 
-      // Get command from application registry (including aliases)
-      const command = this.commands.get(commandName);
-      if (!command) {
-        this.outputFormatter.printError(`Unknown command: ${commandName}`);
-        this.outputFormatter.printInfo('Run "flowx help" to see available commands.');
-        return;
-      }
-
-      // Handle subcommands - check if first argument is a valid subcommand
-      let targetCommand = command;
-      let subcommand: string | undefined;
-      let finalArgs = commandArgs;
-      
-      if (commandArgs.length > 0 && command.subcommands) {
-        const potentialSubcommand = commandArgs[0];
-        const subCmd = command.subcommands.find(sc => sc.name === potentialSubcommand);
-        if (subCmd) {
-          targetCommand = subCmd;
-          subcommand = potentialSubcommand;
-          finalArgs = commandArgs.slice(1); // Remove subcommand from args
-        }
-      }
-
-      // Apply default values from command option definitions
-      const options = this.applyDefaultValues(targetCommand, rawOptions, command);
-
-      // Create execution context
-      const context: CLIContext = {
-        args: finalArgs,
-        options,
-        config: this.config,
-        command: commandName,
-        workingDirectory: process.cwd(),
-        environment: process.env as Record<string, string>,
-        user: { id: 'default', name: 'user' }
-      };
-
-      // Add subcommand if it exists
+    if (subcommandName && command.subcommands) {
+      const subcommand = command.subcommands.find(sc => sc.name === subcommandName || (sc.aliases && sc.aliases.includes(subcommandName)));
       if (subcommand) {
-        context.subcommand = subcommand;
+        finalCommand = subcommand;
+        finalArgs = parsedArgs || [];
+      } else {
+        this.outputFormatter.printError(`Error: Subcommand "${subcommandName}" not found for command "${command.name}".`);
+        console.log(this.formatCommandHelp(command));
+        return;
       }
+    } else if (subcommandName && !command.subcommands) {
+      // If command doesn't have subcommands, treat the "subcommand" as a regular argument
+      finalArgs = [subcommandName, ...finalArgs];
+    }
 
-      // Add optional properties if they exist
-      if (this.container) context.container = this.container;
-      if (this.logger) context.logger = this.logger;
-      if (this.validator) context.validator = this.validator;
-
-      // Execute the target command through middleware
-      await this.executeMiddleware(targetCommand, context);
-
-    } catch (error) {
-      this.handleError(error);
+    const context = this.createContext(finalCommand.name, finalArgs, options, subcommandName);
+    
+    try {
+      await this.executeMiddleware(finalCommand, context);
+    } catch(err) {
+      this.handleError(err);
     }
   }
 
@@ -461,11 +422,8 @@ export class CLIApplication extends EventEmitter {
     };
   }
 
-  private findCommand(command: string, subcommand?: string): CLICommand | undefined {
-    if (subcommand) {
-      return this.commands.get(`${command}:${subcommand}`);
-    }
-    return this.commands.get(command);
+  private findCommand(name: string): CLICommand | undefined {
+    return this.commands.get(name);
   }
 
   private async loadConfig(configPath?: string): Promise<Record<string, any> | undefined> {
@@ -818,5 +776,17 @@ export class CLIApplication extends EventEmitter {
     } else {
       this.outputFormatter.printError(`Unknown error: ${String(error)}`);
     }
+  }
+
+  private createContext(commandName: string, args: string[], options: Record<string, any>, subcommandName?: string): CLIContext {
+      return {
+          args,
+          options,
+          command: commandName,
+          subcommand: subcommandName,
+          workingDirectory: process.cwd(),
+          environment: { ...process.env } as Record<string, string>,
+          user: { id: 'default', name: 'user' }
+      };
   }
 } 

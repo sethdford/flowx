@@ -1,0 +1,96 @@
+{
+  "name": "Java Hello World Maven Project",
+  "description": "Complete Java Hello World Maven project with tests and build configuration",
+  "agents": [
+    {
+      "id": "architect",
+      "name": "Project Architect",
+      "type": "architect",
+      "capabilities": ["project-structure", "maven", "build-systems"],
+      "tools": ["file-editor"]
+    },
+    {
+      "id": "java-developer",
+      "name": "Java Developer",
+      "type": "developer",
+      "capabilities": ["java", "coding", "documentation"],
+      "tools": ["file-editor"]
+    },
+    {
+      "id": "test-engineer",
+      "name": "Test Engineer",
+      "type": "tester",
+      "capabilities": ["junit", "testing", "quality-assurance"],
+      "tools": ["file-editor"]
+    }
+  ],
+  "tasks": [
+    {
+      "id": "setup-project-structure",
+      "name": "Setup Maven Project Structure",
+      "description": "Create the complete Maven directory structure and pom.xml configuration",
+      "agentId": "architect",
+      "type": "setup",
+      "instructions": "Create a complete Maven project structure with pom.xml, src/main/java, src/test/java directories. Configure Maven for Java 11+, include JUnit 5 dependencies, and set up proper build plugins.",
+      "requirements": {
+        "deliverables": [
+          "pom.xml with proper Maven configuration",
+          "src/main/java/com/example/ directory structure",
+          "src/test/java/com/example/ directory structure"
+        ]
+      },
+      "output": {
+        "artifacts": ["pom.xml", "directory-structure"]
+      }
+    },
+    {
+      "id": "implement-application",
+      "name": "Implement Java Application",
+      "description": "Create the main Java application class with Hello World functionality",
+      "agentId": "java-developer",
+      "type": "coding",
+      "dependencies": ["setup-project-structure"],
+      "instructions": "Create src/main/java/com/example/App.java with a main method that prints 'Hello, World!'. Include proper package declaration, imports, documentation, and a testable getGreeting() method.",
+      "requirements": {
+        "deliverables": [
+          "App.java with main method",
+          "Proper Java documentation",
+          "Clean, professional code structure"
+        ]
+      },
+      "output": {
+        "artifacts": ["src/main/java/com/example/App.java"]
+      }
+    },
+    {
+      "id": "create-tests",
+      "name": "Create Unit Tests",
+      "description": "Create comprehensive JUnit tests for the application",
+      "agentId": "test-engineer",
+      "type": "testing",
+      "dependencies": ["implement-application"],
+      "instructions": "Create src/test/java/com/example/AppTest.java with JUnit 5 tests. Test the main functionality, the getGreeting() method, and ensure proper test coverage.",
+      "requirements": {
+        "deliverables": [
+          "AppTest.java with JUnit 5 tests",
+          "Test coverage for main functionality",
+          "Proper test assertions and structure"
+        ]
+      },
+      "output": {
+        "artifacts": ["src/test/java/com/example/AppTest.java"]
+      }
+    }
+  ],
+  "execution": {
+    "mode": "sequential",
+    "timeout": 300,
+    "validation": {
+      "required_files": [
+        "pom.xml",
+        "src/main/java/com/example/App.java",
+        "src/test/java/com/example/AppTest.java"
+      ]
+    }
+  }
+} 

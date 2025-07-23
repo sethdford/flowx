@@ -2,7 +2,7 @@
  * Simple logger utility for claude-code-flow
  */
 
-import { ILogger } from '../core/logger.ts';
+import { ILogger } from '../core/logger.js';
 
 /**
  * Create a simple console logger

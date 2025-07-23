@@ -4,10 +4,10 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { ILogger } from '../core/logger.ts';
-import { createConsoleLogger } from '../utils/logger.ts';
-import { Issue, IssueTracker, Sprint, Project } from './issue-tracker.ts';
-import { ProjectManager } from './project-manager.ts';
+import { ILogger } from '../core/logger.js';
+import { createConsoleLogger } from '../utils/logger.js';
+import { Issue, IssueTracker, Sprint, Project } from './issue-tracker.js';
+import { ProjectManager } from './project-manager.js';
 
 export interface JiraConfig {
   baseUrl: string;

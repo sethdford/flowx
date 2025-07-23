@@ -211,7 +211,7 @@ export const InkDashboard: React.FC<DashboardProps> = ({ processManager, systemM
   if (isLoading) {
     return (
       <Box flexDirection="column" alignItems="center" justifyContent="center" minHeight={10}>
-        <Spinner type="dots" />
+        {(Spinner as any)({ type: "dots" })}
         <Text> Loading Claude Flow Dashboard...</Text>
       </Box>
     );

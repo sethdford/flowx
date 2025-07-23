@@ -1,14 +1,14 @@
 import * as path from 'node:path';
 import { EventEmitter } from 'node:events';
-import { copyPrompts, CopyOptions, CopyResult, CopyError } from './prompt-copier.ts';
+import { copyPrompts, CopyOptions, CopyResult, CopyError } from './prompt-copier.js';
 import { 
   PromptConfigManager, 
   PromptPathResolver, 
   PromptValidator,
   formatDuration,
   formatFileSize
-} from './prompt-utils.ts';
-import { Logger } from '../core/logger.ts';
+} from './prompt-utils.js';
+import { Logger } from '../core/logger.js';
 import * as fs from 'node:fs/promises';
 
 export interface PromptManagerOptions {

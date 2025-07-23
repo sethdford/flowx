@@ -4,10 +4,10 @@
 
 import { spawn, ChildProcess } from 'node:child_process';
 import { platform } from 'node:os';
-import { ITerminalAdapter, Terminal } from "./base.ts";
-import { ILogger } from "../../core/logger.ts";
-import { TerminalError, TerminalCommandError } from "../../utils/errors.ts";
-import { generateId, delay, timeout, createDeferred } from "../../utils/helpers.ts";
+import { ITerminalAdapter, Terminal } from "./base.js";
+import { ILogger } from "../../core/logger.js";
+import { TerminalError, TerminalCommandError } from "../../utils/errors.js";
+import { generateId, delay, timeout, createDeferred } from "../../utils/helpers.js";
 
 /**
  * Platform-specific shell configuration

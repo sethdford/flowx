@@ -430,7 +430,7 @@ export async function runMockBatchTest() {
   }
 }
 
-// Run if main
-if (import.meta.main) {
+// Run if main (Deno compatibility)
+if ((import.meta as any).main) {
   runMockBatchTest().catch(console.error);
 }

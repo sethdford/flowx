@@ -4,13 +4,13 @@
  * NO MOCK OR PARTIAL IMPLEMENTATIONS - FULLY FUNCTIONAL
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.ts';
-import { getMemoryManager, getPersistenceManager, getLogger } from '../../core/global-initialization.ts';
-import { SparcTaskExecutor } from '../../../swarm/sparc-executor.ts';
-import { TaskDefinition, AgentState, AgentId, TaskType, AgentType, TaskStatus, AgentStatus, TaskPriority } from '../../../swarm/types.ts';
-import { generateId } from '../../../utils/helpers.ts';
-import { Logger } from '../../../core/logger.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.js';
+import { getMemoryManager, getPersistenceManager, getLogger } from '../../core/global-initialization.js';
+import { SparcTaskExecutor } from '../../../swarm/sparc-executor.js';
+import { TaskDefinition, AgentState, AgentId, TaskType, AgentType, TaskStatus, AgentStatus, TaskPriority } from '../../../swarm/types.js';
+import { generateId } from '../../../utils/helpers.js';
+import { Logger } from '../../../core/logger.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 

@@ -2,10 +2,10 @@
  * MCP Tools CLI Command
  */
 
-import { ParsedArgs } from '../../core/command-parser.ts';
-import { AdvancedToolRegistry, AdvancedTool } from '../../../mcp/tools/advanced-tool-registry.ts';
-import { AdvancedToolServer } from '../../../mcp/tools/advanced-tool-server.ts';
-import { printError, printInfo, printSuccess, printWarning } from '../../core/output-formatter.ts';
+import { ParsedArgs } from '../../core/command-parser.js';
+import { AdvancedToolRegistry, AdvancedTool } from '../../../mcp/tools/advanced-tool-registry.js';
+import { AdvancedToolServer } from '../../../mcp/tools/advanced-tool-server.js';
+import { printError, printInfo, printSuccess, printWarning } from '../../core/output-formatter.js';
 
 const toolRegistry = new AdvancedToolRegistry();
 const toolServer = new AdvancedToolServer();

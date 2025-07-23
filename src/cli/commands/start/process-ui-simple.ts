@@ -2,11 +2,11 @@
  * Simple ProcessUI implementation for the start command
  */
 
-import { ProcessManager } from "./process-manager.ts";
-import { ILogger } from "../../../core/logger.ts";
-import { logger } from "../../../core/logger.ts";
+import { ProcessManager } from "./process-manager.js";
+import { ILogger } from "../../../core/logger.js";
+import { logger } from "../../../core/logger.js";
 import * as readline from 'readline';
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
 
 export class ProcessUI {
   private processManager: ProcessManager;

@@ -9,7 +9,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { readFileSync, existsSync } from 'fs';
 import { WebSocketServer } from 'ws';
-import { createConsoleLogger } from '../utils/logger.ts';
+import { createConsoleLogger } from '../utils/logger.js';
 
 const logger = createConsoleLogger('EnterpriseWebServer');
 

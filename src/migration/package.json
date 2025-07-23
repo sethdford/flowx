@@ -57,7 +57,7 @@
       "html"
     ],
     "testMatch": [
-      "**/__tests__/**/*.ts",
+              "**/tests/**/*.ts",
       "**/?(*.)+(spec|test).ts"
     ]
   },

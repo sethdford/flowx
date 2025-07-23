@@ -6,8 +6,8 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { Logger } from '../../core/logger.ts';
-import { EventBus } from '../../core/event-bus.ts';
+import { Logger } from '../../core/logger.js';
+import { EventBus } from '../../core/event-bus.js';
 import {
   ConsensusProposal,
   ConsensusVote,
@@ -15,7 +15,7 @@ import {
   VotingStrategy,
   VotingStrategyConfig
 } from '../types.js';
-import { generateId } from '../../utils/helpers.ts';
+import { generateId } from '../../utils/helpers.js';
 
 // Configuration for the consensus engine
 export interface ConsensusEngineConfig {

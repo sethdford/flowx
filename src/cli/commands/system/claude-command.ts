@@ -2,8 +2,8 @@
  * Claude Command - Direct Claude Code spawning with configurations
  */
 
-import { CLIContext, CLICommand } from '../../interfaces/index.ts';
-import { printSuccess, printError, printInfo, printWarning } from '../../core/output-formatter.ts';
+import { CLIContext, CLICommand } from '../../interfaces/index.js';
+import { printSuccess, printError, printInfo, printWarning } from '../../core/output-formatter.js';
 import { spawn, execSync } from 'node:child_process';
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';

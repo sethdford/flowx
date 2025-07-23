@@ -3,9 +3,9 @@
  * Simplified audit logging that integrates with existing Logger and EventBus
  */
 
-import { ILogger, Logger } from './logger.ts';
-import { IEventBus, EventBus } from './event-bus.ts';
-import { generateId } from '../utils/helpers.ts';
+import { ILogger, Logger } from './logger';
+import { IEventBus, EventBus } from './event-bus';
+import { generateId } from '../utils/helpers';
 
 // Simple audit event structure
 export interface SimpleAuditEvent {
@@ -293,6 +293,9 @@ export function AuditSimple(options: {
   logParameters?: boolean;
 } = {}) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    if (!descriptor || !descriptor.value) {
+      throw new Error(`Invalid descriptor for ${target.constructor?.name || 'unknown'}.${propertyKey}. Make sure the decorator is applied to a method.`);
+    }
     const originalMethod = descriptor.value;
     
     descriptor.value = async function (...args: any[]) {

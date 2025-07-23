@@ -3,8 +3,8 @@
  * Provides TypeScript decorators to automatically audit method calls, data access, and security events
  */
 
-import { auditLogger, AuditEventType, AuditCategory, AuditSeverity } from './audit-logger.ts';
-import { generateId } from '../utils/helpers.ts';
+import { auditLogger, AuditEventType, AuditCategory, AuditSeverity } from './audit-logger.js';
+import { generateId } from '../utils/helpers.js';
 
 // Decorator metadata storage
 const auditMetadata = new WeakMap();

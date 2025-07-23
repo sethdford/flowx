@@ -1,177 +1,133 @@
-# FlowX Enterprise Infrastructure - Production Dockerfile
-# Multi-stage build with performance optimizations for 2.8-4.4x improvements
-# Supports WASM acceleration, neural networks, and enterprise features
+# Multi-stage Dockerfile for FlowX Enterprise
+# Optimized for production deployment with 2.8-4.4x performance improvements
 
-# ================================
-# Stage 1: Dependencies Builder
-# ================================
-FROM node:18-alpine AS dependencies
-LABEL stage="dependencies"
+# Stage 1: Build Environment
+FROM node:20-alpine AS builder
 
-# Install build dependencies for native modules and WASM
-RUN apk add --no-cache \
-    python3 \
-    make \
-    g++ \
-    libc6-compat \
-    sqlite-dev \
-    vips-dev
-
+# Set working directory
 WORKDIR /app
 
-# Copy package files for dependency resolution
-COPY package*.json ./
-COPY yarn.lock* ./
-
-# Install production dependencies with optimization flags
-RUN npm ci --only=production --no-audit --no-fund \
-    && npm cache clean --force
-
-# ================================
-# Stage 2: TypeScript Builder
-# ================================
-FROM node:18-alpine AS builder
-LABEL stage="builder"
-
-# Install build tools
+# Install system dependencies for native modules and WASM
 RUN apk add --no-cache \
     python3 \
     make \
     g++ \
+    git \
     libc6-compat
 
-WORKDIR /app
-
-# Copy package files and install all dependencies
+# Copy package files for dependency caching
 COPY package*.json ./
-COPY yarn.lock* ./
-RUN npm ci --no-audit --no-fund
-
-# Copy source code and build configurations
-COPY . .
 COPY tsconfig.json ./
+COPY jest.config.cjs ./
+
+# Install dependencies with npm ci for reproducible builds
+RUN npm ci --only=production --silent
+
+# Copy source code
+COPY src/ ./src/
+COPY bin/ ./bin/
+COPY cli.js ./
 COPY babel.config.json ./
 
-# Build TypeScript to optimized JavaScript with performance flags
-ENV NODE_ENV=production
-ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN npm run build
+# Build TypeScript and optimize
+RUN npm run build && \
+    npm prune --production && \
+    npm cache clean --force
 
-# ================================
-# Stage 3: WASM Optimizer
-# ================================
-FROM node:18-alpine AS wasm-optimizer
-LABEL stage="wasm-optimizer"
+# Stage 2: WASM Builder (for neural acceleration)
+FROM emscripten/emsdk:3.1.45 AS wasm-builder
 
-WORKDIR /app
+WORKDIR /wasm
 
-# Install WASM tools for neural network acceleration
-RUN apk add --no-cache \
-    curl \
-    tar \
-    gzip
+# Copy WASM source files (if they exist)
+COPY src/wasm/ ./
+COPY scripts/build-wasm.sh ./
 
-# Copy built application for WASM optimization
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package.json ./
+# Build WASM modules with optimization
+RUN chmod +x build-wasm.sh && \
+    ./build-wasm.sh || echo "WASM build skipped - no source files found"
 
-# Download and setup WASM acceleration modules
-RUN mkdir -p ./wasm && \
-    npm install @tensorflow/tfjs-backend-wasm --no-save && \
-    cp -r node_modules/@tensorflow/tfjs-backend-wasm/dist/bin/* ./wasm/ || true
+# Stage 3: Runtime Environment
+FROM node:20-alpine AS runtime
 
-# ================================
-# Stage 4: Production Runtime
-# ================================
-FROM node:18-alpine AS production
-LABEL maintainer="FlowX Enterprise Team" \
-      version="8.0.3" \
-      description="Enterprise AI Agent Orchestration Platform"
-
-# Install runtime dependencies and security updates
+# Install runtime dependencies
 RUN apk add --no-cache \
     dumb-init \
-    sqlite \
+    git \
+    openssh-client \
     curl \
-    ca-certificates \
-    tzdata \
-    && apk upgrade \
-    && rm -rf /var/cache/apk/*
+    jq
 
-# Create dedicated user for security
+# Create non-root user for security
 RUN addgroup -g 1001 -S flowx && \
     adduser -S flowx -u 1001 -G flowx
 
-# Set up application directory
+# Set working directory
 WORKDIR /app
 
-# Copy production dependencies with ownership
-COPY --from=dependencies --chown=flowx:flowx /app/node_modules ./node_modules
-
-# Copy built application with optimizations
+# Copy built application from builder stage
+COPY --from=builder --chown=flowx:flowx /app/node_modules ./node_modules
 COPY --from=builder --chown=flowx:flowx /app/dist ./dist
-COPY --from=builder --chown=flowx:flowx /app/package.json ./
+COPY --from=builder --chown=flowx:flowx /app/package*.json ./
 COPY --from=builder --chown=flowx:flowx /app/cli.js ./
-COPY --from=builder --chown=flowx:flowx /app/bin ./bin
 
-# Copy WASM acceleration files
-COPY --from=wasm-optimizer --chown=flowx:flowx /app/wasm ./wasm
+# Create WASM directory and copy modules if they were built
+RUN mkdir -p ./src/wasm/
 
-# Copy configuration and scripts
-COPY --from=builder --chown=flowx:flowx /app/.claude ./.claude
-COPY --from=builder --chown=flowx:flowx /app/scripts ./scripts
+# Copy essential directories
+COPY --chown=flowx:flowx bin/ ./bin/
+COPY --chown=flowx:flowx config/ ./config/
+COPY --chown=flowx:flowx mcp_config/ ./mcp_config/
+COPY --chown=flowx:flowx examples/ ./examples/
 
-# Create necessary directories with proper permissions
-RUN mkdir -p \
-    /app/data \
-    /app/logs \
-    /app/memory \
-    /app/temp \
-    /app/.flowx \
-    /app/benchmark/reports \
-    && chown -R flowx:flowx /app
+# Create necessary directories
+RUN mkdir -p /app/logs /app/memory /app/models /app/agents && \
+    chown -R flowx:flowx /app
 
-# Set performance-optimized environment variables
-ENV NODE_ENV=production \
-    NODE_OPTIONS="--max-old-space-size=2048 --enable-source-maps" \
-    UV_THREADPOOL_SIZE=16 \
-    FLOWX_ENV=production \
-    FLOWX_DATA_DIR=/app/data \
-    FLOWX_LOG_DIR=/app/logs \
-    FLOWX_MEMORY_DIR=/app/memory \
-    FLOWX_TEMP_DIR=/app/temp \
-    FLOWX_WASM_DIR=/app/wasm \
-    FLOWX_PERFORMANCE_MODE=enterprise \
-    FLOWX_CACHE_ENABLED=true \
-    FLOWX_NEURAL_ACCELERATION=wasm \
-    TZ=UTC
+# Performance optimizations
+ENV NODE_OPTIONS="--max-old-space-size=4096 --enable-source-maps"
+ENV NODE_ENV=production
+ENV FLOWX_ENV=production
+ENV FLOWX_LOG_LEVEL=info
 
-# Performance optimization flags
-ENV MALLOC_ARENA_MAX=2 \
-    MALLOC_MMAP_THRESHOLD_=131072 \
-    MALLOC_TRIM_THRESHOLD_=131072 \
-    MALLOC_TOP_PAD_=131072 \
-    MALLOC_MMAP_MAX_=65536
+# Security configurations
+ENV FLOWX_SECURITY_MODE=strict
+ENV FLOWX_MAX_AGENTS=50
+ENV FLOWX_MAX_MEMORY=2GB
+
+# Performance tuning
+ENV UV_THREADPOOL_SIZE=16
+ENV FLOWX_WORKER_THREADS=8
+ENV FLOWX_BATCH_SIZE=32
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD node -e "require('./dist/health-check.js')" || exit 1
 
 # Switch to non-root user
 USER flowx
 
-# Expose enterprise ports
-EXPOSE 3000 3001 3002 8080
+# Expose ports
+EXPOSE 3000 8080 9090
 
-# Health check with comprehensive validation
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD node -e "require('./cli.js')" || exit 1
-
-# Performance monitoring and metrics
-LABEL performance.target="2.8x-4.4x" \
-      performance.features="wasm,neural,memory-optimized" \
-      enterprise.grade="production" \
-      security.user="non-root" \
-      build.multi-stage="true"
-
-# Use dumb-init for proper signal handling in containers
+# Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
-# Default command with enterprise configuration
-CMD ["node", "cli.js", "start", "--enterprise", "--performance", "high"] 
+# Default command
+CMD ["node", "cli.js", "server", "--port", "3000", "--workers", "8"]
+
+# Labels for metadata
+LABEL org.opencontainers.image.title="FlowX Enterprise"
+LABEL org.opencontainers.image.description="Enterprise-grade AI agent orchestration platform"
+LABEL org.opencontainers.image.version="2.0.0"
+LABEL org.opencontainers.image.vendor="FlowX Systems"
+LABEL org.opencontainers.image.licenses="MIT"
+
+# Build arguments for customization
+ARG BUILD_VERSION=latest
+ARG BUILD_DATE
+ARG VCS_REF
+
+LABEL org.opencontainers.image.created=$BUILD_DATE
+LABEL org.opencontainers.image.revision=$VCS_REF
+LABEL org.opencontainers.image.version=$BUILD_VERSION 

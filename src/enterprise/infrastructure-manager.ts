@@ -14,8 +14,8 @@ import { EventEmitter } from 'node:events';
 import { spawn, ChildProcess } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
-import { ILogger } from '../core/logger.ts';
-import { createConsoleLogger } from '../utils/logger.ts';
+import { ILogger } from '../core/logger.js';
+import { createConsoleLogger } from '../utils/logger.js';
 
 export interface InfrastructureConfig {
   mode: 'development' | 'production' | 'enterprise';

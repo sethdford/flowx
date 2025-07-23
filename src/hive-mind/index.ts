@@ -7,7 +7,7 @@
 
 // Core components
 export { HiveMind } from './core/hive-mind.js';
-export { DatabaseManager } from './database/database-manager.ts';
+export { DatabaseManager } from './database/database-manager.js';
 export { HiveInitializer } from './hive-initializer.js';
 export { HiveCoordinator, createAndStartHiveMind } from './hive-coordinator.js';
 
@@ -28,34 +28,34 @@ export { NeuralIntegration } from './neural/neural-integration.js';
 export { ResourceManager, createResourceManager } from './utilities/resource-manager.js';
 
 // Types - export all types
-export * from './types.ts';
+export * from './types.js';
 
 // Original factory functions (maintained for backward compatibility)
 export const HiveMindFactory = {
   /**
    * Create a new hive mind with default configuration
    */
-  async createDefault(name: string): Promise<import('./core/hive-mind.ts').HiveMind> {
-    const { HiveMind } = await import('./core/hive-mind.ts');
-    const { NeuralIntegration } = await import('./neural/neural-integration.ts');
-    const { NeuralPatternEngine } = await import('../coordination/neural-pattern-engine.ts');
-    const { Logger } = await import('../core/logger.ts');
-    const { EventBus } = await import('../core/event-bus.ts');
+  async createDefault(name: string): Promise<import('./core/hive-mind.js').HiveMind> {
+    const { HiveMind } = await import('./core/hive-mind.js');
+    const { NeuralIntegration } = await import('./neural/neural-integration.js');
+    const { NeuralPatternEngine } = await import('../coordination/neural-pattern-engine.js');
+    const { Logger } = await import('../core/logger.js');
+    const { EventBus } = await import('../core/event-bus.js');
     
     // Create neural components
     const logger = new Logger('NeuralPatternEngine');
     const eventBus = EventBus.getInstance();
     const neuralEngine = new NeuralPatternEngine({
-      modelUpdateInterval: 300000,
-      confidenceThreshold: 0.7,
-      trainingBatchSize: 32,
-      maxTrainingEpochs: 50,
+      enableWasm: true,
       learningRate: 0.001,
-      enableWasmAcceleration: true,
-      patternCacheSize: 1000,
-      autoRetraining: true,
-      qualityThreshold: 0.7
-    }, logger, eventBus);
+      patternThreshold: 0.7,
+      maxPatterns: 1000,
+      cacheTTL: 300000,
+      batchSize: 32,
+      enableDistribution: false,
+      computeBackend: 'wasm',
+      modelPath: './models'
+    });
     
     const neuralIntegration = new NeuralIntegration(neuralEngine, {
       taskLearningEnabled: true,
@@ -96,16 +96,16 @@ export const HiveMindFactory = {
     const logger = new Logger('NeuralPatternEngine');
     const eventBus = EventBus.getInstance();
     const neuralEngine = new NeuralPatternEngine({
-      modelUpdateInterval: 300000,
-      confidenceThreshold: 0.7,
-      trainingBatchSize: 16,
-      maxTrainingEpochs: 25,
+      enableWasm: false,
       learningRate: 0.001,
-      enableWasmAcceleration: false,
-      patternCacheSize: 500,
-      autoRetraining: true,
-      qualityThreshold: 0.6
-    }, logger, eventBus);
+      patternThreshold: 0.6,
+      maxPatterns: 500,
+      cacheTTL: 300000,
+      batchSize: 16,
+      enableDistribution: false,
+      computeBackend: 'cpu',
+      modelPath: './models'
+    });
     
     const neuralIntegration = new NeuralIntegration(neuralEngine, {
       taskLearningEnabled: true,
@@ -146,16 +146,16 @@ export const HiveMindFactory = {
     const logger = new Logger('NeuralPatternEngine');
     const eventBus = EventBus.getInstance();
     const neuralEngine = new NeuralPatternEngine({
-      modelUpdateInterval: 180000, // 3 minutes
-      confidenceThreshold: 0.8,
-      trainingBatchSize: 64,
-      maxTrainingEpochs: 100,
+      enableWasm: true,
       learningRate: 0.0005,
-      enableWasmAcceleration: true,
-      patternCacheSize: 2000,
-      autoRetraining: true,
-      qualityThreshold: 0.8
-    }, logger, eventBus);
+      patternThreshold: 0.8,
+      maxPatterns: 2000,
+      cacheTTL: 180000,
+      batchSize: 64,
+      enableDistribution: false,
+      computeBackend: 'wasm',
+      modelPath: './models'
+    });
     
     const neuralIntegration = new NeuralIntegration(neuralEngine, {
       taskLearningEnabled: true,

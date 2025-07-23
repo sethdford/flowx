@@ -3,79 +3,31 @@
  */
 
 // Core coordination components
-export { CoordinationManager } from './manager.ts';
-export { TaskCoordinator } from './task-coordinator.ts';
-export { WorkStealingCoordinator } from './work-stealing.ts';
-export { CircuitBreakerManager } from './circuit-breaker.ts';
-export { TaskExecutionEngine } from './task-execution-engine.ts';
+export { CoordinationManager } from './manager.js';
+export { TaskCoordinator } from './task-coordinator.js';
+export { WorkStealingCoordinator } from './work-stealing.js';
+export { CircuitBreakerManager, CircuitBreaker } from './circuit-breaker.js';
 
-// Advanced coordination components
-export { BackgroundExecutor } from './background-executor.ts';
-export { HiveOrchestrator } from './hive-orchestrator.ts';
-export { LoadBalancer } from './load-balancer.ts';
-export { TaskOrchestrator } from './task-orchestrator.ts';
+// Task execution and orchestration
+export { TaskExecutionEngine } from './task-execution-engine.js';
+export { BackgroundExecutor } from './background-executor.js';
+export { LoadBalancer } from './load-balancer.js';
+
+// Resource and conflict management
+export { ResourceManager } from './resources.js';
+export { ConflictResolver } from './conflict-resolution.js';
+export { DependencyGraph } from './dependency-graph.js';
+
+// Messaging and communication
+export { MessageCoordinator } from './message-coordinator.js';
+
+// Metrics and monitoring
+export { CoordinationMetricsCollector } from './metrics.js';
 
 // Types and interfaces
-export type {
-  BackgroundTaskConfig,
-  BackgroundTaskDefinition,
-  BackgroundExecutorMetrics
-} from './background-executor.ts';
-
-export type {
-  HiveOrchestratorConfig,
-  DecompositionStrategy,
-  CoordinationStrategy,
-  TaskDecomposition,
-  SubTask,
-  TaskRequirement,
-  TaskDependency,
-  AgentTopology,
-  AgentNode,
-  ConsensusVote,
-  ConsensusResult,
-  HiveOrchestratorMetrics
-} from './hive-orchestrator.ts';
-
-export type {
-  LoadBalancerConfig,
-  LoadBalancingStrategy,
-  AgentLoad,
-  LoadPrediction,
-  LoadBalancingDecision,
-  LoadBalancerMetrics
-} from './load-balancer.ts';
-
-export type {
-  TaskOrchestratorConfig,
-  WorkflowStrategy,
-  WorkflowDefinition,
-  WorkflowTask,
-  WorkflowExecution,
-  WorkflowState,
-  WorkflowProgress,
-  TaskOrchestratorMetrics
-} from './task-orchestrator.ts';
-
-// Core coordination types
-export type {
-  EnhancedCoordinationConfig,
-  ICoordinationManager
-} from './manager.ts';
-
-export type {
-  CoordinationConfig,
-  SchedulingStrategy
-} from './task-coordinator.ts';
-
-export type {
-  WorkStealingConfig
-} from './work-stealing.ts';
-
-export type {
-  CircuitBreakerConfig
-} from './circuit-breaker.ts';
-
-export type {
-  TaskExecutorConfig
-} from './task-execution-engine.ts';
+export type { ICoordinationManager, EnhancedCoordinationConfig } from './manager.js';
+export type { CoordinationConfig, SchedulingStrategy } from './task-coordinator.js';
+export type { WorkStealingConfig } from './work-stealing.js';
+export type { CircuitBreakerConfig } from './circuit-breaker.js';
+export type { LoadBalancerConfig } from './load-balancer.js';
+export type { CoordinationMetrics } from './metrics.js';

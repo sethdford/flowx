@@ -7,12 +7,13 @@
 // import { describe, it, expect, beforeEach, afterEach } from 'jest';
 import * as fs from 'fs-extra';
 import * as path from 'node:path';
+const { pathExists } = fs;
 import * as os from 'node:os';
-import { MigrationRunner } from '../migration-runner.ts';
-import { MigrationAnalyzer } from '../migration-analyzer.ts';
-import { RollbackManager } from '../rollback-manager.ts';
-import { MigrationValidator } from '../migration-validator.ts';
-import { MigrationStrategy } from '../types.ts';
+import { MigrationRunner } from '../migration-runner.js';
+import { MigrationAnalyzer } from '../migration-analyzer.js';
+import { RollbackManager } from '../rollback-manager.js';
+import { MigrationValidator } from '../migration-validator.js';
+import { MigrationStrategy } from '../types.js';
 
 describe('Migration System', () => {
   let testDir: string;

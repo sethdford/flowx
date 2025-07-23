@@ -8,7 +8,9 @@ import { EventEmitter } from 'node:events';
 import { spawn, ChildProcess } from 'node:child_process';
 import { writeFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import { ILogger } from '../core/logger.ts';
+import { ILogger } from '../core/logger.js';
+import { ModelSelector, DEFAULT_MODEL_ID } from '../config/models.js';
+import { getClaudeTimeout } from '../config/timeout-config.js';
 
 export interface ClaudeCliConfig {
   claudePath?: string; // Path to claude executable
@@ -84,7 +86,7 @@ export class ClaudeApiClient extends EventEmitter {
       model: config.model || 'claude-3-sonnet-20240229',
       temperature: config.temperature || 0.7,
       maxTokens: config.maxTokens || 8192,
-      timeout: config.timeout || 300000, // 5 minutes
+      timeout: config.timeout || getClaudeTimeout(), // Use centralized timeout
       retryAttempts: config.retryAttempts || 2,
       verbose: config.verbose || false,
       allowedTools: config.allowedTools || ['file_editor', 'bash', 'computer'],
@@ -382,7 +384,7 @@ Please implement this requirement completely.
     const baseArgs: string[] = [request.prompt];
 
     // Always use non-interactive mode for automation
-    baseArgs.push(isV1 ? '--message' : '--print');
+    baseArgs.push('--print'); // Claude CLI v1.0.56 uses --print for non-interactive mode
     
     // Output format
     if (request.outputFormat) {
@@ -396,29 +398,27 @@ Please implement this requirement completely.
       baseArgs.push('--dangerously-skip-permissions');
     }
 
-    // Add working directory context (repository pattern)
-    if (workDir && workDir !== process.cwd()) {
-      baseArgs.push('--add-dir', workDir);
-    }
+    // Note: --add-dir not supported in Claude CLI v1.0.56
+    // Claude CLI automatically has access to the working directory via cwd option
+    
+    // Note: --model not supported in Claude CLI v1.0.56
+    // Model selection is handled by Claude CLI configuration
 
-    // Model selection
-    if (this.config.model) {
-      baseArgs.push('--model', this.config.model);
-    }
+    // Temperature - Skip for Claude CLI (not supported)
+    // Claude CLI doesn't support --temperature option, only the API does
+    // if (this.config.temperature !== undefined) {
+    //   baseArgs.push('--temperature', this.config.temperature.toString());
+    // }
 
-    // Temperature
-    if (this.config.temperature !== undefined) {
-      baseArgs.push('--temperature', this.config.temperature.toString());
-    }
-
-    // Max tokens
-    if (this.config.maxTokens) {
-      baseArgs.push('--max-tokens', this.config.maxTokens.toString());
-    }
+    // Max tokens - Skip for Claude CLI (not supported)
+    // Claude CLI doesn't support --max-tokens option, only the API does
+    // if (this.config.maxTokens) {
+    //   baseArgs.push('--max-tokens', this.config.maxTokens.toString());
+    // }
 
     // Tools configuration (repository pattern)
     if (this.config.allowedTools && this.config.allowedTools.length > 0) {
-      baseArgs.push('--allowed-tools', this.config.allowedTools.join(','));
+      baseArgs.push('--allowedTools', this.config.allowedTools.join(','));
     }
 
     // SECURITY INTEGRATION: Enhance arguments with security context
@@ -845,7 +845,7 @@ Please implement this requirement completely.
 export function createClaudeClient(logger: ILogger, config?: ClaudeCliConfig): ClaudeApiClient {
   const defaultConfig: ClaudeCliConfig = {
     claudePath: process.env.CLAUDE_CLI_PATH || 'claude',
-    model: process.env.CLAUDE_MODEL || 'claude-3-5-sonnet-20241022',
+          model: process.env.CLAUDE_MODEL || DEFAULT_MODEL_ID,
     temperature: process.env.CLAUDE_TEMPERATURE ? parseFloat(process.env.CLAUDE_TEMPERATURE) : 0.7,
     maxTokens: process.env.CLAUDE_MAX_TOKENS ? parseInt(process.env.CLAUDE_MAX_TOKENS) : 4096,
     verbose: process.env.CLAUDE_VERBOSE === 'true',

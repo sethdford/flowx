@@ -4,9 +4,9 @@
  * Includes hive-mind integration, auto-save middleware, and comprehensive session persistence
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { printSuccess, printError, printInfo, printWarning, formatTable, TableColumn } from '../../core/output-formatter.ts';
-import { getLogger, getPersistenceManager } from '../../core/global-initialization.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { printSuccess, printError, printInfo, printWarning, formatTable, TableColumn } from '../../core/output-formatter.js';
+import { getLogger, getPersistenceManager } from '../../core/global-initialization.js';
 import { writeFile, readFile, mkdir, unlink, readdir, stat } from 'fs/promises';
 import { join, dirname } from 'path';
 import { generateId } from '../../../utils/helpers.js';

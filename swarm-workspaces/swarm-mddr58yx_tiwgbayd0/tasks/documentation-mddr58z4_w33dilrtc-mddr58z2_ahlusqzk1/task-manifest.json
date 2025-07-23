@@ -1,0 +1,19 @@
+{
+  "taskId": "mddr58z4_w33dilrtc",
+  "taskName": "Create README",
+  "taskType": "documentation",
+  "assignedAgent": "mddr58z2_ahlusqzk1",
+  "agentName": "coordinator-SwarmLead",
+  "workspaceDir": "swarm-workspaces/swarm-mddr58yx_tiwgbayd0/tasks/documentation-mddr58z4_w33dilrtc-mddr58z2_ahlusqzk1",
+  "objective": "Create README with setup instructions",
+  "requirements": {
+    "capabilities": [
+      "documentation"
+    ],
+    "tools": [],
+    "permissions": [],
+    "estimatedDuration": 120000
+  },
+  "createdAt": "2025-07-21T23:44:04.315Z",
+  "status": "active"
+}

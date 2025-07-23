@@ -3,15 +3,15 @@
  * Master Control Program server for Claude Flow
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { formatTable, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { formatTable, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.js';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import * as express from 'express';
-import { Logger } from '../../../core/logger.ts';
-import { getMemoryManager } from '../../core/global-initialization.ts';
+import { Logger } from '../../../core/logger.js';
+import { getMemoryManager } from '../../core/global-initialization.js';
 
 // Type definitions for MCP
 interface McpTool {

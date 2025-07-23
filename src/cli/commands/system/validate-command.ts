@@ -3,12 +3,12 @@
  * Configuration and system validation with comprehensive checks
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { formatTable, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.ts';
-import { getMemoryManager, getPersistenceManager } from '../../core/global-initialization.ts';
-import { SwarmCoordinator } from '../../../swarm/coordinator.ts';
-import { TaskEngine } from '../../../task/engine.ts';
-import { Logger } from '../../../core/logger.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { formatTable, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.js';
+import { getMemoryManager, getPersistenceManager } from '../../core/global-initialization.js';
+import { SwarmCoordinator } from '../../../swarm/coordinator.js';
+import { TaskEngine } from '../../../task/engine.js';
+import { Logger } from '../../../core/logger.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 

@@ -3,8 +3,8 @@
  * Comprehensive batch operations for multiple projects and workflows
  */
 
-import type { CLIContext, CLICommand } from '../../interfaces/index.ts';
-import { successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.ts';
+import type { CLIContext, CLICommand } from '../../interfaces/index.js';
+import { successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.js';
 import { execSync } from 'child_process';
 import { writeFileSync, readFileSync, existsSync } from 'fs';
 

@@ -4,7 +4,7 @@ This tutorial will guide you through creating your first swarm and understanding
 
 ## Prerequisites
 
-- Claude Flow installed (`npm install -g claude-flow`)
+- Claude Flow installed (`npm install -g @claude-flow/cli` or use local `../../cli.js`)
 - Basic command line knowledge
 - Node.js 18+ installed
 
@@ -18,7 +18,7 @@ Let's create a basic "Hello World" application:
 
 ```bash
 cd examples
-../claude-flow swarm create "Build a hello world CLI application" \
+../../cli.js swarm create "Build a hello world CLI application" \
   --name my-first-swarm \
   --output ./output/hello-world
 ```
@@ -68,7 +68,7 @@ You'll see agents like:
 Try with more specific requirements:
 
 ```bash
-../claude-flow swarm create \
+../../cli.js swarm create \
   "Build a CLI calculator that supports add, subtract, multiply, divide" \
   --agents 3 \
   --strategy development \
@@ -90,13 +90,13 @@ Try with more specific requirements:
 
 2. Use configuration files:
    ```bash
-   ../claude-flow swarm create "Your task" \
+   ../../cli.js swarm create "Your task" \
      --config ../01-configurations/basic/simple-config.json
    ```
 
 3. Monitor swarm progress:
    ```bash
-   ../claude-flow swarm create "Your task" --monitor
+   ../../cli.js swarm create "Your task" --monitor
    ```
 
 ## Common Issues

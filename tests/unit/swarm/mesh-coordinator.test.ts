@@ -5,20 +5,22 @@
  */
 
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
-import { MeshCoordinator } from '../../../src/swarm/mesh-coordinator.ts';
-import { AgentId, TaskDefinition, TaskId, AgentType } from '../../../src/swarm/types.ts';
+import { MeshCoordinator } from '../../../src/swarm/mesh-coordinator';
+import { AgentId, TaskDefinition, TaskId, AgentType } from '../../../src/swarm/types';
 
-// Mock dependencies
-jest.mock('../../../src/core/logger.ts', () => ({
-  Logger: jest.fn().mockImplementation(() => ({
+// Mock dependencies before importing
+jest.doMock('../../../src/core/logger', () => ({
+  Logger: jest.fn().mockImplementation((config, context) => ({
     info: jest.fn(),
     error: jest.fn(),
     warn: jest.fn(),
-    debug: jest.fn()
+    debug: jest.fn(),
+    config: config || {},
+    context: context || {}
   }))
 }));
 
-jest.mock('../../../src/utils/logger.ts', () => ({
+jest.mock('../../../src/utils/logger', () => ({
   createConsoleLogger: jest.fn().mockReturnValue({
     info: jest.fn(),
     error: jest.fn(),
@@ -27,7 +29,7 @@ jest.mock('../../../src/utils/logger.ts', () => ({
   })
 }));
 
-jest.mock('../../../src/utils/helpers.ts', () => ({
+jest.mock('../../../src/utils/helpers', () => ({
   generateId: jest.fn().mockImplementation((prefix) => `${prefix}-${Date.now()}-${Math.random()}`)
 }));
 

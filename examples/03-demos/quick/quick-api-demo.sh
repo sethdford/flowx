@@ -7,12 +7,12 @@ echo ""
 echo "Creating a simple TODO API with Claude Flow..."
 echo ""
 
-# Navigate to examples directory to use ../claude-flow
+# Navigate to examples directory to use ../../cli.js
 cd "$(dirname "$0")/../.."
 
 # Create the API using swarm
 echo "📦 Initializing swarm..."
-if ../claude-flow swarm create "Build a TODO API with GET, POST, PUT, DELETE endpoints" \
+if ../../cli.js swarm create "Build a TODO API with GET, POST, PUT, DELETE endpoints" \
   --strategy development \
   --name todo-api-demo \
   --output ./output/todo-api \

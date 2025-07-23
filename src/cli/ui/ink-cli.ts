@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { render } from 'ink';
-import { ProcessManager } from '../commands/start/process-manager.ts';
-import { SystemMonitor } from '../commands/start/system-monitor.ts';
+import { ProcessManager } from '../commands/start/process-manager.js';
+import { SystemMonitor } from '../commands/start/system-monitor.js';
 import InkDashboard from './ink-dashboard.tsx';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';

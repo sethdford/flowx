@@ -4,8 +4,8 @@
  */
 
 import Database from 'better-sqlite3';
-import { ILogger } from './logger.ts';
-import { generateId } from '../utils/helpers.ts';
+import { ILogger } from './logger.js';
+import { generateId } from '../utils/helpers.js';
 
 export interface DatabaseConfig {
   path: string;

@@ -1,0 +1,315 @@
+version: '3.8'
+
+services:
+  # FlowX Main Application
+  flowx-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+      args:
+        - BUILD_VERSION=${BUILD_VERSION:-latest}
+        - BUILD_DATE=${BUILD_DATE}
+        - VCS_REF=${VCS_REF}
+    image: flowx:${BUILD_VERSION:-latest}
+    container_name: flowx-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - FLOWX_ENV=production
+      - FLOWX_DATABASE_URL=postgresql://flowx:flowx_password@postgres:5432/flowx_db
+      - FLOWX_REDIS_URL=redis://redis:6379
+      - FLOWX_MONGODB_URL=mongodb://mongodb:27017/flowx
+      - FLOWX_LOG_LEVEL=info
+      - FLOWX_MAX_AGENTS=50
+      - FLOWX_WORKER_THREADS=8
+      - FLOWX_PERFORMANCE_MODE=enterprise
+    volumes:
+      - flowx_data:/app/data
+      - flowx_logs:/app/logs
+      - flowx_memory:/app/memory
+      - flowx_models:/app/models
+    depends_on:
+      - postgres
+      - redis
+      - mongodb
+    networks:
+      - flowx-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+
+  # FlowX Workers (scaled instances)
+  flowx-worker:
+    image: flowx:${BUILD_VERSION:-latest}
+    command: ["node", "cli.js", "worker", "--mode", "background"]
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - FLOWX_ENV=production
+      - FLOWX_DATABASE_URL=postgresql://flowx:flowx_password@postgres:5432/flowx_db
+      - FLOWX_REDIS_URL=redis://redis:6379
+      - FLOWX_LOG_LEVEL=info
+      - FLOWX_WORKER_MODE=background
+      - FLOWX_MAX_CONCURRENT_TASKS=10
+    volumes:
+      - flowx_data:/app/data
+      - flowx_logs:/app/logs
+      - flowx_memory:/app/memory
+      - flowx_models:/app/models
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - flowx-network
+    deploy:
+      replicas: 4
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 3G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: flowx-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=flowx_db
+      - POSTGRES_USER=flowx
+      - POSTGRES_PASSWORD=flowx_password
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./config/database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - flowx-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flowx -d flowx_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: flowx-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass redis_password
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - flowx-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MongoDB (for document storage)
+  mongodb:
+    image: mongo:6
+    container_name: flowx-mongodb
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=flowx
+      - MONGO_INITDB_ROOT_PASSWORD=mongo_password
+      - MONGO_INITDB_DATABASE=flowx
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./config/database/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - flowx-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # NGINX Load Balancer
+  nginx:
+    image: nginx:alpine
+    container_name: flowx-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/nginx/ssl:/etc/nginx/ssl:ro
+      - flowx_logs:/var/log/nginx
+    depends_on:
+      - flowx-app
+    networks:
+      - flowx-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Prometheus Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: flowx-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - flowx-network
+
+  # Grafana Dashboard
+  grafana:
+    image: grafana/grafana:latest
+    container_name: flowx-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin_password
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./config/monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    depends_on:
+      - prometheus
+    networks:
+      - flowx-network
+
+  # Elasticsearch (for log aggregation)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    container_name: flowx-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - flowx-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Kibana Dashboard
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.0
+    container_name: flowx-kibana
+    restart: unless-stopped
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - flowx-network
+
+  # Jaeger Tracing
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: flowx-jaeger
+    restart: unless-stopped
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - flowx-network
+
+  # MinIO (S3-compatible storage)
+  minio:
+    image: minio/minio:latest
+    container_name: flowx-minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=flowx
+      - MINIO_ROOT_PASSWORD=minio_password
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - flowx-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# Volumes
+volumes:
+  flowx_data:
+    driver: local
+  flowx_logs:
+    driver: local
+  flowx_memory:
+    driver: local
+  flowx_models:
+    driver: local
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  mongodb_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  minio_data:
+    driver: local
+
+# Networks
+networks:
+  flowx-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16 

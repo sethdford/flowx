@@ -437,6 +437,6 @@ export async function runBatchTaskTest() {
 }
 
 // Run the test if this file is executed directly
-if (import.meta.main) {
+if ((import.meta as any).main) {
   runBatchTaskTest().catch(console.error);
 }

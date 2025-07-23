@@ -4,8 +4,8 @@
  * Includes visual workflow designer and enterprise monitoring dashboard
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { createConsoleLogger } from '../../../utils/logger.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { createConsoleLogger } from '../../../utils/logger.js';
 import { EnterpriseWebServer } from '../../../ui/enterprise-web-server.js';
 
 const logger = createConsoleLogger('WebUICommand');

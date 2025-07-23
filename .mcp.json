@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "flowx": {
+      "command": "node",
+      "args": [
+        "cli.js",
+        "mcp",
+        "start",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "NODE_ENV": "production",
+        "FLOWX_ENV": "mcp",
+        "FLOWX_DATA_PATH": "./.flowx",
+        "FLOWX_HOOKS_ENABLED": "true",
+        "FLOWX_TELEMETRY_ENABLED": "true",
+        "FLOWX_REMOTE_READY": "true",
+        "FLOWX_GITHUB_INTEGRATION": "true"
+      }
+    }
+  }
+} 

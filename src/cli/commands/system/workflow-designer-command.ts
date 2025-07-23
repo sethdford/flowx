@@ -3,8 +3,8 @@
  * Enterprise-grade drag-and-drop workflow builder with templates and collaboration
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { createConsoleLogger } from '../../../utils/logger.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { createConsoleLogger } from '../../../utils/logger.js';
 import { VisualWorkflowEngine } from '../../../workflow/visual-workflow-engine.js';
 
 const logger = createConsoleLogger('WorkflowDesignerCommand');

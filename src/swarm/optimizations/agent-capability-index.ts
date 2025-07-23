@@ -4,10 +4,10 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { Logger } from "../../core/logger.ts";
-import { TTLMap } from "./ttl-map.ts";
-import { CircularBuffer } from "./circular-buffer.ts";
-import type { AgentId, TaskType, TaskPriority } from "../types.ts";
+import { Logger } from "../../core/logger.js";
+import { TTLMap } from "./ttl-map.js";
+import { CircularBuffer } from "./circular-buffer.js";
+import type { AgentId, TaskType, TaskPriority } from "../types.js";
 
 export interface AgentCapability {
   taskType: TaskType;

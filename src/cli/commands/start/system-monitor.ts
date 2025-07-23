@@ -4,7 +4,7 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { ProcessManager } from './process-manager.ts';
+import { ProcessManager } from './process-manager.js';
 
 export interface MonitoringConfig {
   interval: number;

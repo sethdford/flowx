@@ -1,0 +1,19 @@
+{
+  "taskId": "mdefqula_05ckqxnxc",
+  "taskName": "Complete Objective",
+  "taskType": "coding",
+  "assignedAgent": "mdefqul7_neo3r74rp",
+  "agentName": "coordinator-SwarmLead",
+  "workspaceDir": "swarm-workspaces/swarm-mdefqul3_7n4fwnsuz/tasks/coding-mdefqula_05ckqxnxc-mdefqul7_neo3r74rp",
+  "objective": "Create a package.json with name 'fixed-app' and version '2.0.0' Create a package.json with name 'fixed-app' and version '2.0.0'",
+  "requirements": {
+    "capabilities": [
+      "code-generation"
+    ],
+    "tools": [],
+    "permissions": [],
+    "estimatedDuration": 600000
+  },
+  "createdAt": "2025-07-22T11:12:33.887Z",
+  "status": "active"
+}

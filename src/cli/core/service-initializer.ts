@@ -3,10 +3,10 @@
  * Connects CLI commands to real persistence, config, and agent management
  */
 
-import { PersistenceManager } from '../../core/persistence.ts';
-import { ConfigManager } from '../../core/config.ts';
-import { AgentManager } from '../../agents/agent-manager.ts';
-import { Logger } from '../../core/logger.ts';
+import { PersistenceManager } from '../../core/persistence.js';
+import { ConfigManager } from '../../core/config.js';
+import { AgentManager } from '../../agents/agent-manager.js';
+import { Logger } from '../../core/logger.js';
 import { EventEmitter } from 'node:events';
 import { join } from 'node:path';
 import { mkdir } from 'node:fs/promises';

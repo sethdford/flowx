@@ -3,14 +3,14 @@
  * Comprehensive workflow management and orchestration
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { formatTable, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.ts';
-import { getMemoryManager, getPersistenceManager } from '../../core/global-initialization.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { formatTable, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.js';
+import { getMemoryManager, getPersistenceManager } from '../../core/global-initialization.js';
 import { nanoid } from 'nanoid';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { TaskEngine, WorkflowTask, Workflow as TaskWorkflow } from '../../../task/engine.ts';
-import { SwarmCoordinator } from '../../../swarm/coordinator.ts';
+import { TaskEngine, WorkflowTask, Workflow as TaskWorkflow } from '../../../task/engine.js';
+import { SwarmCoordinator } from '../../../swarm/coordinator.js';
 
 // Dynamic import for YAML support
 type YAMLModule = {

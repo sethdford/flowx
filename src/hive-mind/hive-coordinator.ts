@@ -6,8 +6,8 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { Logger } from '../core/logger.ts';
-import { EventBus } from '../core/event-bus.ts';
+import { Logger } from '../core/logger.js';
+import { EventBus } from '../core/event-bus.js';
 import { HiveInitializer, HiveInitOptions } from './hive-initializer.js';
 import { AgentSpawner, AgentSpawnerConfig } from './agents/agent-spawner.js';
 import { NeuralIntegration, NeuralIntegrationConfig } from './neural/neural-integration.js';

@@ -1,0 +1,19 @@
+{
+  "taskId": "mdf51l0g_witdylofb",
+  "taskName": "Complete Objective",
+  "taskType": "coding",
+  "assignedAgent": "mdf51l0e_yjkxewv56",
+  "agentName": "coordinator-SwarmLead",
+  "workspaceDir": "swarm-workspaces/swarm-mdf51l09_sflmt0y2o/tasks/coding-mdf51l0g_witdylofb-mdf51l0e_yjkxewv56",
+  "objective": "Create a package.json Create a package.json",
+  "requirements": {
+    "capabilities": [
+      "code-generation"
+    ],
+    "tools": [],
+    "permissions": [],
+    "estimatedDuration": 600000
+  },
+  "createdAt": "2025-07-22T23:00:45.089Z",
+  "status": "active"
+}

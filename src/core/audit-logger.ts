@@ -8,9 +8,9 @@ import { EventEmitter } from 'node:events';
 import { writeFile, readFile, mkdir, appendFile, readdir, stat } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { createHash, randomBytes, createHmac } from 'node:crypto';
-import { Logger, ILogger } from './logger.ts';
-import { EventBus, IEventBus } from './event-bus.ts';
-import { generateId } from '../utils/helpers.ts';
+import { Logger, ILogger } from './logger.js';
+import { EventBus, IEventBus } from './event-bus.js';
+import { generateId } from '../utils/helpers.js';
 
 // Core audit event structure
 export interface AuditEvent {

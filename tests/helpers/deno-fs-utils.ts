@@ -2,6 +2,41 @@
  * Helper utilities for Deno tests to handle filesystem operations safely
  */
 
+// Mock Deno for Node.js environment
+declare global {
+  var Deno: any;
+}
+
+const fs = require('fs').promises;
+
+// Mock Deno implementation using Node.js fs
+if (typeof globalThis.Deno === 'undefined') {
+  globalThis.Deno = {
+    async stat(filePath: string) {
+      const stats = await fs.stat(filePath);
+      return {
+        isFile: stats.isFile(),
+        isDirectory: stats.isDirectory(),
+        size: stats.size
+      };
+    },
+    readTextFile: (filePath: string) => fs.readFile(filePath, 'utf-8'),
+    writeTextFile: (filePath: string, content: string) => fs.writeFile(filePath, content, 'utf-8'),
+    async *readDir(dirPath: string) {
+      const entries = await fs.readdir(dirPath, { withFileTypes: true });
+      for (const entry of entries) {
+        yield {
+          name: entry.name,
+          isFile: entry.isFile(),
+          isDirectory: entry.isDirectory()
+        };
+      }
+    },
+    mkdir: (dirPath: string, options?: { recursive?: boolean }) => fs.mkdir(dirPath, options),
+    remove: (filePath: string, options?: { recursive?: boolean }) => fs.rm(filePath, { recursive: options?.recursive, force: true })
+  };
+}
+
 /**
  * Safely changes the current working directory with robust error handling
  * @param path The directory path to change to
@@ -96,7 +131,7 @@ export async function cleanupTestDirEnvironment(originalCwd: string|null, testDi
 }
 
 // Compatibility layer for exists function used in tests
-export const exists = async (filePath) => {
+export const exists = async (filePath: string) => {
   try {
     await fs.promises.access(filePath);
     return true;

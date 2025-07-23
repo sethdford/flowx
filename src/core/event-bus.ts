@@ -3,7 +3,7 @@
  */
 
 import { EventEmitter } from 'node:events';
-import { generateId } from "../utils/helpers.ts";
+import { generateId } from "../utils/helpers.js";
 
 export interface IEventBus {
   emit(event: string, data?: any): boolean;

@@ -4,20 +4,20 @@
  */
 
 // Core Enterprise Managers
-export { AnalyticsManager } from './analytics-manager.ts';
-export { AuditManager } from './audit-manager.ts';
-export { CloudManager } from './cloud-manager.ts';
-export { DeploymentManager } from './deployment-manager.ts';
-export { InfrastructureManager } from './infrastructure-manager.ts';
-export { ProjectManager } from './project-manager.ts';
+export { AnalyticsManager } from './analytics-manager.js';
+export { AuditManager } from './audit-manager.js';
+export { CloudManager } from './cloud-manager.js';
+export { DeploymentManager } from './deployment-manager.js';
+export { InfrastructureManager } from './infrastructure-manager.js';
+export { ProjectManager } from './project-manager.js';
 
 // GitHub Integration
-export { GitHubCoordinator } from './github-coordinator.ts';
-export { IssueTracker } from './issue-tracker.ts';
+export { GitHubCoordinator } from './github-coordinator.js';
+export { IssueTracker } from './issue-tracker.js';
 
 // Atlassian Integration
-export { JiraIntegration } from './jira-integration.ts';
-export { ConfluenceIntegration } from './confluence-integration.ts';
+export { JiraIntegration } from './jira-integration.js';
+export { ConfluenceIntegration } from './confluence-integration.js';
 
 // Type exports to avoid conflicts
 export type {
@@ -28,7 +28,7 @@ export type {
   UsageMetrics,
   BusinessMetrics,
   PredictiveModel
-} from './analytics-manager.ts';
+} from './analytics-manager.js';
 
 export type {
   AuditEntry,
@@ -37,7 +37,7 @@ export type {
   AuditReport,
   AuditMetrics,
   AuditConfiguration
-} from './audit-manager.ts';
+} from './audit-manager.js';
 
 export type {
   CloudProvider,
@@ -45,7 +45,7 @@ export type {
   CloudInfrastructure,
   CloudMetrics,
   CostOptimization
-} from './cloud-manager.ts';
+} from './cloud-manager.js';
 
 export type {
   Deployment as EnterpriseDeployment,
@@ -54,14 +54,14 @@ export type {
   DeploymentStage,
   DeploymentMetrics,
   DeploymentPipeline as EnterpriseDeploymentPipeline
-} from './deployment-manager.ts';
+} from './deployment-manager.js';
 
 export type {
   InfrastructureConfig,
   PerformanceMetrics as InfrastructurePerformanceMetrics,
   ContainerStatus,
   ScalingDecision
-} from './infrastructure-manager.ts';
+} from './infrastructure-manager.js';
 
 export type {
   Project as EnterpriseProject,
@@ -71,7 +71,7 @@ export type {
   ProjectResource,
   ProjectMetrics,
   ProjectReport
-} from './project-manager.ts';
+} from './project-manager.js';
 
 export type {
   GitHubRepository,
@@ -79,7 +79,7 @@ export type {
   CiCdPipeline,
   WorkflowCoordination,
   MultiRepositoryOperation
-} from './github-coordinator.ts';
+} from './github-coordinator.js';
 
 export type {
   Issue,
@@ -87,14 +87,14 @@ export type {
   Project as IssueProject,
   Milestone,
   ProjectCoordination
-} from './issue-tracker.ts';
+} from './issue-tracker.js';
 
 export type {
   JiraConfig,
   JiraIssue,
   JiraSyncResult,
   JiraWebhookEvent
-} from './jira-integration.ts';
+} from './jira-integration.js';
 
 export type {
   ConfluenceConfig,
@@ -103,4 +103,4 @@ export type {
   ProjectDocumentation,
   DocumentationPage,
   DocumentationTemplate
-} from './confluence-integration.ts';
+} from './confluence-integration.js';

@@ -3,8 +3,8 @@
  * Provides persistent storage and coordination for agent management
  */
 
-import { DistributedMemorySystem } from "../memory/distributed-memory.ts";
-import { AgentState, AgentType, AgentStatus } from "../swarm/types.ts";
+import { DistributedMemorySystem } from "../memory/distributed-memory.js";
+import { AgentState, AgentType, AgentStatus } from "../swarm/types.js";
 import { EventEmitter } from 'node:events';
 
 export interface AgentRegistryEntry {

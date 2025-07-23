@@ -3,7 +3,7 @@
  * Provides the foundation for different task execution strategies
  */
 
-import { TaskDefinition, SwarmObjective, AgentState, SwarmConfig } from "../types.ts";
+import { TaskDefinition, SwarmObjective, AgentState, SwarmConfig } from "../types.js";
 
 export interface StrategyMetrics {
   tasksCompleted: number;

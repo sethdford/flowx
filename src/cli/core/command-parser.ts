@@ -35,13 +35,21 @@ export class CommandParser {
     }
 
     const command = args[0];
+    let subcommand: string | undefined = undefined;
+    let remainingArgs = args.slice(1);
+
+    // Check for a subcommand
+    if (remainingArgs.length > 0 && !remainingArgs[0].startsWith('-')) {
+      subcommand = remainingArgs[0];
+      remainingArgs = remainingArgs.slice(1);
+    }
     
-    // Parse options and remaining arguments from position 1 onwards
-    const { options, args: remainingArgs } = this.parseOptions(args.slice(1));
+    const { options, args: finalArgs } = this.parseOptions(remainingArgs);
 
     return {
       command,
-      args: remainingArgs,
+      subcommand,
+      args: finalArgs,
       options
     };
   }
@@ -138,8 +146,16 @@ export class CommandParser {
 
     const flags = arg.slice(1);
 
+    if (!flags || flags.length === 0) {
+      return { options, nextIndex };
+    }
+
     for (let j = 0; j < flags.length; j++) {
       const flag = flags[j];
+
+      if (!flag) {
+        continue;
+      }
 
       if (this.isBooleanFlag(flag)) {
         options[flag] = true;
@@ -155,7 +171,12 @@ export class CommandParser {
           }
         } else {
           // Value is the rest of the string
-          options[flag] = this.parseValue(flag, flags.slice(j + 1));
+          const remainingFlags = flags.slice(j + 1);
+          if (remainingFlags) {
+            options[flag] = this.parseValue(flag, remainingFlags);
+          } else {
+            options[flag] = true;
+          }
           break;
         }
       }

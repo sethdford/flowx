@@ -4,7 +4,7 @@
  * Provides templates, tool integration, execution, and collaboration features
  */
 
-import { createConsoleLogger } from '../utils/logger.ts';
+import { createConsoleLogger } from '../utils/logger.js';
 
 const logger = createConsoleLogger('VisualWorkflowEngine');
 

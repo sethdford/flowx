@@ -7,6 +7,7 @@
 import { EventEmitter } from 'events';
 import { ILogger } from '../core/logger.js';
 import { ConfigManager } from '../config/config-manager.js';
+import { ModelSelector, DEFAULT_MODEL_ID, CLAUDE_MODELS } from '../config/models.js';
 // Error handler utility
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
@@ -36,26 +37,8 @@ export interface ClaudeAPIConfig {
   customHeaders?: Record<string, string>;
 }
 
-// COMPREHENSIVE model support - ALL Claude models supported!
-export type ClaudeModel = 
-  // Latest and greatest Claude 3.5 models
-  | 'claude-3-5-sonnet-20241022'
-  | 'claude-3-5-sonnet-20240620'
-  | 'claude-3-5-haiku-20241022'
-  
-  // Claude 3 models  
-  | 'claude-3-opus-20240229'
-  | 'claude-3-sonnet-20240229'
-  | 'claude-3-haiku-20240307'
-  
-  // Claude 2 models
-  | 'claude-2.1'
-  | 'claude-2.0'
-  
-  // Claude instant models
-  | 'claude-instant-1.2'
-  | 'claude-instant-1.1'
-  | 'claude-instant-1.0';
+// COMPREHENSIVE model support - Uses centralized model configuration
+export type ClaudeModel = keyof typeof CLAUDE_MODELS;
 
 export interface ClaudeMessage {
   role: 'user' | 'assistant' | 'system';
@@ -181,8 +164,29 @@ export class ClaudeAPIClient extends EventEmitter {
     lastReset: Date.now(),
   };
 
-  // Model capabilities database - comprehensive information for ALL models
-  private readonly modelCapabilities: Record<ClaudeModel, ModelCapabilities> = {
+  // Model capabilities database - REMOVED DUPLICATE METHOD
+  
+  private getModelStrengths(model: any): string[] {
+    const strengths = ['reasoning'];
+    if (model.capabilities.codeGeneration) strengths.push('code_generation');
+    if (model.capabilities.vision) strengths.push('vision');
+    if (model.capabilities.toolUse) strengths.push('tool_use');
+    if (model.capabilities.extendedThinking) strengths.push('deep_reasoning');
+    if (model.capabilities.computerUse) strengths.push('computer_use');
+    return strengths;
+  }
+  
+  private getOptimalUseCases(model: any): string[] {
+    const useCases = ['general_tasks'];
+    if (model.capabilities.codeGeneration) useCases.push('code_review', 'software_development');
+    if (model.capabilities.vision) useCases.push('multimodal_tasks', 'data_analysis');
+    if (model.capabilities.extendedThinking) useCases.push('complex_reasoning', 'research');
+    if (model.capabilities.computerUse) useCases.push('automation', 'workflow_tasks');
+    return useCases;
+  }
+  
+  // Legacy compatibility - keeping old structure for now
+  private readonly modelCapabilities: Record<string, ModelCapabilities> = {
     'claude-3-5-sonnet-20241022': {
       contextWindow: 200000,
       maxOutputTokens: 8192,
@@ -340,7 +344,7 @@ export class ClaudeAPIClient extends EventEmitter {
     const config: ClaudeAPIConfig = {
       apiKey: '',
       apiUrl: 'https://api.anthropic.com/v1/messages',
-      model: 'claude-3-5-sonnet-20241022', // Default to latest and greatest
+      model: DEFAULT_MODEL_ID as ClaudeModel, // Default to latest and greatest
       temperature: 0.7,
       maxTokens: 4096,
       topP: 1,
@@ -590,7 +594,7 @@ export class ClaudeAPIClient extends EventEmitter {
       })
       .map(([model]) => model as ClaudeModel);
 
-    return candidates.length > 0 ? candidates : ['claude-3-5-sonnet-20241022'];
+    return candidates.length > 0 ? candidates : [DEFAULT_MODEL_ID as ClaudeModel];
   }
 
   /**

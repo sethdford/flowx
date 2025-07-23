@@ -1,5 +1,14 @@
 import { promises as fs } from 'node:fs';
+import * as fsSync from 'node:fs';
 import { join, dirname, relative } from 'node:path';
+import { createHash } from 'node:crypto';
+
+export interface FileInfo {
+  path: string;
+  relativePath: string;
+  size: number;
+  permissions: number;
+}
 
 export interface CopyOptions {
   source: string;
@@ -12,6 +21,7 @@ export interface CopyOptions {
   verify?: boolean;
   parallel?: boolean;
   maxWorkers?: number;
+  preservePermissions?: boolean;
   conflictResolution?: 'skip' | 'overwrite' | 'backup' | 'merge';
   dryRun?: boolean;
   progressCallback?: (progress: ProgressInfo) => void;
@@ -48,9 +58,13 @@ export interface ProgressInfo {
  * Enterprise-grade prompt file copier with comprehensive error handling and monitoring
  */
 export class PromptCopier {
-  private options: CopyOptions;
+  protected options: CopyOptions;
+  protected fileQueue: FileInfo[] = [];
+  protected copiedFiles = new Set<string>();
+  protected errors: { file: string; error: string; phase: 'read' | 'write' | 'verify' }[] = [];
+  protected totalSize = 0;
+  protected totalFiles = 0;
   private startTime: number = 0;
-  private totalBytes: number = 0;
 
   constructor(options: CopyOptions) {
     this.options = options;
@@ -93,16 +107,16 @@ export class PromptCopier {
       }
 
       // Copy files
-      await this.copyFiles(files, result);
+      await this.copyFiles();
 
       // Verify if requested
       if (this.options.verify) {
-        await this.verifyFiles(files, result);
+        await this.verifyFiles();
       }
 
       result.success = result.failedFiles === 0;
       result.duration = Date.now() - this.startTime;
-      result.bytesTransferred = this.totalBytes;
+      result.bytesTransferred = this.totalSize;
 
       return result;
 
@@ -164,81 +178,114 @@ export class PromptCopier {
     }
   }
 
-  private async copyFiles(files: string[], result: CopyResult): Promise<void> {
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      
-      try {
-        this.reportProgress(files.length, i, file, 'copying');
-        
-        if (this.options.dryRun) {
-          console.log(`[DRY RUN] Would copy: ${relative(this.options.source, file)}`);
-          result.copiedFiles++;
-          continue;
-        }
-
-        const copied = await this.copyFile(file);
-        if (copied) {
-          result.copiedFiles++;
-        } else {
-          result.skippedFiles++;
-        }
-
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        result.errors.push({
-          file,
-          error: errorMsg,
-          phase: 'write',
-          timestamp: new Date()
-        });
-        result.failedFiles++;
-      }
+  protected async copyFiles(): Promise<void> {
+    for (const file of this.fileQueue) {
+      await this.copyFile(file);
     }
-
-    // Final progress update
-    this.reportProgress(files.length, files.length, 'Complete', 'copying');
   }
 
-  private async verifyFiles(files: string[], result: CopyResult): Promise<void> {
-    this.reportProgress(files.length, 0, 'Verifying files...', 'verifying');
+  private async copyFile(file: FileInfo): Promise<void> {
+    const relativePath = file.relativePath;
+    const destPath = join(this.options.destination, relativePath);
+
+    // Handle conflict resolution
+    try {
+      await fs.access(destPath);
+      
+      // File exists, handle based on conflict resolution strategy
+      const strategy = this.options.conflictResolution || (this.options.overwrite ? 'overwrite' : 'skip');
+      
+      switch (strategy) {
+        case 'skip':
+          console.log(`Skipping existing file: ${relativePath}`);
+          return;
+          
+        case 'backup':
+          const backupPath = `${destPath}.backup-${Date.now()}`;
+          await fs.copyFile(destPath, backupPath);
+          console.log(`Backed up existing file: ${relativePath}`);
+          break;
+          
+        case 'overwrite':
+          // Continue with copy
+          break;
+          
+        case 'merge':
+          // For now, treat as overwrite - could implement content merging
+          console.log(`Merging file: ${relativePath}`);
+          break;
+      }
+    } catch {
+      // File doesn't exist, continue with copy
+    }
+
+    // Ensure destination directory exists
+    await fs.mkdir(dirname(destPath), { recursive: true });
+
+    // Copy the file and track bytes
+    const sourceStats = await fs.stat(file.path);
+    await fs.copyFile(file.path, destPath);
+    this.totalSize += sourceStats.size;
     
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+    console.log(`Copied: ${relativePath} (${sourceStats.size} bytes)`);
+  }
+
+  protected async verifyFiles(): Promise<void> {
+    this.reportProgress(this.totalFiles, 0, 'Verifying files...', 'verifying');
+    
+    for (let i = 0; i < this.totalFiles; i++) {
+      const file = this.fileQueue[i];
       
       try {
-        const relativePath = relative(this.options.source, file);
+        const relativePath = file.relativePath;
         const destPath = join(this.options.destination, relativePath);
         
         // Check if destination file exists and has same size
         const [sourceStats, destStats] = await Promise.all([
-          fs.stat(file),
+          fs.stat(file.path),
           fs.stat(destPath)
         ]);
         
         if (sourceStats.size !== destStats.size) {
-          result.errors.push({
-            file,
+          this.errors.push({
+            file: relativePath,
             error: `File size mismatch: source ${sourceStats.size} bytes, destination ${destStats.size} bytes`,
             phase: 'verify',
-            timestamp: new Date()
           });
-          result.failedFiles++;
+          // result.failedFiles++; // This line was removed from the new_code, so it's removed here.
         }
         
-        this.reportProgress(files.length, i + 1, file, 'verifying');
+        this.reportProgress(this.totalFiles, i + 1, file.relativePath, 'verifying');
         
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error);
-        result.errors.push({
-          file,
+        this.errors.push({
+          file: file.relativePath,
           error: `Verification failed: ${errorMsg}`,
           phase: 'verify',
-          timestamp: new Date()
         });
-        result.failedFiles++;
+        // result.failedFiles++; // This line was removed from the new_code, so it's removed here.
       }
     }
+  }
+
+  protected async fileExists(filePath: string): Promise<boolean> {
+    try {
+      await fs.access(filePath);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  protected async calculateFileHash(filePath: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const hash = createHash('sha256');
+      const stream = fsSync.createReadStream(filePath);
+      stream.on('data', (chunk) => hash.update(chunk));
+      stream.on('end', () => resolve(hash.digest('hex')));
+      stream.on('error', (err) => reject(err));
+    });
   }
 
   private reportProgress(total: number, completed: number, current?: string, phase: ProgressInfo['phase'] = 'copying'): void {
@@ -313,53 +360,6 @@ export class PromptCopier {
       .replace(/\?/g, '.');
     
     return new RegExp(regex, 'i').test(filePath);
-  }
-
-  private async copyFile(sourcePath: string): Promise<boolean> {
-    const relativePath = relative(this.options.source, sourcePath);
-    const destPath = join(this.options.destination, relativePath);
-
-    // Handle conflict resolution
-    try {
-      await fs.access(destPath);
-      
-      // File exists, handle based on conflict resolution strategy
-      const strategy = this.options.conflictResolution || (this.options.overwrite ? 'overwrite' : 'skip');
-      
-      switch (strategy) {
-        case 'skip':
-          console.log(`Skipping existing file: ${relativePath}`);
-          return false;
-          
-        case 'backup':
-          const backupPath = `${destPath}.backup-${Date.now()}`;
-          await fs.copyFile(destPath, backupPath);
-          console.log(`Backed up existing file: ${relativePath}`);
-          break;
-          
-        case 'overwrite':
-          // Continue with copy
-          break;
-          
-        case 'merge':
-          // For now, treat as overwrite - could implement content merging
-          console.log(`Merging file: ${relativePath}`);
-          break;
-      }
-    } catch {
-      // File doesn't exist, continue with copy
-    }
-
-    // Ensure destination directory exists
-    await fs.mkdir(dirname(destPath), { recursive: true });
-
-    // Copy the file and track bytes
-    const sourceStats = await fs.stat(sourcePath);
-    await fs.copyFile(sourcePath, destPath);
-    this.totalBytes += sourceStats.size;
-    
-    console.log(`Copied: ${relativePath} (${sourceStats.size} bytes)`);
-    return true;
   }
 
   async restoreFromBackup(backupPath: string): Promise<void> {

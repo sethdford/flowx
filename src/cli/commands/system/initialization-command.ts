@@ -3,8 +3,8 @@
  * Comprehensive initialization for Claude Flow projects
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.js';
 import { writeFile, mkdir, readFile } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { existsSync } from 'node:fs';

@@ -23,7 +23,7 @@
         "FLOWX_LOAD_BALANCER": "true",
         "FLOWX_SESSION_TIMEOUT": "3600000",
         "FLOWX_MAX_SESSIONS": "100",
-        "FLOWX_TOOL_COUNT": "100",
+        "FLOWX_TOOL_COUNT": "142",
         "FLOWX_VERSION": "8.1.0"
       }
     }
@@ -93,6 +93,43 @@
         "confluence_generate_docs", "confluence_template_render", "confluence_space_manage"
       ]
     },
+    "resilient_code": {
+      "count": 15,
+      "intelligence": true,
+      "tools": [
+        "property_test_generate", "formal_verify", "multi_agent_code", "security_scan_deep",
+        "code_review_intelligent", "github_issue_resolve", "multi_file_coordinate",
+        "learn_from_feedback", "quality_monitor_realtime", "invariant_check",
+        "edge_case_generate", "vulnerability_prevent", "complexity_analyze",
+        "performance_optimize", "test_comprehensive"
+      ]
+    },
+    "clean_architecture": {
+      "count": 12,
+      "principled": true,
+      "tools": [
+        "solid_validate", "clean_arch_validate", "ddd_validate", "design_pattern_recommend",
+        "layer_separation_check", "dependency_direction_validate", "anti_pattern_detect",
+        "bounded_context_analyze", "aggregate_validate", "value_object_check",
+        "domain_service_validate", "architectural_refactor_suggest"
+      ]
+    },
+    "swe_bench": {
+      "count": 8,
+      "benchmark": true,
+      "tools": [
+        "swe_evaluate", "github_issue_parse", "codebase_analyze_deep", "solution_generate_multi",
+        "test_strategy_create", "change_impact_assess", "dependency_trace", "rollback_plan"
+      ]
+    },
+    "quality_assurance": {
+      "count": 7,
+      "enterprise": true,
+      "tools": [
+        "static_analysis_advanced", "mutation_testing", "fuzz_testing", "property_based_testing",
+        "security_testing_comprehensive", "performance_profiling", "code_coverage_analysis"
+      ]
+    },
     "daa": {
       "count": 8,
       "dynamicAgents": true,
@@ -113,8 +150,8 @@
   },
   "capabilities": {
     "protocolVersion": "2024.11.5",
-    "totalTools": 100,
-    "categories": 14,
+    "totalTools": 142,
+    "categories": 18,
     "wasmAcceleration": true,
     "neuralNetworks": true,
     "enterpriseFeatures": true,
@@ -123,6 +160,17 @@
     "githubIntegration": true,
     "jiraIntegration": true,
     "confluenceIntegration": true,
+    "resilientCodeGeneration": true,
+    "sweChallengeBenchmark": true,
+    "propertyBasedTesting": true,
+    "formalVerification": true,
+    "multiAgentCodeGeneration": true,
+    "intelligentCodeReview": true,
+    "cleanArchitecture": true,
+    "solidPrinciples": true,
+    "domainDrivenDesign": true,
+    "designPatternRecognition": true,
+    "architecturalValidation": true,
     "dynamicAgentArchitecture": true,
     "crossSessionMemory": true,
     "swarmCoordination": true,

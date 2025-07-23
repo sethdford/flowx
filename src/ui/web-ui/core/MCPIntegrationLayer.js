@@ -285,7 +285,7 @@ export class MCPIntegrationLayer {
   async executeRealTool(toolName, params) {
     // This would call the actual MCP tool
     // For now, we'll simulate the call
-    const mcpToolName = `mcp__claude-flow__${toolName}`;
+    const mcpToolName = `mcp__flowx__${toolName}`;
     
     if (typeof window !== 'undefined' && window.claudeFlowMCP) {
       return await window.claudeFlowMCP.execute(mcpToolName, params);

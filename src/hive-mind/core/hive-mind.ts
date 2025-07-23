@@ -339,30 +339,30 @@ export class HiveMind {
     
     // Create neural pattern engine first
     const neuralEngine = new NeuralPatternEngine({
-      modelUpdateInterval: 300000,
-      confidenceThreshold: 0.7,
-      trainingBatchSize: 32,
-      maxTrainingEpochs: 50,
+      enableWasm: true,
       learningRate: 0.001,
-      enableWasmAcceleration: true,
-      patternCacheSize: 1000,
-      autoRetraining: true,
-      qualityThreshold: 0.7
-    }, logger, eventBus);
+      patternThreshold: 0.7,
+      maxPatterns: 1000,
+      cacheTTL: 300000,
+      batchSize: 32,
+      enableDistribution: false,
+      computeBackend: 'wasm',
+      modelPath: './models'
+    });
     
     // This would load configuration from storage
     const config = {
       neuralIntegration: new NeuralIntegration(neuralEngine, {
         neuralConfig: {
-          modelUpdateInterval: 300000,
-          confidenceThreshold: 0.7,
-          trainingBatchSize: 32,
-          maxTrainingEpochs: 50,
+          enableWasm: true,
           learningRate: 0.001,
-          enableWasmAcceleration: true,
-          patternCacheSize: 1000,
-          autoRetraining: true,
-          qualityThreshold: 0.7
+          patternThreshold: 0.7,
+          maxPatterns: 1000,
+          cacheTTL: 300000,
+          batchSize: 32,
+          enableDistribution: false,
+          computeBackend: 'wasm',
+          modelPath: './models'
         },
         taskLearningEnabled: true,
         behaviorAnalysisEnabled: true,

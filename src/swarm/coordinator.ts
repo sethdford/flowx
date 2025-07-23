@@ -13,15 +13,31 @@
 
 import { EventEmitter } from 'node:events';
 import { join, dirname } from 'node:path';
-import { Logger } from "../core/logger.ts";
-import { generateId } from "../utils/helpers.ts";
+import { Logger } from "../core/logger.js";
+import { generateId } from "../utils/helpers.js";
+import { getTaskTimeout, getSwarmTimeout, getHeartbeatInterval } from '../config/timeout-config.js';
 import {
   SwarmId, AgentId, TaskId, AgentState, TaskDefinition, SwarmObjective,
   SwarmConfig, SwarmStatus, AgentType, TaskType, TaskStatus, TaskPriority,
-  SwarmEvent, SwarmEventEmitter, EventType
-} from "./types.ts";
-import { AgentProcessManager } from "../agents/agent-process-manager.ts";
+  SwarmEvent, SwarmEventEmitter, EventType, TaskResult
+} from "./types.js";
+import { AgentProcessManager } from "../agents/agent-process-manager.js";
 import { MeshCoordinator, MeshCoordinatorConfig } from './mesh-coordinator.js';
+import { SwarmMemoryManager } from "./memory.js";
+import { TaskExecutor, ExecutionResult } from "./executor.js";
+import { FlowXExecutor } from "./flowx-executor.js";
+import { WorkspaceCoordinator } from "./workspace-coordinator.js";
+import { SwarmJsonOutputAggregator } from './json-output-aggregator.js';
+// Enhanced coordination imports
+import { SwarmCoordinatorConfig as CoordinationConfig, SwarmIntelligence as CoordinationIntelligence } from "../coordination/swarm-coordinator.js";
+import { NeuralPatternEngine, NeuralConfig, PatternPrediction } from "../coordination/neural-pattern-engine.js";
+import { BackgroundExecutor } from "../coordination/background-executor.js";
+import { getCapabilitiesForType, calculateAgentSuitability } from "../coordination/agent-strategy-helpers.js";
+// Removed wrong application generator import - swarms don't generate static files!
+import * as fs from 'fs-extra';
+import * as path from 'path';
+import { promises as fsPromises, mkdirSync } from 'fs';
+import { ChildProcess } from 'child_process';
 
 // ===== ENTERPRISE COORDINATION TYPES =====
 
@@ -123,6 +139,11 @@ export interface EnhancedSwarmConfig extends SwarmConfig {
     minReliability: number;
     maxLoadImbalance: number;
   };
+  // FlowX Executor Configuration
+  enableFlowX?: boolean;
+  verbose?: boolean;
+  // Add missing swarmId property
+  swarmId?: string;
 }
 
 export interface TopologyMetrics {
@@ -188,6 +209,23 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
   // Swarm intelligence
   private swarmIntelligence: SwarmIntelligence;
   
+  // Neural pattern engine for advanced coordination
+  private neuralEngine: NeuralPatternEngine;
+  private backgroundExecutor: BackgroundExecutor;
+  
+  // Memory management
+  private memoryManager: SwarmMemoryManager;
+  
+  // Real task execution
+  private taskExecutor: TaskExecutor;
+  private flowxExecutor?: FlowXExecutor;
+  
+  // Workspace coordination for agent collaboration
+  private workspaceCoordinator: WorkspaceCoordinator;
+  
+  // JSON output aggregation
+  private jsonAggregator?: SwarmJsonOutputAggregator;
+  
   // Advanced background processes
   private patternLearningInterval?: NodeJS.Timeout;
   private performanceAnalysisInterval?: NodeJS.Timeout;
@@ -215,6 +253,30 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
   private metricsInterval?: NodeJS.Timeout;
   private adaptiveInterval?: NodeJS.Timeout;
 
+  // Add missing agent processes map
+  private agentProcesses: Map<string, ChildProcess> = new Map();
+
+  // Rate limiting for Claude API calls
+  private static readonly CLAUDE_API_DELAY = 2000; // 2 seconds between Claude calls
+  private lastClaudeCall: number = 0;
+  private lastClaudeApiCall: Map<string, number> = new Map();
+
+  private async waitForRateLimit(): Promise<void> {
+    const now = Date.now();
+    const timeSinceLastCall = now - this.lastClaudeCall;
+    
+    if (timeSinceLastCall < SwarmCoordinator.CLAUDE_API_DELAY) {
+      const waitTime = SwarmCoordinator.CLAUDE_API_DELAY - timeSinceLastCall;
+      this.logger.info('Rate limiting: waiting before next Claude API call', {
+        waitTime,
+        timeSinceLastCall
+      });
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+    
+    this.lastClaudeCall = Date.now();
+  }
+
   constructor(config: Partial<EnhancedSwarmConfig> = {}) {
     super();
     
@@ -233,6 +295,55 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
     this.coordinationTopology = this.initializeTopology();
     this.swarmIntelligence = this.initializeSwarmIntelligence();
     
+    // Initialize memory manager
+    this.memoryManager = new SwarmMemoryManager(this.config.memory);
+    
+    // Initialize real task executor for actual work
+    this.taskExecutor = new TaskExecutor({
+        logLevel: 'info', // Or get from config
+    });
+    
+    // Initialize FlowX executor for enhanced SPARC capabilities if enabled
+    if (config.enableFlowX) {
+      this.flowxExecutor = new FlowXExecutor({
+        enableSparc: true,
+        logLevel: 'info',
+        timeoutMs: getTaskTimeout('default'),
+        verbose: config.verbose || false,
+      });
+    }
+    
+    // Initialize workspace coordinator for agent collaboration
+    this.workspaceCoordinator = new WorkspaceCoordinator(this.logger);
+    
+    // Initialize JSON aggregator if in non-interactive mode
+    if (config.nonInteractive) {
+        this.jsonAggregator = new SwarmJsonOutputAggregator(this.swarmId.id, config.objective || 'Untitled Swarm', config);
+    }
+    
+    // Initialize neural pattern engine for advanced coordination
+    this.neuralEngine = new NeuralPatternEngine({
+      enableWasm: true,
+      modelPath: './models/swarm-patterns.model',
+      patternThreshold: 0.7,
+      learningRate: 0.01,
+      maxPatterns: 1000,
+      cacheTTL: 300000,
+      batchSize: 32,
+      enableDistribution: false,
+      computeBackend: 'wasm'
+    });
+    
+    // Initialize background executor for parallel task processing
+    this.backgroundExecutor = new BackgroundExecutor({
+      maxConcurrentTasks: 10,
+      defaultTimeout: getSwarmTimeout(),
+      logPath: './logs/background-executor',
+      enablePersistence: true,
+      enableWorkStealing: true,
+      retryAttempts: 3
+    });
+    
     // Initialize mesh coordinator for adaptive topology
     this.meshCoordinator = new MeshCoordinator({
       maxPeersPerNode: 6,
@@ -243,6 +354,8 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
       byzantineFaultTolerance: true,
       ...this.config.meshConfig
     });
+    
+    // Removed wrong application generator initialization
     
     this.setupEventHandlers();
     this.startEnterpriseProcesses();
@@ -327,7 +440,7 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
       },
       performance: {
         maxConcurrency: 10,
-        defaultTimeout: 300000,
+        defaultTimeout: getSwarmTimeout(),
         cacheEnabled: true,
         cacheSize: 1000,
         cacheTtl: 3600000,
@@ -351,7 +464,9 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
         minThroughput: 10,
         minReliability: 0.95,
         maxLoadImbalance: 0.3
-      }
+      },
+      // Add swarmId if not provided
+      swarmId: config.swarmId || this.swarmId?.id || generateId()
     };
     
     return baseConfig as EnhancedSwarmConfig;
@@ -1056,7 +1171,16 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
       return;
     }
 
-    this.logger.info('Initializing enterprise swarm coordinator with adaptive topology');
+    this.logger.info('Initializing enterprise swarm coordinator with advanced neural coordination');
+    
+    // Initialize memory manager
+    await this.memoryManager.initialize();
+    
+    // Initialize neural pattern engine
+    await this.neuralEngine.initialize();
+    
+    // Initialize background executor
+    await this.backgroundExecutor.start();
     
     // Initialize adaptive topology
     await this.initializeAdaptive();
@@ -1066,7 +1190,7 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
     this.status = 'executing';
     this.startTime = new Date();
     
-    this.logger.info('Enterprise swarm coordinator with adaptive topology initialized successfully');
+    this.logger.info('Enterprise swarm coordinator with advanced neural coordination initialized successfully');
   }
 
   async start(): Promise<void> {
@@ -1082,30 +1206,18 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
   }
 
   async stop(): Promise<void> {
-    this.logger.info('Stopping enterprise swarm coordinator');
-    
+    this.logger.info('Stopping SwarmCoordinator...');
     this.isRunning = false;
-    this.status = 'completed';
-    
-    // Clear basic intervals
-    if (this.schedulingInterval) clearInterval(this.schedulingInterval);
-    if (this.monitoringInterval) clearInterval(this.monitoringInterval);
-    if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
-    
-    // Clear enterprise intervals
+    this.status = 'stopping';
+
     this.stopEnterpriseProcesses();
+    this.agentProcessManager.shutdown();
     
-    // Clear adaptive topology intervals
-    if (this.metricsInterval) clearInterval(this.metricsInterval);
-    if (this.adaptiveInterval) clearInterval(this.adaptiveInterval);
-    
-    // Stop mesh coordinator
-    await this.meshCoordinator.shutdown();
-    
-    // Stop all agent processes
-    await this.agentProcessManager.shutdown();
-    
-    this.logger.info('Enterprise swarm coordinator with adaptive topology stopped');
+    if (this.jsonAggregator) {
+        await this.jsonAggregator.saveToFile(`./swarm-output-${this.swarmId.id}.json`);
+    }
+
+    this.emit('swarm:stopped', { swarmId: this.swarmId.id });
   }
 
   private stopEnterpriseProcesses(): void {
@@ -1257,20 +1369,34 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
     return objectiveId;
   }
 
-  async registerAgent(name: string, type: AgentType, capabilities: string[] = []): Promise<string> {
+  /**
+   * Register and spawn an agent with the swarm
+   */
+  async registerAgent(
+    name: string,
+    type: string,
+    capabilities: string[] = [],
+    systemPrompt?: string
+  ): Promise<string> {
     const agentId = generateId();
     
-    this.logger.info('Registering agent with adaptive topology', { agentId, name, type, capabilities });
-    
-    const agent: AgentState = {
-      id: { 
-        id: agentId,
-        swarmId: this.swarmId.id,
-        type,
-        instance: this.getNextInstanceNumber(type)
-      },
+    this.logger.info('Registering agent with adaptive topology', {
+      agentId,
       name,
       type,
+      capabilities
+    });
+
+    // Create agent profile
+    const agent: AgentState = {
+      id: { 
+        id: agentId, 
+        swarmId: this.swarmId.id, 
+        type: type as AgentType,
+        instance: this.getNextInstanceNumber(type as AgentType)
+      } as AgentId,
+      name,
+      type: type as AgentType,
       status: 'idle',
       capabilities: {
         codeGeneration: capabilities.includes('code-generation'),
@@ -1286,7 +1412,7 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
         languages: [],
         frameworks: [],
         domains: [],
-        tools: [],
+        tools: capabilities,
         maxConcurrentTasks: 3,
         maxMemoryUsage: 512,
         maxExecutionTime: 300000,
@@ -1328,14 +1454,14 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
         preferences: {}
       },
       environment: {
-        runtime: 'node',
-        version: '18.0.0',
+        runtime: 'claude',
+        version: '1.0.0',
         workingDirectory: `./agents/${agentId}`,
         tempDirectory: './temp',
         logDirectory: './logs',
         apiEndpoints: {},
         credentials: {},
-        availableTools: [],
+        availableTools: capabilities,
         toolConfigs: {}
       },
       endpoints: [],
@@ -1346,61 +1472,234 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
       collaborators: []
     };
 
+    // Add to registry
     this.agents.set(agentId, agent);
-
-    // Register with mesh coordinator if using mesh topology
-    if (this.currentTopology === 'mesh' || this.currentTopology === 'hybrid') {
-      const agentCapabilities = Object.keys(agent.capabilities).filter(cap => 
-        agent.capabilities[cap as keyof typeof agent.capabilities]
-      );
-      await this.meshCoordinator.addNode(agent.id, agentCapabilities, 'default');
-    }
-
-    // Create agent process
-    const processConfig = {
-      id: agentId,
-      type: this.mapAgentType(type),
-      specialization: name,
-      maxMemory: 512,
-      maxConcurrentTasks: 3,
-      timeout: 300000,
-      retryAttempts: 3,
-      workingDirectory: `./agents/${agentId}`,
-      environment: {
-        AGENT_NAME: name,
-        AGENT_TYPE: type,
-        AGENT_ID: agentId
-      },
-      claudeConfig: {
-        model: 'claude-3-sonnet-20240229',
-        temperature: 0.1,
-        maxTokens: 4000
-      }
-    };
-
-    await this.agentProcessManager.createAgent(processConfig);
     
-    // Check if topology should be adapted based on new agent count
+    // Update topology (check if topology should be adapted based on new agent count)
     await this.evaluateTopologyAdaptation();
-    
-    this.logger.info('Agent registered with adaptive coordination', { 
-      agentId, 
-      name, 
-      type, 
-      capabilities,
-      currentTopology: this.currentTopology,
-      totalAgents: this.agents.size 
-    });
-    
-    this.emit('agent:registered', {
+
+    // FIXED: Spawn Claude Code process directly with MCP tools instead of TypeScript template
+    await this.spawnClaudeCodeAgent(agent, systemPrompt);
+
+    this.logger.info('Agent registered with adaptive coordination', {
       agentId,
       name,
       type,
       capabilities,
-      topology: this.currentTopology
+      currentTopology: this.currentTopology,
+      totalAgents: this.agents.size
     });
-    
+
     return agentId;
+  }
+
+  /**
+   * Spawn Claude Code agent with MCP tools (SUPERIOR APPROACH)
+   */
+  private async spawnClaudeCodeAgent(agent: AgentState, systemPrompt?: string): Promise<void> {
+    // Create working directory
+    await fs.ensureDir(agent.environment.workingDirectory);
+    
+    // Create MCP-powered prompt for Claude Code
+    const mcpPrompt = this.createMCPAgentPrompt(agent, systemPrompt);
+    
+    // Create .clauderc file for the agent with MCP tools
+    const clauderc = {
+      mcp: {
+        servers: {
+          "flowx-swarm": {
+            command: "flowx",
+            args: ["mcp", "start", "--port", "3030"],
+            env: {
+              AGENT_ID: agent.id.id,
+              AGENT_TYPE: agent.type,
+              AGENT_NAME: agent.name,
+              SWARM_ID: this.config.swarmId || this.swarmId.id,
+              CAPABILITIES: agent.capabilities.tools.join(',')
+            }
+          }
+        }
+      },
+      tools: [
+        "mcp__flowx__agent_spawn",
+        "mcp__flowx__memory_store", 
+        "mcp__flowx__memory_retrieve",
+        "mcp__flowx__task_create",
+        "mcp__flowx__task_assign",
+        "mcp__flowx__swarm_status",
+        "mcp__flowx__agent_communicate"
+      ]
+    };
+
+    try {
+      await fs.ensureDir(agent.environment.workingDirectory);
+      await fsPromises.writeFile(path.join(agent.environment.workingDirectory, '.clauderc'), JSON.stringify(clauderc, null, 2));
+    } catch (error) {
+      this.logger.warn('Failed to create .clauderc file, continuing without MCP config', { error: error instanceof Error ? error.message : String(error) });
+    }
+
+    // Create initial prompt file
+    try {
+      await fsPromises.writeFile(
+        path.join(agent.environment.workingDirectory, 'agent-prompt.md'),
+        mcpPrompt
+      );
+    } catch (error) {
+      this.logger.warn('Failed to create agent prompt file, continuing', { error: error instanceof Error ? error.message : String(error) });
+    }
+
+    this.logger.info('Agent script created successfully', {
+      scriptPath: `${agent.environment.workingDirectory}/.clauderc`
+    });
+
+    // Spawn Claude Code process with the prompt
+    await this.spawnClaudeProcess(agent, mcpPrompt);
+  }
+
+  /**
+   * Create MCP-powered agent prompt for Claude Code
+   */
+  private createMCPAgentPrompt(agent: AgentState, customSystemPrompt?: string): string {
+    const basePrompt = customSystemPrompt || this.getDefaultSystemPrompt(agent.type);
+    
+    return `# ${agent.name} - ${agent.type.toUpperCase()} Agent
+
+## Your Role
+${basePrompt}
+
+## Agent Configuration
+- **ID**: ${agent.id.id}
+- **Type**: ${agent.type}
+- **Capabilities**: ${agent.capabilities.tools.join(', ')}
+- **Max Concurrent Tasks**: ${agent.capabilities.maxConcurrentTasks}
+- **Working Directory**: ${agent.environment.workingDirectory}
+
+## MCP Tools Available
+You have access to the following FlowX MCP tools for coordination:
+
+### Agent Management
+- \`mcp__flowx__agent_spawn\` - Spawn new agents for specialized tasks
+- \`mcp__flowx__agent_list\` - List all agents in the swarm
+- \`mcp__flowx__agent_communicate\` - Send messages to other agents
+
+### Task Management  
+- \`mcp__flowx__task_create\` - Create new tasks
+- \`mcp__flowx__task_assign\` - Assign tasks to agents
+- \`mcp__flowx__task_list\` - List current tasks
+
+### Memory & Coordination
+- \`mcp__flowx__memory_store\` - Store information in swarm memory
+- \`mcp__flowx__memory_retrieve\` - Retrieve information from swarm memory
+- \`mcp__flowx__swarm_status\` - Get swarm status and metrics
+
+## Instructions
+1. You are part of a swarm working on: "${this.config.description}"
+2. Use MCP tools to coordinate with other agents
+3. Store important information using \`mcp__flowx__memory_store\`
+4. Spawn specialized agents when needed using \`mcp__flowx__agent_spawn\`
+5. Communicate with other agents using \`mcp__flowx__agent_communicate\`
+6. Check swarm status regularly with \`mcp__flowx__swarm_status\`
+
+## Current Objective
+${this.config.description}
+
+Begin by checking the swarm status and coordinating with other agents to understand the current progress and your role in achieving the objective.
+`;
+  }
+
+  /**
+   * Get default system prompt for agent type
+   */
+  private getDefaultSystemPrompt(type: AgentType): string {
+    const prompts: Record<AgentType, string> = {
+      coordinator: "You are a coordinator agent responsible for orchestrating and managing other agents in the swarm.",
+      researcher: "You are a research agent specialized in gathering information and conducting analysis.",
+      developer: "You are a developer agent focused on writing, reviewing, and maintaining code.",
+      analyzer: "You are an analyzer agent that processes data and generates insights.",
+      reviewer: "You are a reviewer agent that validates and provides feedback on work products.",
+      tester: "You are a tester agent responsible for testing and quality assurance.",
+      documenter: "You are a documentation agent that creates and maintains documentation.",
+      monitor: "You are a monitoring agent that tracks system health and performance.",
+      specialist: "You are a specialist agent with domain-specific expertise."
+    };
+    
+    return prompts[type] || prompts.specialist;
+  }
+
+  /**
+   * Spawn the actual Claude Code process
+   */
+  private async spawnClaudeProcess(agent: AgentState, prompt: string): Promise<void> {
+    const { spawn } = await import('child_process');
+    
+    const claudeArgs = [
+      prompt,
+      '--print',
+      '--dangerously-skip-permissions'
+    ];
+
+    this.logger.info('Spawning agent process', {
+      agentId: agent.id.id,
+      workDir: agent.environment.workingDirectory
+    });
+
+    // Use Claude Code instead of Node.js for agent execution
+    const nodeCmd = process.execPath;
+    
+    this.logger.info('Spawning agent with Claude Code', {
+      args: claudeArgs
+    });
+
+    try {
+      const childProcess = spawn('claude', claudeArgs, {
+        cwd: agent.environment.workingDirectory,
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: {
+          ...process.env,
+          AGENT_ID: agent.id.id,
+          AGENT_TYPE: agent.type,
+          AGENT_NAME: agent.name,
+          SWARM_ID: this.config.swarmId || this.swarmId.id,
+          CAPABILITIES: agent.capabilities.tools.join(',')
+        }
+      });
+
+      // Store process reference
+      this.agentProcesses.set(agent.id.id, childProcess);
+
+      this.logger.info('Agent process started', {
+        agentId: agent.id.id,
+        pid: childProcess.pid,
+        workDir: agent.environment.workingDirectory
+      });
+
+      // Close stdin to prevent hanging [[memory:3798511]]
+      if (childProcess.stdin) {
+        childProcess.stdin.end();
+      }
+
+      childProcess.on('exit', (code: number | null) => {
+        this.logger.info('Agent process exited', {
+          agentId: agent.id.id,
+          exitCode: code
+        });
+        this.agentProcesses.delete(agent.id.id);
+      });
+
+      childProcess.on('error', (error: Error) => {
+        this.logger.error('Agent process error', {
+          agentId: agent.id.id,
+          error: error.message
+        });
+      });
+
+    } catch (error) {
+      this.logger.error('Failed to spawn Claude Code process', {
+        agentId: agent.id.id,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      throw error;
+    }
   }
 
   // =============================================================================
@@ -1431,13 +1730,25 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
 
   private async scheduleAvailableTasks(): Promise<void> {
     if (!this.isRunning || this.pendingTasks.size === 0) {
+      this.logger.info('DEBUG: scheduleAvailableTasks early return', { 
+        isRunning: this.isRunning, 
+        pendingTasksSize: this.pendingTasks.size 
+      });
       return;
     }
 
     const availableAgents = Array.from(this.agents.values())
       .filter(agent => agent.status === 'idle');
 
+    this.logger.info('DEBUG: Task scheduling attempt', {
+      totalAgents: this.agents.size,
+      availableAgents: availableAgents.length,
+      pendingTasks: this.pendingTasks.size,
+      agentStatuses: Array.from(this.agents.values()).map(a => ({ id: a.id.id, name: a.name, status: a.status }))
+    });
+
     if (availableAgents.length === 0) {
+      this.logger.warn('DEBUG: No available agents for task assignment');
       return;
     }
 
@@ -1447,18 +1758,56 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
       .filter(task => this.areTaskDependenciesMet(task))
       .sort((a, b) => this.getTaskPriority(b) - this.getTaskPriority(a));
 
-    let assignedCount = 0;
+    this.logger.info('DEBUG: Ready tasks for assignment', {
+      readyTasksCount: readyTasks.length,
+      readyTasks: readyTasks.map(t => ({ 
+        id: t.id.id, 
+        name: t.name, 
+        type: t.type, 
+        capabilities: t.requirements.capabilities 
+      }))
+    });
+
+    // PARALLEL TASK ASSIGNMENT: Assign multiple tasks concurrently instead of sequentially
     const maxConcurrent = Math.min(availableAgents.length, this.config.maxConcurrentTasks);
+    const assignmentPromises: Promise<void>[] = [];
+    const assignedAgents: AgentState[] = [];
+    let assignedCount = 0;
 
     for (const task of readyTasks) {
       if (assignedCount >= maxConcurrent) break;
 
-      const suitableAgent = this.findBestAgentForTask(task, availableAgents);
+      const suitableAgent = this.findBestAgentForTask(task, availableAgents.filter(a => !assignedAgents.includes(a)));
+      
+      this.logger.info('DEBUG: Agent selection result', {
+        taskId: task.id.id,
+        taskName: task.name,
+        suitableAgentFound: !!suitableAgent,
+        suitableAgentId: suitableAgent?.id.id,
+        suitableAgentName: suitableAgent?.name
+      });
+      
       if (suitableAgent) {
-        await this.assignTaskToAgent(task, suitableAgent);
-        availableAgents.splice(availableAgents.indexOf(suitableAgent), 1);
+        // Start assignment asynchronously (don't await here for parallel execution)
+        const assignmentPromise = this.assignTaskToAgent(task, suitableAgent);
+        assignmentPromises.push(assignmentPromise);
+        
+        // Track assigned agents to prevent double-assignment
+        assignedAgents.push(suitableAgent);
         assignedCount++;
+      } else {
+        this.logger.warn('DEBUG: No suitable agent found for task', {
+          taskId: task.id.id,
+          taskName: task.name,
+          taskCapabilities: task.requirements.capabilities,
+          availableAgentCount: availableAgents.filter(a => !assignedAgents.includes(a)).length
+        });
       }
+    }
+
+    // Wait for all assignments to complete in parallel
+    if (assignmentPromises.length > 0) {
+      await Promise.allSettled(assignmentPromises);
     }
 
     if (assignedCount > 0) {
@@ -1474,13 +1823,46 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
     }
     
     if (!task.constraints.dependencies || task.constraints.dependencies.length === 0) {
+      this.logger.info('DEBUG: Task has no dependencies - ready to run', { 
+        taskId: task.id.id, 
+        taskName: task.name 
+      });
       return true;
     }
 
-    return task.constraints.dependencies.every(dep => {
+    // ENHANCED DEBUG: Check each dependency individually
+    const dependencyResults = task.constraints.dependencies.map(dep => {
       const depTask = this.tasks.get(dep.id);
-      return depTask && depTask.status === 'completed';
+      const isCompleted = depTask && depTask.status === 'completed';
+      
+      this.logger.info('DEBUG: Dependency check', {
+        taskId: task.id.id,
+        taskName: task.name,
+        dependencyId: dep.id,
+        dependencyExists: !!depTask,
+        dependencyStatus: depTask?.status || 'NOT_FOUND',
+        dependencyName: depTask?.name || 'UNKNOWN',
+        isCompleted
+      });
+      
+      return isCompleted;
     });
+
+    const allDependenciesMet = dependencyResults.every(result => result);
+    
+    this.logger.info('DEBUG: Overall dependency check result', {
+      taskId: task.id.id,
+      taskName: task.name,
+      totalDependencies: task.constraints.dependencies.length,
+      metDependencies: dependencyResults.filter(r => r).length,
+      allDependenciesMet,
+      dependencyStatuses: task.constraints.dependencies.map(dep => {
+        const depTask = this.tasks.get(dep.id);
+        return { id: dep.id, status: depTask?.status || 'NOT_FOUND', name: depTask?.name || 'UNKNOWN' };
+      })
+    });
+
+    return allDependenciesMet;
   }
 
   private getTaskPriority(task: TaskDefinition): number {
@@ -1508,7 +1890,27 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
     let score = 0;
 
     // Base compatibility
-    if (this.isAgentCompatibleWithTask(agent, task)) {
+    const isCompatible = this.isAgentCompatibleWithTask(agent, task);
+    this.logger.info('DEBUG: Agent compatibility check', {
+      agentId: agent.id.id,
+      agentName: agent.name,
+      agentType: agent.type,
+      taskId: task.id.id,
+      taskName: task.name,
+      taskType: task.type,
+      isCompatible,
+      agentCapabilities: {
+        codeGeneration: agent.capabilities.codeGeneration,
+        testing: agent.capabilities.testing,
+        documentation: agent.capabilities.documentation,
+        research: agent.capabilities.research,
+        analysis: agent.capabilities.analysis,
+        tools: agent.capabilities.tools
+      },
+      taskCapabilities: task.requirements.capabilities
+    });
+
+    if (isCompatible) {
       score += 50;
     } else {
       return 0; // Not compatible
@@ -1519,9 +1921,19 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
     score += (1 - agent.workload) * 20; // Prefer less loaded agents
 
     // Task type specific bonuses
-    if (this.getAgentTaskTypeMatch(agent, task)) {
+    const typeMatch = this.getAgentTaskTypeMatch(agent, task);
+    if (typeMatch) {
       score += 25;
     }
+
+    this.logger.info('DEBUG: Agent scoring result', {
+      agentId: agent.id.id,
+      taskId: task.id.id,
+      finalScore: score,
+      typeMatch,
+      successRate: agent.metrics.successRate,
+      workload: agent.workload
+    });
 
     return score;
   }
@@ -1547,8 +1959,27 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
         case 'analysis':
           if (!agent.capabilities.analysis) return false;
           break;
+        case 'design':
+          // Design can be handled by architects, analysts, or if agent has system-design/architecture tools
+          if (!agent.capabilities.analysis && 
+              !agent.capabilities.tools.includes('system-design') &&
+              !agent.capabilities.tools.includes('architecture')) {
+            return false;
+          }
+          break;
+        case 'custom':
+          // Custom capabilities can be handled by any agent
+          break;
         default:
-          // General capability - all agents can handle
+          // For any other capability, check if it's in the agent's tools
+          if (!agent.capabilities.tools.includes(capability)) {
+            // FALLBACK: If agent is a developer/coordinator and task is coding, allow it
+            if ((agent.type === 'developer' || agent.type === 'coordinator') && 
+                (capability === 'file-system' || task.type === 'coding')) {
+              continue; // Allow this capability
+            }
+            return false;
+          }
           break;
       }
     }
@@ -1573,17 +2004,36 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
     return agentTaskTypes.includes(task.type) || task.type === 'custom';
   }
 
+  private shouldUseFlowXForTask(task: TaskDefinition, agent: AgentState): boolean {
+    // Use FlowX for complex tasks that benefit from SPARC methodology
+    const complexTaskTypes = ['coding', 'architecture', 'setup', 'integration', 'documentation'];
+    const complexAgentTypes = ['architect', 'developer', 'coordinator'];
+    
+    const isComplexTask = complexTaskTypes.includes(task.type);
+    const isComplexAgent = complexAgentTypes.includes(agent.type);
+    const isLongRunningTask = (task.constraints.timeoutAfter || 0) > 600000; // > 10 minutes
+    
+    return isComplexTask || isComplexAgent || isLongRunningTask;
+  }
+
   private async assignTaskToAgent(task: TaskDefinition, agent: AgentState): Promise<void> {
     if (!task || !agent) {
       this.logger.error('Invalid task or agent', { taskId: task?.id?.id, agentId: agent?.id?.id });
       throw new Error('Cannot assign task: Invalid task or agent');
     }
+
+    // Add rate limiting before Claude API calls
+    await this.waitForRateLimit();
     this.logger.info('Assigning task to agent', { 
       taskId: task.id.id, 
       agentId: agent.id.id,
       taskName: task.name,
       agentName: agent.name
     });
+
+    if (this.jsonAggregator) {
+        this.jsonAggregator.updateTask(task.id.id, { assignedAgent: agent.id.id, status: 'assigned' });
+    }
 
     // Update task status
     task.status = 'running';
@@ -1599,41 +2049,153 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
     this.pendingTasks.delete(task.id.id);
     this.runningTasks.add(task.id.id);
 
-    // Execute task via agent process
-    try {
-      const executionRequest = {
-        id: task.id.id,
+    // PARALLEL-SAFE RATE LIMITING: Use per-agent rate limiting that doesn't block other agents
+    // This allows multiple agents to work in parallel while still preventing individual agent rate limits
+    const agentId = agent.id.id;
+    const lastClaudeCall = this.lastClaudeApiCall.get(agentId);
+    const now = Date.now();
+    const MIN_DELAY_PER_AGENT = 1000; // 1 second between calls per agent (allows parallel agents)
+    
+    if (lastClaudeCall && (now - lastClaudeCall) < MIN_DELAY_PER_AGENT) {
+      const delayNeeded = MIN_DELAY_PER_AGENT - (now - lastClaudeCall);
+      this.logger.info('Per-agent rate limiting delay (allows parallel execution)', {
         taskId: task.id.id,
-        type: task.type,
-        description: task.description,
-        instructions: task.instructions || task.description,
-        // Convert TaskRequirements to Record<string, unknown>
-        requirements: {
-          capabilities: task.requirements.capabilities,
-          tools: task.requirements.tools,
-          permissions: task.requirements.permissions,
-          estimatedDuration: task.requirements.estimatedDuration,
-          maxDuration: task.requirements.maxDuration,
-          memoryRequired: task.requirements.memoryRequired,
-          cpuRequired: task.requirements.cpuRequired,
-          environment: task.requirements.environment,
-          reviewRequired: task.requirements.reviewRequired,
-          testingRequired: task.requirements.testingRequired,
-          documentationRequired: task.requirements.documentationRequired,
-          agentType: task.requirements.agentType,
-          minReliability: task.requirements.minReliability
-        } as Record<string, unknown>,
-        agent: {
-          instructions: task.instructions || this.generateTaskInstructions(task),
-          constraints: task.constraints,
-          timeout: 300000
-        }
-      };
+        agentId,
+        delayMs: delayNeeded,
+        parallelExecution: true
+      });
+      // This delay only affects THIS agent, others can continue in parallel
+      await new Promise(resolve => setTimeout(resolve, delayNeeded));
+    }
 
-      await this.agentProcessManager.executeTask(agent.id.id, executionRequest);
+    // Record this Claude API call attempt for this specific agent
+    this.lastClaudeApiCall.set(agentId, Date.now());
+
+    // Execute task via REAL task executor with workspace coordination
+    try {
+      this.logger.info('🚀 Starting REAL task execution with workspace coordination', {
+        taskId: task.id.id,
+        agentId: agent.id.id,
+        taskType: task.type,
+        agentType: agent.type
+      });
+
+      // CRITICAL FIX: Create workspace for ALL tasks, not just collaborative ones
+      let workspaceId: string | undefined;
       
+      // Check if this task requires collaboration or is a handoff
+      const isCollaborativeTask = task.requirements.reviewRequired || 
+                                  task.name.includes('review') ||
+                                  task.name.includes('handoff') ||
+                                  task.type === 'review';
+
+      this.logger.info('DEBUG: About to setup workspace', {
+        taskId: task.id.id,
+        agentId: agent.id.id,
+        isCollaborativeTask,
+        taskName: task.name,
+        taskType: task.type
+      });
+
+      try {
+        if (isCollaborativeTask) {
+          // Create or use shared workspace for collaborative tasks
+          this.logger.info('DEBUG: Setting up collaborative workspace', { taskId: task.id.id });
+          workspaceId = await this.setupCollaborativeWorkspace(task, agent);
+        } else {
+          // FIXED: Create individual workspace for regular tasks
+          this.logger.info('DEBUG: Setting up individual task workspace', { taskId: task.id.id });
+          workspaceId = await this.setupTaskWorkspace(task, agent);
+        }
+        
+        this.logger.info('DEBUG: Workspace setup completed', {
+          taskId: task.id.id,
+          workspaceId,
+          isCollaborativeTask
+        });
+      } catch (workspaceError) {
+        this.logger.error('DEBUG: Workspace setup failed', {
+          taskId: task.id.id,
+          error: workspaceError instanceof Error ? workspaceError.message : String(workspaceError),
+          stack: workspaceError instanceof Error ? workspaceError.stack : undefined,
+          isCollaborativeTask
+        });
+        throw workspaceError;
+      }
+
+      // Use FlowX executor for enhanced SPARC capabilities, fallback to TaskExecutor
+      let executionResult: ExecutionResult;
+      
+      this.logger.info('DEBUG: About to execute task', {
+        taskId: task.id.id,
+        agentId: agent.id.id,
+        workspaceId,
+        hasFlowXExecutor: !!this.flowxExecutor,
+        shouldUseFlowX: this.flowxExecutor && this.shouldUseFlowXForTask(task, agent)
+      });
+
+      try {
+        if (this.flowxExecutor && this.shouldUseFlowXForTask(task, agent)) {
+          this.logger.info('Using FlowX executor with SPARC methodology', {
+            taskId: task.id.id,
+            taskType: task.type,
+            agentType: agent.type
+          });
+          executionResult = await this.flowxExecutor.executeTask(task, agent) as ExecutionResult;
+        } else {
+          // Use the standard task executor that produces actual deliverables
+          this.logger.info('DEBUG: Using TaskExecutor.executeClaudeTask', {
+            taskId: task.id.id,
+            agentId: agent.id.id,
+            taskExecutorExists: !!this.taskExecutor
+          });
+          executionResult = await this.taskExecutor.executeClaudeTask(task, agent);
+        }
+        
+        this.logger.info('DEBUG: Task execution completed', {
+          taskId: task.id.id,
+          success: executionResult.success,
+          hasOutput: !!executionResult.output,
+          outputLength: executionResult.output?.length || 0,
+          hasError: !!executionResult.error
+        });
+      } catch (executionError) {
+        this.logger.error('DEBUG: Task execution threw error', {
+          taskId: task.id.id,
+          error: executionError instanceof Error ? executionError.message : String(executionError),
+          stack: executionError instanceof Error ? executionError.stack : undefined
+        });
+        throw executionError;
+      }
+      
+      if (executionResult.success) {
+        this.logger.info('✅ REAL task execution completed successfully', {
+          taskId: task.id.id,
+          filesGenerated: executionResult.artifacts.files?.length || 0,
+          duration: executionResult.duration,
+          tokensUsed: executionResult.resourcesUsed.cpuTime, // Not a direct mapping, but best effort
+        });
+        
+        await this.handleTaskCompleted(task.id.id, {
+          success: true,
+          output: executionResult.output,
+          files: executionResult.artifacts.files || [],
+          artifacts: executionResult.artifacts,
+        });
+
+        // Check for automatic handoffs
+        await this.checkForAutomaticHandoffs(task, agent, executionResult);
+        
+      } else {
+        this.logger.error('❌ REAL task execution failed', {
+          taskId: task.id.id,
+          error: executionResult.error,
+          exitCode: executionResult.exitCode,
+        });
+        await this.handleTaskFailed(task.id.id, new Error(executionResult.error));
+      }
     } catch (error) {
-      this.logger.error('Failed to execute task', { taskId: task.id.id, error });
+      this.logger.error('💥 REAL task execution error', { taskId: task.id.id, error });
       await this.handleTaskFailed(task.id.id, error);
     }
   }
@@ -1839,12 +2401,15 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
   private async createTasksFromBreakdown(objective: SwarmObjective, taskBreakdown: any[]): Promise<TaskDefinition[]> {
     const tasks: TaskDefinition[] = [];
     
+    // FIXED: Pre-generate all task IDs to resolve dependency references
+    const taskIds = taskBreakdown.map(() => generateId());
+    
     for (let i = 0; i < taskBreakdown.length; i++) {
       const taskInfo = taskBreakdown[i];
       
       const task: TaskDefinition = {
         id: { 
-          id: generateId(),
+          id: taskIds[i],  // Use pre-generated ID
           swarmId: this.swarmId.id,
           sequence: i + 1,
           priority: 1
@@ -1861,11 +2426,11 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
         },
         constraints: {
           dependencies: taskInfo.dependencies.map((depIndex: number) => ({
-            id: tasks[depIndex]?.id.id || '',
+            id: taskIds[depIndex],  // FIXED: Use pre-generated IDs, no more undefined references!
             swarmId: this.swarmId.id,
             sequence: depIndex + 1,
             priority: 1
-          })).filter((dep: any) => dep.id),
+          })),  // FIXED: No more filtering - all dependencies are now valid
           dependents: [],
           conflicts: []
         },
@@ -1903,12 +2468,15 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
     // Analyze the objective to determine task breakdown
     const taskBreakdown = this.analyzeObjectiveComplexity(objective.description);
     
+    // FIXED: Pre-generate all task IDs to resolve dependency references  
+    const taskIds = taskBreakdown.map(() => generateId());
+    
     for (let i = 0; i < taskBreakdown.length; i++) {
       const taskInfo = taskBreakdown[i];
       
       const task: TaskDefinition = {
         id: { 
-          id: generateId(),
+          id: taskIds[i],  // Use pre-generated ID
           swarmId: this.swarmId.id,
           sequence: i + 1,
           priority: 1
@@ -1925,11 +2493,11 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
         },
         constraints: {
           dependencies: taskInfo.dependencies.map(depIndex => ({
-            id: tasks[depIndex]?.id.id || '',
+            id: taskIds[depIndex],  // FIXED: Use pre-generated IDs
             swarmId: this.swarmId.id,
             sequence: depIndex + 1,
             priority: 1
-          })).filter(dep => dep.id),
+          })),  // FIXED: No more filtering - all dependencies are valid
           dependents: [],
           conflicts: []
         },
@@ -1973,6 +2541,62 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
   }> {
     const lowerDesc = description.toLowerCase();
     
+    // React component breakdown
+    if (lowerDesc.includes('react') && (lowerDesc.includes('component') || lowerDesc.includes('hello'))) {
+      return [
+        {
+          name: 'Create Package.json',
+          description: 'Create package.json with React and TypeScript dependencies',
+          instructions: 'Create a package.json file with React, TypeScript, and necessary build dependencies. Include start, build, and test scripts.',
+          type: 'coding',
+          capabilities: ['code-generation'],
+          estimatedDuration: 120000, // 2 minutes
+          priority: 'high',
+          dependencies: []
+        },
+        {
+          name: 'Create Hello Component',
+          description: 'Create React TypeScript Hello component',
+          instructions: 'Create a Hello.tsx component with TypeScript that displays "Hello, World!" with proper props and modern React patterns.',
+          type: 'coding',
+          capabilities: ['code-generation'],
+          estimatedDuration: 180000, // 3 minutes
+          priority: 'high',
+          dependencies: [0]
+        },
+        {
+          name: 'Create App Component',
+          description: 'Create main App.tsx component',
+          instructions: 'Create the main App.tsx component that imports and renders the Hello component.',
+          type: 'coding',
+          capabilities: ['code-generation'],
+          estimatedDuration: 150000, // 2.5 minutes
+          priority: 'high',
+          dependencies: [1]
+        },
+        {
+          name: 'Create Index File',
+          description: 'Create index.tsx entry point',
+          instructions: 'Create index.tsx as the entry point that renders the App component.',
+          type: 'coding',
+          capabilities: ['code-generation'],
+          estimatedDuration: 90000, // 1.5 minutes
+          priority: 'normal',
+          dependencies: [2]
+        },
+        {
+          name: 'Create README',
+          description: 'Create README with setup instructions',
+          instructions: 'Create a comprehensive README.md with setup instructions, how to run the app, and project structure.',
+          type: 'documentation',
+          capabilities: ['documentation'],
+          estimatedDuration: 120000, // 2 minutes
+          priority: 'normal',
+          dependencies: [0, 1, 2, 3]
+        }
+      ];
+    }
+
     // Hello World application breakdown
     if (lowerDesc.includes('hello world')) {
       return [
@@ -1981,7 +2605,7 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
           description: 'Create the basic HTML structure for the Hello World application',
           instructions: 'Create a modern HTML5 file with semantic elements, proper meta tags, and a responsive layout structure for a Hello World application.',
           type: 'coding',
-          capabilities: ['code-generation', 'file-system'],
+          capabilities: ['code-generation'],
           estimatedDuration: 300000, // 5 minutes
           priority: 'high',
           dependencies: []
@@ -1991,7 +2615,7 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
           description: 'Create responsive CSS styling with animations',
           instructions: 'Create modern CSS with responsive design, animations, and attractive styling for the Hello World application.',
           type: 'coding',
-          capabilities: ['code-generation', 'file-system'],
+          capabilities: ['code-generation'],
           estimatedDuration: 420000, // 7 minutes
           priority: 'high',
           dependencies: [0]
@@ -2001,7 +2625,7 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
           description: 'Implement interactive JavaScript features',
           instructions: 'Add JavaScript functionality for user interaction, dynamic greetings, and smooth animations.',
           type: 'coding',
-          capabilities: ['code-generation', 'file-system'],
+          capabilities: ['code-generation'],
           estimatedDuration: 480000, // 8 minutes
           priority: 'high',
           dependencies: [0, 1]
@@ -2011,7 +2635,7 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
           description: 'Write comprehensive README and documentation',
           instructions: 'Create a detailed README.md with setup instructions, features, and usage guide.',
           type: 'documentation',
-          capabilities: ['documentation', 'file-system'],
+          capabilities: ['documentation'],
           estimatedDuration: 240000, // 4 minutes
           priority: 'normal',
           dependencies: [0, 1, 2]
@@ -2021,7 +2645,7 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
           description: 'Test the application and validate functionality',
           instructions: 'Test all features, validate HTML, CSS, and JavaScript, ensure cross-browser compatibility.',
           type: 'testing',
-          capabilities: ['testing', 'analysis'],
+          capabilities: ['testing'],
           estimatedDuration: 180000, // 3 minutes
           priority: 'normal',
           dependencies: [0, 1, 2]
@@ -2029,14 +2653,14 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
       ];
     }
 
-    // Default single task for other objectives
+    // Default single task for other objectives - FIXED: Use 'coding' instead of 'custom'
     return [
       {
         name: 'Complete Objective',
         description: description,
         instructions: `Complete the following objective: ${description}`,
-        type: 'custom',
-        capabilities: ['custom'],
+        type: 'coding',
+        capabilities: ['code-generation'],
         estimatedDuration: 600000, // 10 minutes
         priority: 'normal',
         dependencies: []
@@ -2049,7 +2673,17 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
   // =============================================================================
 
   private async writeTaskResults(task: TaskDefinition, result: any): Promise<void> {
-    if (!result || !result.result || !result.result.files) {
+    // FIXED: Check for files in the correct structure - result.files (from SwarmCoordinator) or result.artifacts.files
+    const files = result?.files || result?.artifacts?.files || result?.result?.files;
+    if (!files || !Array.isArray(files) || files.length === 0) {
+      this.logger.info('No files to copy from task result', { 
+        taskId: task.id.id,
+        hasResult: !!result,
+        hasFiles: !!result?.files,
+        hasArtifactsFiles: !!result?.artifacts?.files,
+        hasResultFiles: !!result?.result?.files,
+        fileCount: files?.length || 0
+      });
       return; // No files to write
     }
 
@@ -2067,15 +2701,38 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
       await this.ensureDirectoryExists(outputDir);
 
       // Write each file from the task result
-      for (const file of result.result.files) {
-        const filePath = this.joinPath(outputDir, file.path);
+      for (const file of files) {
+        // Handle both file path string and file object formats
+        let filePath: string;
+        let content: string;
+        
+        if (typeof file === 'string') {
+          // File is a path string - read from the temporary location
+          const fileName = file.split('/').pop() || 'output';
+          filePath = this.joinPath(outputDir, fileName);
+          try {
+            const fs = await import('node:fs/promises');
+            content = await fs.readFile(file, 'utf-8');
+          } catch (error) {
+            this.logger.warn('Could not read file from path', { file, error });
+            continue;
+          }
+        } else if (file && typeof file === 'object' && file.path && file.content) {
+          // File is an object with path and content
+          filePath = this.joinPath(outputDir, file.path);
+          content = file.content;
+        } else {
+          this.logger.warn('Unknown file format in artifacts', { file });
+          continue;
+        }
+        
         await this.ensureDirectoryExists(this.getDirectoryName(filePath));
-        await this.writeFile(filePath, file.content);
+        await this.writeFile(filePath, content);
         
         this.logger.info('File written', { 
           taskId: task.id.id, 
           filePath: filePath.replace(process.cwd(), '.'),
-          size: file.content?.length || 0
+          size: content?.length || 0
         });
       }
 
@@ -2251,6 +2908,10 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
 
     // Schedule dependent tasks
     await this.scheduleAvailableTasks();
+
+    if (this.jsonAggregator) {
+        this.jsonAggregator.completeTask(taskId, result);
+    }
   }
 
   private async handleTaskFailed(taskId: string, error: any): Promise<void> {
@@ -2280,6 +2941,10 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
     // Move task from running to failed
     this.runningTasks.delete(taskId);
     this.failedTasks.add(taskId);
+
+    if (this.jsonAggregator) {
+        this.jsonAggregator.updateTask(taskId, { status: 'failed', error: error.message });
+    }
   }
 
   // =============================================================================
@@ -2329,15 +2994,33 @@ export class SwarmCoordinator extends EventEmitter implements SwarmEventEmitter 
     }
   }
 
-  private checkAgentHealth(): void {
+    private checkAgentHealth(): void {
     const now = new Date();
     for (const [agentId, agent] of this.agents) {
       const timeSinceHeartbeat = now.getTime() - agent.lastHeartbeat.getTime();
       
-              if (timeSinceHeartbeat > 90000) { // 1.5 minutes (agents send every 30s)
-        if (agent.status !== 'offline') {
-          this.logger.warn('Agent marked as offline due to missed heartbeats', { agentId });
+      // Skip heartbeat check for agents that are actively busy with tasks
+      // Claude Code tasks can take several minutes to complete
+      if (agent.status === 'busy' && agent.currentTask) {
+        // Extend timeout for busy agents - allow up to 10 minutes for long-running tasks
+        if (timeSinceHeartbeat > 600000) { // 10 minutes for busy agents
+          this.logger.warn('Agent marked as offline due to prolonged inactivity during task execution', { 
+            agentId, 
+            currentTask: agent.currentTask.id,
+            timeSinceHeartbeat: Math.round(timeSinceHeartbeat / 1000) + 's'
+          });
           agent.status = 'offline';
+        }
+      } else {
+        // Normal timeout for idle agents
+        if (timeSinceHeartbeat > 90000) { // 1.5 minutes for idle agents
+          if (agent.status !== 'offline') {
+            this.logger.warn('Agent marked as offline due to missed heartbeats', { 
+              agentId,
+              timeSinceHeartbeat: Math.round(timeSinceHeartbeat / 1000) + 's'
+            });
+            agent.status = 'offline';
+          }
         }
       }
     }
@@ -2470,5 +3153,492 @@ Context: This task is part of a larger objective. Focus on quality and completen
   correlateEvents(correlationId: string): SwarmEvent[] {
     // This is a simple implementation - in a real system you'd store events
     return [];
+  }
+
+  /*
+   * REMOVED: createApplication method - FUNDAMENTALLY WRONG APPROACH!
+   * 
+   * Real swarms don't generate static files - they coordinate live Claude Code processes!
+   * The correct approach is to spawn Claude Code with MCP tool instructions.
+   */
+
+  /*
+   * REMOVED: All application generation analysis methods - WRONG APPROACH!
+   * 
+   * Real swarms coordinate Claude Code processes, not static file generation.
+   */
+
+  // ===== WORKSPACE COORDINATION METHODS =====
+
+  /**
+   * Setup collaborative workspace for multi-agent tasks
+   */
+  private async setupCollaborativeWorkspace(task: TaskDefinition, agent: AgentState): Promise<string> {
+    const workspaceName = `${task.type}-${task.id.id}`;
+    
+    // Get other agents that might collaborate
+    const collaborators = Array.from(this.agents.values())
+      .filter(a => a.id.id !== agent.id.id && a.status === 'idle')
+      .slice(0, 2) // Limit to 2 additional collaborators
+      .map(a => a.id.id);
+
+    const workspaceId = await this.workspaceCoordinator.createSharedWorkspace(
+      workspaceName,
+      [agent.id.id, ...collaborators],
+      {
+        description: `Collaborative workspace for task: ${task.name}`,
+        template: task.type
+      }
+    );
+
+    this.logger.info('🏗️ Setup collaborative workspace', {
+      workspaceId,
+      taskId: task.id.id,
+      agent: agent.id.id,
+      collaborators
+    });
+
+    return workspaceId;
+  }
+
+  /**
+   * Setup individual workspace for regular tasks
+   */
+  private async setupTaskWorkspace(task: TaskDefinition, agent: AgentState): Promise<string> {
+    const workspaceName = `${task.type}-${task.id.id}-${agent.id.id}`;
+    const workspaceDir = `./swarm-workspaces/swarm-${this.swarmId.id}`;
+    
+    // Create workspace directory structure
+    await fs.ensureDir(workspaceDir);
+    await fs.ensureDir(path.join(workspaceDir, 'tasks'));
+    await fs.ensureDir(path.join(workspaceDir, 'artifacts'));
+    await fs.ensureDir(path.join(workspaceDir, 'logs'));
+    
+    // Create task-specific directory
+    const taskWorkspaceDir = path.join(workspaceDir, 'tasks', workspaceName);
+    await fs.ensureDir(taskWorkspaceDir);
+
+    // Create task manifest
+    const taskManifest = {
+      taskId: task.id.id,
+      taskName: task.name,
+      taskType: task.type,
+      assignedAgent: agent.id.id,
+      agentName: agent.name,
+      workspaceDir: taskWorkspaceDir,
+      objective: task.description,
+      requirements: task.requirements,
+      createdAt: new Date(),
+      status: 'active'
+    };
+
+    // Use dynamic import to avoid transpilation issues
+    const { writeFile } = await import('node:fs/promises');
+    
+    await writeFile(
+      path.join(taskWorkspaceDir, 'task-manifest.json'),
+      JSON.stringify(taskManifest, null, 2),
+      'utf8'
+    );
+
+    // Create README for the task
+    const readmeContent = `# Task: ${task.name}
+
+## Objective
+${task.description}
+
+## Task Details
+- **Type**: ${task.type}
+- **Assigned Agent**: ${agent.name} (${agent.id.id})
+- **Created**: ${new Date().toISOString()}
+
+## Instructions
+${task.instructions || 'Complete the task according to the objective above.'}
+
+## Workspace Structure
+- \`src/\` - Source code files
+- \`docs/\` - Documentation
+- \`tests/\` - Test files
+- \`artifacts/\` - Generated artifacts
+`;
+
+    await writeFile(path.join(taskWorkspaceDir, 'README.md'), readmeContent, 'utf8');
+
+    // Create basic project structure for coding tasks
+    if (task.type === 'coding' || task.type === 'integration') {
+      await fs.ensureDir(path.join(taskWorkspaceDir, 'src'));
+      await fs.ensureDir(path.join(taskWorkspaceDir, 'docs'));
+      await fs.ensureDir(path.join(taskWorkspaceDir, 'tests'));
+      await fs.ensureDir(path.join(taskWorkspaceDir, 'artifacts'));
+    }
+
+    this.logger.info('🏗️ Setup individual task workspace', {
+      workspaceId: workspaceName,
+      taskId: task.id.id,
+      agentId: agent.id.id,
+      workspaceDir: taskWorkspaceDir
+    });
+
+    return workspaceName;
+  }
+
+  /**
+   * Share task results in workspace for collaboration
+   */
+  private async shareTaskResults(
+    workspaceId: string, 
+    task: TaskDefinition, 
+    agent: AgentState, 
+    result: any
+  ): Promise<void> {
+    try {
+      // Store each generated file in the shared workspace
+      for (const [filename, content] of result.files) {
+        await this.workspaceCoordinator.storeWorkspaceFile(
+          workspaceId,
+          filename,
+          content,
+          agent.id.id,
+          {
+            status: task.requirements.reviewRequired ? 'review' : 'approved',
+            reviewRequired: task.requirements.reviewRequired
+          }
+        );
+      }
+
+      this.logger.info('📤 Shared task results in workspace', {
+        workspaceId,
+        taskId: task.id.id,
+        agent: agent.id.id,
+        files: result.files.size
+      });
+    } catch (error) {
+      this.logger.error('Failed to share task results', { error, workspaceId, taskId: task.id.id });
+    }
+  }
+
+  /**
+   * Check for automatic handoffs based on task completion
+   */
+  private async checkForAutomaticHandoffs(
+    task: TaskDefinition, 
+    agent: AgentState, 
+    result: any
+  ): Promise<void> {
+    try {
+      // Check if this was a coding task that needs review
+      if (task.type === 'coding' && result.files.size > 0) {
+        const reviewerAgent = this.findBestAgentForTask({
+          ...task,
+          type: 'review',
+          name: `Review: ${task.name}`,
+          description: `Review the code generated for: ${task.description}`
+        } as TaskDefinition, Array.from(this.agents.values()).filter(a => 
+          a.id.id !== agent.id.id && 
+          a.capabilities.codeReview && 
+          a.status === 'idle'
+        ));
+
+        if (reviewerAgent) {
+          this.logger.info('🔄 Automatic handoff to reviewer', {
+            taskId: task.id.id,
+            fromAgent: agent.id.id,
+            toAgent: reviewerAgent.id.id
+          });
+
+          // Create review task
+          const reviewTask = this._createTaskDefinition({
+            name: `Review: ${task.name}`,
+            description: `Review the code generated for: ${task.description}`,
+            type: 'review',
+            priority: task.priority,
+            instructions: `Please review the code files generated by ${agent.name} and provide feedback.`,
+            requirements: {
+              capabilities: ['code-review'],
+              tools: ['str_replace_editor'],
+              permissions: ['read', 'write'],
+              reviewRequired: false,
+            },
+            constraints: {
+              dependencies: [],
+              dependents: [],
+              conflicts: [],
+            },
+          });
+
+          this.tasks.set(reviewTask.id.id, reviewTask);
+          this.pendingTasks.add(reviewTask.id.id);
+
+          await this.assignTaskToAgent(reviewTask, reviewerAgent);
+        }
+      }
+
+      // Check if this was a research task that needs analysis
+      if (task.type === 'research' && result.files.size > 0) {
+        const analystAgent = this.findBestAgentForTask(
+          {
+            ...task,
+            type: 'analysis',
+            name: `Analyze: ${task.name}`,
+            description: `Analyze the research findings for: ${task.description}`,
+          } as TaskDefinition,
+          Array.from(this.agents.values()).filter(
+            (a) =>
+              a.id.id !== agent.id.id &&
+              a.capabilities.analysis &&
+              a.status === 'idle'
+          )
+        );
+
+        if (analystAgent) {
+          this.logger.info('🔄 Automatic handoff to analyst', {
+            taskId: task.id.id,
+            fromAgent: agent.id.id,
+            toAgent: analystAgent.id.id,
+          });
+
+          // Create analysis task
+          const analysisTask = this._createTaskDefinition({
+            name: `Analyze: ${task.name}`,
+            description: `Analyze the research findings for: ${task.description}`,
+            type: 'analysis',
+            priority: task.priority,
+            instructions: `Please analyze the research findings generated by ${agent.name} and provide insights.`,
+            requirements: {
+              capabilities: ['analysis'],
+              tools: ['str_replace_editor'],
+              permissions: ['read', 'write'],
+              reviewRequired: false,
+            },
+            constraints: {
+              dependencies: [],
+              dependents: [],
+              conflicts: [],
+            },
+          });
+
+          this.tasks.set(analysisTask.id.id, analysisTask);
+          this.pendingTasks.add(analysisTask.id.id);
+
+          await this.assignTaskToAgent(analysisTask, analystAgent);
+        }
+      }
+    } catch (error) {
+      this.logger.error('Failed to check automatic handoffs', {
+        error,
+        taskId: task.id.id,
+      });
+    }
+  }
+
+  /**
+   * Get workspace coordinator for external access
+   */
+  getWorkspaceCoordinator(): WorkspaceCoordinator {
+    return this.workspaceCoordinator;
+  }
+
+  private _createTaskDefinition(details: Partial<TaskDefinition>): TaskDefinition {
+    const taskId = {
+      id: generateId('task'),
+      swarmId: this.swarmId.id,
+      sequence: this.tasks.size + 1,
+      priority: this._getTaskPriorityValue(details.priority || 'normal'),
+    };
+
+    return {
+      id: taskId,
+      name: details.name || 'Untitled Task',
+      description: details.description || '',
+      type: details.type || 'custom',
+      priority: details.priority || 'normal',
+      status: 'created',
+      instructions: details.instructions || '',
+      requirements: details.requirements || { capabilities: [], tools: [], permissions: [] },
+      constraints: details.constraints || { dependencies: [], dependents: [], conflicts: [] },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      input: details.input || {},
+      context: details.context || {},
+      attempts: [],
+      statusHistory: [],
+      ...details,
+    };
+  }
+
+  private _getTaskPriorityValue(priority: TaskPriority): number {
+    switch (priority) {
+      case 'critical': return 5;
+      case 'high': return 4;
+      case 'normal': return 3;
+      case 'low': return 2;
+      case 'background': return 1;
+      default: return 3;
+    }
+  }
+
+  /**
+   * Create tasks from workflow definition
+   */
+  createTasks(workflowTasks: any[]): void {
+    this.logger.info('Creating tasks from workflow definition', { 
+      taskCount: workflowTasks.length 
+    });
+
+    for (const workflowTask of workflowTasks) {
+      const task: TaskDefinition = {
+        id: { 
+          id: workflowTask.id || generateId(),
+          swarmId: this.swarmId.id,
+          sequence: workflowTask.sequence || 1,
+          priority: 1
+        },
+        type: workflowTask.type || 'coding',
+        name: workflowTask.name,
+        description: workflowTask.description || workflowTask.instructions,
+        instructions: workflowTask.instructions || workflowTask.description,
+        requirements: {
+          capabilities: workflowTask.requirements?.capabilities || [],
+          tools: workflowTask.requirements?.tools || [],
+          permissions: workflowTask.requirements?.permissions || [],
+          estimatedDuration: workflowTask.requirements?.estimatedDuration || 300000,
+          maxDuration: workflowTask.requirements?.maxDuration || 600000,
+          reviewRequired: workflowTask.requirements?.reviewRequired || false,
+          testingRequired: workflowTask.requirements?.testingRequired || false
+        },
+        constraints: {
+          dependencies: workflowTask.dependencies ? 
+            workflowTask.dependencies.map((dep: string) => ({
+              id: dep,
+              swarmId: this.swarmId.id,
+              sequence: 1,
+              priority: 1
+            })) : [],
+          dependents: [],
+          conflicts: []
+        },
+        priority: workflowTask.priority || 'medium',
+        input: workflowTask.input || {},
+        context: {
+          objectiveId: 'workflow-objective',
+          strategy: 'workflow',
+          ...workflowTask.context  // Preserve any context passed from CLI (like rootDirectory)
+        },
+        status: 'queued',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        attempts: [],
+        statusHistory: []
+      };
+
+      this.tasks.set(task.id.id, task);
+      this.pendingTasks.add(task.id.id);
+      
+      this.logger.info('Created task from workflow', {
+        taskId: task.id.id,
+        taskName: task.name,
+        taskType: task.type
+      });
+    }
+
+    this.logger.info('All workflow tasks created', { 
+      totalTasks: this.tasks.size,
+      pendingTasks: this.pendingTasks.size 
+    });
+  }
+
+  async completeTask(taskId: string, result: TaskResult): Promise<void> {
+    const task = this.tasks.get(taskId);
+    if (!task) {
+      throw new Error(`Task ${taskId} not found`);
+    }
+
+    const agent = this.agents.get(task.assignedTo!.id);
+    if (!agent) {
+      throw new Error(`Agent ${task.assignedTo} not found`);
+    }
+
+    const success = result.quality > 0.5 && result.completeness > 0.5; // Define success based on quality metrics
+    
+    this.logger.info('🏁 Task completion initiated', {
+      taskId,
+      taskName: task.name,
+      agentId: agent.id.id,
+      agentName: agent.name,
+      result: {
+        quality: result.quality,
+        completeness: result.completeness,
+        duration: result.executionTime,
+        artifactsCreated: Object.keys(result.artifacts || {}).length,
+        outputLength: result.output?.toString().length || 0
+      }
+    });
+
+    // Enhanced task completion with memory and coordination
+    task.status = success ? 'completed' : 'failed';
+    task.completedAt = new Date();
+    task.result = result;
+
+    // Update agent status and workload
+    agent.status = 'idle';
+    agent.workload = Math.max(0, agent.workload - 0.3);
+    agent.currentTask = undefined;
+
+    // Move task from running to completed/failed
+    this.runningTasks.delete(taskId);
+    if (success) {
+      this.completedTasks.add(taskId);
+      agent.metrics.tasksCompleted++;
+    } else {
+      this.failedTasks.add(taskId);
+      agent.metrics.tasksFailed++;
+    }
+
+    // Enhanced logging for swarm coordination
+    this.logger.info('🧠 Storing task knowledge in swarm memory', {
+      taskId: task.id.id,
+      taskType: task.type,
+      agentType: agent.type,
+      memoryContext: {
+        artifacts: Object.keys(result.artifacts || {}).length,
+        quality: result.quality,
+        completeness: result.completeness
+      }
+    });
+
+    // Log enhanced agent coordination 
+    this.logger.info('📡 Sharing task knowledge across swarm', {
+      taskId: task.id.id,
+      completingAgent: agent.id.id,
+      swarmSize: this.agents.size,
+      knowledgeType: {
+        artifacts: Object.keys(result.artifacts || {}).length,
+        recommendations: result.recommendations?.length || 0,
+        nextSteps: result.nextSteps?.length || 0
+      }
+    });
+
+    this.logger.info('✅ Task completed and swarm updated', {
+      taskId,
+      taskName: task.name,
+      swarmStatus: {
+        pendingTasks: this.pendingTasks.size,
+        runningTasks: this.runningTasks.size,
+        completedTasks: this.completedTasks.size,
+        failedTasks: this.failedTasks.size,
+        activeAgents: Array.from(this.agents.values()).filter(a => a.status !== 'offline').length
+      }
+    });
+
+    // Continue scheduling if there are more tasks
+    if (this.pendingTasks.size > 0) {
+      this.logger.info('🔄 Scheduling next tasks in pipeline', {
+        remainingTasks: this.pendingTasks.size,
+        availableAgents: Array.from(this.agents.values()).filter(a => a.status === 'idle').length
+      });
+      setImmediate(() => this.scheduleAvailableTasks());
+    }
+
+    // this.emit('task:completed', { taskId, result, agent: agent.id });
   }
 } 

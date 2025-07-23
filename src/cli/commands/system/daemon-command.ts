@@ -3,9 +3,9 @@
  * Background service management with real process control and monitoring
  */
 
-import type { CLICommand, CLIContext } from '../../interfaces/index.ts';
-import { formatTable, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.ts';
-import { getPersistenceManager } from '../../core/global-initialization.ts';
+import type { CLICommand, CLIContext } from '../../interfaces/index.js';
+import { formatTable, successBold, infoBold, warningBold, errorBold, printSuccess, printError, printWarning, printInfo } from '../../core/output-formatter.js';
+import { getPersistenceManager } from '../../core/global-initialization.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { spawn, ChildProcess } from 'child_process';

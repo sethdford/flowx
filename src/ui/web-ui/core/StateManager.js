@@ -13,7 +13,7 @@ export class StateManager {
     this.toolResults = new Map();
     this.viewStates = new Map();
     this.sessionData = new Map();
-    this.storageKey = 'claude-flow-ui-state';
+    this.storageKey = 'flowx-ui-state';
     this.isInitialized = false;
     this.autoSaveInterval = 30000; // 30 seconds
     this.autoSaveTimer = null;

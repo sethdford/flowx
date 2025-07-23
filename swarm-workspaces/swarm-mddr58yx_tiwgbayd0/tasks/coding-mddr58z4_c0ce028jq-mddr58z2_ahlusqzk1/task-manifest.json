@@ -1,0 +1,19 @@
+{
+  "taskId": "mddr58z4_c0ce028jq",
+  "taskName": "Create Package.json",
+  "taskType": "coding",
+  "assignedAgent": "mddr58z2_ahlusqzk1",
+  "agentName": "coordinator-SwarmLead",
+  "workspaceDir": "swarm-workspaces/swarm-mddr58yx_tiwgbayd0/tasks/coding-mddr58z4_c0ce028jq-mddr58z2_ahlusqzk1",
+  "objective": "Create package.json with React and TypeScript dependencies",
+  "requirements": {
+    "capabilities": [
+      "code-generation"
+    ],
+    "tools": [],
+    "permissions": [],
+    "estimatedDuration": 120000
+  },
+  "createdAt": "2025-07-21T23:43:55.313Z",
+  "status": "active"
+}

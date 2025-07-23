@@ -1,0 +1,42 @@
+{
+  "name": "Simple README Creation",
+  "description": "Create a simple README.md file with project description",
+  "version": "1.0.0",
+  "tasks": [
+    {
+      "id": "create-readme",
+      "name": "Create README.md",
+      "type": "setup",
+      "description": "Create a simple README.md file with project description",
+      "requirements": {
+        "skills": ["documentation", "markdown"],
+        "tools": ["file_editor"],
+        "estimatedDuration": 300000,
+        "priority": "high"
+      },
+      "constraints": {
+        "timeoutAfter": 1800000,
+        "maxRetries": 2
+      },
+      "deliverables": [
+        {
+          "path": "README.md",
+          "type": "file",
+          "description": "Main project README file"
+        }
+      ]
+    }
+  ],
+  "agents": [
+    {
+      "name": "Documentation Writer",
+      "type": "developer", 
+      "capabilities": ["documentation", "markdown", "writing"],
+      "maxConcurrentTasks": 1
+    }
+  ],
+  "coordination": {
+    "strategy": "sequential",
+    "dependencies": []
+  }
+} 

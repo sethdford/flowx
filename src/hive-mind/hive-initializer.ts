@@ -6,11 +6,11 @@
  */
 
 import { HiveMind, HiveMindConfig } from './core/hive-mind.js';
-import { NeuralPatternEngine } from '../coordination/neural-pattern-engine.ts';
-import { Logger } from '../core/logger.ts';
-import { EventBus } from '../core/event-bus.ts';
-import { QueenAgent } from '../agents/queen-agent.ts';
-import { generateId } from '../utils/helpers.ts';
+import { NeuralPatternEngine } from '../coordination/neural-pattern-engine.js';
+import { Logger } from '../core/logger.js';
+import { EventBus } from '../core/event-bus.js';
+import { QueenAgent } from '../agents/queen-agent.js';
+import { generateId } from '../utils/helpers.js';
 import { AgentType, SwarmTopology, QueenMode, Task, TaskPriority, TaskStrategy, AgentCapability } from './types.js';
 
 // Hive Mind initialization options
@@ -107,17 +107,17 @@ export class HiveInitializer {
    */
   private async setupNeuralEngine(): Promise<void> {
     try {
-      this.neuralEngine = new NeuralPatternEngine(
-        {
-          confidenceThreshold: 0.7,
-          learningRate: 0.001,
-          trainingBatchSize: 32,
-          enableWasmAcceleration: true,
-          autoRetraining: true
-        },
-        this.logger,
-        this.eventBus
-      );
+      this.neuralEngine = new NeuralPatternEngine({
+        enableWasm: true,
+        learningRate: 0.001,
+        patternThreshold: 0.7,
+        maxPatterns: 1000,
+        cacheTTL: 300000,
+        batchSize: 32,
+        enableDistribution: false,
+        computeBackend: 'wasm',
+        modelPath: './models'
+      });
 
       this.logger.info('Neural pattern engine initialized');
     } catch (error) {
@@ -132,25 +132,25 @@ export class HiveInitializer {
   private async setupHiveCore(options: HiveInitOptions): Promise<string> {
     try {
       // Import required neural components
-      const { NeuralIntegration } = await import('./neural/neural-integration.ts');
-      const { NeuralPatternEngine } = await import('../coordination/neural-pattern-engine.ts');
-      const { Logger } = await import('../core/logger.ts');
-      const { EventBus } = await import('../core/event-bus.ts');
+      const { NeuralIntegration } = await import('./neural/neural-integration.js');
+      const { NeuralPatternEngine } = await import('../coordination/neural-pattern-engine.js');
+      const { Logger } = await import('../core/logger.js');
+      const { EventBus } = await import('../core/event-bus.js');
       
       // Create neural components
       const logger = new Logger('NeuralPatternEngine');
       const eventBus = EventBus.getInstance();
       const neuralEngine = new NeuralPatternEngine({
-        modelUpdateInterval: 300000,
-        confidenceThreshold: 0.7,
-        trainingBatchSize: 32,
-        maxTrainingEpochs: 50,
+        enableWasm: true,
         learningRate: 0.001,
-        enableWasmAcceleration: true,
-        patternCacheSize: 1000,
-        autoRetraining: true,
-        qualityThreshold: 0.7
-      }, logger, eventBus);
+        patternThreshold: 0.7,
+        maxPatterns: 1000,
+        cacheTTL: 300000,
+        batchSize: 32,
+        enableDistribution: false,
+        computeBackend: 'wasm',
+        modelPath: './models'
+      });
       
       const neuralIntegration = new NeuralIntegration(neuralEngine, {
         taskLearningEnabled: true,
